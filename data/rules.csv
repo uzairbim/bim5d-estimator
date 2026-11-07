@@ -6,6 +6,7 @@ priority,ifc_class,keywords,recipe
 6,IfcSlab,\broof\b|\bROOF\b,ROOF_RC
 7,IfcSlab,finish floor|ceramic|tile|wood - flooring|carpet|vinyl|fliese|parkett|teppich|dielen|\bfb [0-9],FLOOR_FINISH
 8,IfcSlab,wood joist|timber|lumber|joist|holz,TIMBER_FLOOR
+4,IfcSlab,\bpad\b|footing|pile ?cap|pilecap|raft|mat foundation|fundament,RC_FOOTING
 10,IfcSlab,on grade|grnd|ground|sog|BASESLAB|bodenplatte,SLAB_ON_GRADE
 20,IfcSlab,,RC_SLAB
 10,IfcRoof,concrete|\bconc|\brc\b|\bstb\b|beton|خرسان,ROOF_RC
@@ -34,7 +35,8 @@ priority,ifc_class,keywords,recipe
 5,IfcStair|IfcStairFlight,concrete|\bstb\b|beton|massiv|cast|in.?situ|precast,STAIR_RC
 10,IfcStair|IfcStairFlight,,STAIR
 10,IfcRailing,,RAILING
-10,IfcFurnishingElement|IfcFurniture|IfcSystemFurnitureElement,,FFE
+5,IfcFurnishingElement|IfcFurniture|IfcSystemFurnitureElement|IfcBuildingElementProxy,cabinet|casework|counter|vanity|wardrobe|kitchen|shelv|enclosure|worktop|joinery|cupboard|closet|schrank|خزانة,JOINERY
+10,IfcFurnishingElement|IfcFurniture|IfcSystemFurnitureElement,,LOOSE_FFE
 10,IfcTransportElement,,LIFT
 10,IfcReinforcingBar|IfcReinforcingMesh,,REBAR_MODELED
 10,IfcPipeSegment,,PIPE
@@ -56,9 +58,9 @@ priority,ifc_class,keywords,recipe
 10,IfcController|IfcSensor|IfcActuator|IfcAlarm|IfcFlowInstrument|IfcUnitaryControlElement,,CONTROLS
 10,IfcFlowTerminal,closet|\bwc\b|toilet|lavatory|sink|basin|urinal|shower|bath|faucet|tap\b,SANITARY
 10,IfcBuildingElementProxy,wshp|heat pump|\bahu\b|\bfcu\b|fan coil|chiller|pump|boiler|split unit|condens,MECH_EQUIP
-20,IfcBuildingElementProxy,cabinet|casework|counter|wardrobe|shelf|vanity,FFE
 30,IfcBuildingElementProxy,sink|basin|\bwc\b|toilet|shower|bowl|urinal|bidet,SANITARY
-35,IfcBuildingElementProxy,tank|photovoltaic|solar|generator|inverter,MECH_EQUIP
+33,IfcBuildingElementProxy|IfcSolarDevice|IfcElectricGenerator,photovoltaic|solar|\bpv\b,SOLAR_PV
+35,IfcBuildingElementProxy,tank|generator|inverter,MECH_EQUIP
 5,IfcBuildingElementProxy|IfcFurnishingElement|IfcFurniture|IfcSite|IfcGeographicElement,\btree\b|\bplant|shrub|entourage|\bpeople\b|person|rpc|\bcar\b|vehicle|\bbaum\b|\bwater\b|vase|flower|porcelain plate|decor|accessor,EXCLUDE
 10,IfcGeographicElement,,EXCLUDE
 10,IfcSpace,bath|toilet|\bwc\b|shower|washroom|lavator|ablution|laundry|washing|wash room|restroom|powder|\bbad\b|dusche|حمام|دورة مياه|وضوء,ROOM_WET
@@ -68,3 +70,23 @@ priority,ifc_class,keywords,recipe
 50,IfcSpace,stair|treppe|درج,ROOM_STAIR
 90,IfcSpace,,ROOM_DRY
 15,IfcBuildingElementProxy,oven|fridge|refrigerator|freezer|washing machine|washer|dryer|dishwasher|cooktop|hob\b|range ?hood|microwave|kühlschrank|appliance,APPLIANCE
+1,IfcFlowTerminal|IfcSanitaryTerminal|IfcBuildingElementProxy|IfcValve,faucet|\btap\b|mixer|armatur,EXCLUDE
+10,IfcSolarDevice,,SOLAR_PV
+12,IfcBuildingElementProxy,receptacle|socket|switch|outlet|steckdose|schalter|data point,OUTLET
+13,IfcBuildingElementProxy,sensor|detector|thermostat|melder|fühler,CONTROLS
+14,IfcBuildingElementProxy,transformer|switchboard|panelboard|breaker|distribution board|\bdb\b|verteiler,ELEC_DEVICE
+16,IfcBuildingElementProxy,\bfan\b|ventilator|exhaust|\bahu\b|air handling,MECH_EQUIP
+17,IfcBuildingElementProxy,\blift\b|elevator|aufzug|escalator,LIFT
+18,IfcBuildingElementProxy,balcony|balkon|canopy|vordach,STEEL_MEMBER
+2,IfcBuildingElementProxy|IfcAnnotation,model text|\blogo\b|text:|label,EXCLUDE
+2,IfcSlab,^\S*(dekvloer|screed|estrich|chape|solera|massetto|betonilha),SCREED_LAYER
+4,IfcBeam|IfcSlab|IfcWall|IfcWallStandardCase,fund_|fundering|strook|grade beam|ground beam|semelle|zapata|cimentaci|fondazione|sapata|fundament,RC_FOOTING
+6,IfcBeam|IfcColumn|IfcMember,staal|\bacier|acero|acciaio|\baço,STEEL_MEMBER
+7,IfcSlab,\bdak|toit|toiture|cubierta|tetto|telhado,ROOF_RC
+25,IfcWall|IfcWallStandardCase,baksteen|gevelsteen|buitenblad|metselwerk|ladrillo|brique|mattone|tijolo,BRICK_WALL
+26,IfcWall|IfcWallStandardCase,kalkzandsteen|binnenblad|bloque|parpaing|blocco|bloco,BLOCK_WALL
+35,IfcWall|IfcWallStandardCase,gipsplaat|placo|pladur|cartongesso|drywall|gesso,DRYWALL
+45,IfcWall|IfcWallStandardCase,beton|béton|hormig|calcestruzzo|betão,RC_WALL
+15,IfcSlab,beton|béton|hormig|calcestruzzo|betão|vloer|plancher|forjado|solaio|laje,RC_SLAB
+10,IfcStair|IfcStairFlight,trap\b|escalier|escalera|scala|escada,STAIR
+3,IfcBeam|IfcMember,latei|lintel|linteau|dintel|architrave|sturz,LINTEL_ELEMENT

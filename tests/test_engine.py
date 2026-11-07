@@ -339,6 +339,53 @@ def test_countries_list():
     assert len(c) > 200 and next(x for x in c if x["code"] == "SA")["currency"] == "SAR"
 
 
+def test_loose_furniture_excluded_by_default(duplex, lib):
+    est = estimate(duplex, "SA", lib)
+    assert est["summary"]["ffe_count"] > 0 and est["summary"]["ffe_outside"] > 0
+    assert not any(l["work_item"] == "FFE" for l in est["lines"])
+    inc = estimate(duplex, "SA", lib, {"include_loose_ffe": True})
+    assert any(l["work_item"] == "FFE" for l in inc["lines"])
+    # built-in joinery is always priced
+    assert any(l["work_item"] == "JOIN" for l in est["lines"])
+
+
+def test_small_vs_large_mechanical_equipment(lib):
+    rad = _el("r", "IfcEnergyConversionDevice", "M_Radiator - Hosted", {"volume": 0.05, "count": 1})
+    rad["kind"] = "IfcSpaceHeater"
+    boiler = _el("b", "IfcEnergyConversionDevice", "Hot Water Boiler", {"volume": 1.2, "count": 1})
+    boiler["kind"] = "IfcBoiler"
+    est = estimate([rad, boiler], "SA", lib)
+    items = {l["guid"]: l["work_item"] for l in est["lines"]}
+    assert items == {"r": "MECH-SM", "b": "MECH-EQ"}
+
+
+def test_no_room_finishes_in_models_without_walls(lib):
+    room = {"guid": "s", "ifc_class": "IfcSpace", "kind": "IfcSpace", "name": "Office", "type": "Office",
+            "level": "L1", "materials": [], "layers": [], "is_room": True, "room_modeled": [],
+            "qty": {"floor_area": 20, "perimeter": 18, "height": 3, "wall_area": 50, "skirting": 17, "count": 1}}
+    rooms = [dict(room, guid=f"s{i}") for i in range(4)]
+    assert not estimate(rooms, "SA", lib)["rooms_on"]
+
+
+def test_resources_add_up_to_measured_work(duplex, lib):
+    est = estimate(duplex, "SA", lib)
+    assert sum(r["cost"] for r in est["resources"]) == pytest.approx(est["summary"]["direct"], rel=0.01)
+
+
+def test_solar_and_taps(lib):
+    pv = _el("p", "IfcBuildingElementProxy", "Photovoltaic-Panel-SolarWorld", {"count": 1, "volume": 0.02})
+    tap = _el("t", "IfcFlowTerminal", "Faucet-8inch_Reach-Kohler", {"count": 1})
+    est = estimate([pv, tap], "SA", lib)
+    assert [l["work_item"] for l in est["lines"]] == ["SOLAR"]
+    assert "t" in est["checks"]["excluded"]
+
+
+def test_friendly_errors():
+    from engine.storage import friendly_error
+    assert "Export it again" in friendly_error(Exception("Unable to parse IFC SPF header"))
+    assert "3D building elements" in friendly_error(ValueError("NO_ELEMENTS"))
+
+
 def test_adjustment_factor(duplex, lib):
     wall = next(e for e in duplex if "Brick on Block" in e["name"])
     key = group_key(wall)

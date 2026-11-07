@@ -25,6 +25,7 @@ SA = {
     "M-MECH": 12000, "M-TRAY": 45, "M-TFIT": 35, "M-CBL": 8, "M-LUM": 250, "M-ACC": 35, "M-DB": 2500,
     "M-APPL": 2500, "M-CTRL": 500, "M-GEN": 800, "M-LINT": 45, "M-SILL": 120, "M-SEAL": 18,
     "M-SKRT": 25, "M-HRD": 35, "M-PINS": 20, "M-DINS": 35, "M-TERM": 5,
+    "M-JOIN": 1100, "M-PV": 650, "M-MECH-S": 1500,
 }
 
 # UAE (AED): close to Saudi levels, slightly higher.

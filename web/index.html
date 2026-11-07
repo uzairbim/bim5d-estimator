@@ -17,6 +17,7 @@
   <button class="brand" id="home" title="All projects"><span class="logo">5D</span><span class="brand-name" data-i18n="BIM Estimator">BIM Estimator</span></button>
   <div class="controls">
     <select id="langSel" title="Language"></select>
+    <button class="btn" id="helpBtn" title="Help">?</button>
     <select id="unitSel" title="Units"><option value="metric">m · m² · m³</option><option value="imperial">ft · ft² · yd³</option></select>
   </div>
   <div class="controls" id="projectControls" hidden>
@@ -34,6 +35,15 @@
   <div class="start-inner">
     <h1 data-i18n="Estimate cost straight from your BIM model">Estimate cost straight from your BIM model</h1>
     <p class="lead" data-i18n="Upload an IFC file from Revit. Every element is measured from its 3D shape, broken into work items, priced with your rates, and shown on the model.">Upload an IFC file from Revit. Every element is measured from its 3D shape, broken into work items, priced with your rates, and shown on the model.</p>
+    <div class="howitworks">
+      <div><b>1</b><span>Pick your country. Prices are ready (assumed) and you can change any of them.</span></div>
+      <div><b>2</b><span>Drop your Revit model exported as IFC, or try the demo.</span></div>
+      <div><b>3</b><span>Follow "What to do next", then send the client report or Excel.</span></div>
+    </div>
+    <div class="row gap wrap" style="margin-bottom:14px">
+      <button class="btn primary big" id="demoBtn">Try the demo (1 click)</button>
+      <label class="btn">Open a project file<input id="projImport" type="file" accept=".zip" hidden></label>
+    </div>
     <label id="drop" class="drop">
       <input id="file" type="file" accept=".ifc" hidden>
       <b data-i18n="Drop an .ifc file here">Drop an .ifc file here</b><span data-i18n="or click to choose a file">or click to choose a file</span>
@@ -116,6 +126,46 @@
     </div>
     <p class="muted small" id="rdHelp"></p>
     <div class="dlg-body" id="ratesBody"></div>
+  </div>
+</div>
+
+<div id="helpDlg" class="overlay" hidden>
+  <div class="dialog help">
+    <div class="dlg-head"><h2>Help</h2><button class="btn" id="helpClose">Close</button></div>
+    <div class="dlg-body">
+      <h3>Quick start</h3>
+      <ol>
+        <li><b>Region</b>: pick your country on the start page. Saudi Arabia, UAE, Pakistan, India, UK, Germany and USA have assumed prices ready. For another country: <i>Add my country / prices</i>.</li>
+        <li><b>Model</b>: in Revit, File &gt; Export &gt; IFC (IFC 2x3 Coordination View 2.0). Drop the .ifc file on the start page.</li>
+        <li><b>What to do next</b>: the box at the top of the Summary lists the few actions that improve the estimate most. Do them in order.</li>
+        <li><b>Report</b>: <i>Client report</i> opens a printable PDF; <i>Export Excel</i> gives the full workbook.</li>
+      </ol>
+      <h3>Words used in the app</h3>
+      <dl class="gloss">
+        <dt>BOQ</dt><dd>Bill of quantities: every work item with its quantity, rate and amount.</dd>
+        <dt>Work item</dt><dd>A priced piece of work, e.g. "Concrete block wall, m²".</dd>
+        <dt>Recipe</dt><dd>How one model element becomes work items, e.g. a block wall gives blockwork, plaster and paint.</dd>
+        <dt>Rate build-up</dt><dd>A rate made from resources: labour hours × wage + materials × price + plant. Click any item in Prices &amp; rates to see it.</dd>
+        <dt>Assumed price</dt><dd>A typical market price (late 2026) shipped with the app. Prices change daily; type today's price over it.</dd>
+        <dt>Estimated price</dt><dd>A price converted from US levels with the country's factors. Least reliable; replace first.</dd>
+        <dt>Allowance</dt><dd>A sum for work that is not in the model, e.g. MEP 25% of measured work.</dd>
+        <dt>Preliminaries</dt><dd>Site costs not tied to one item: site staff, offices, scaffolding, temporary works, insurance.</dd>
+        <dt>Contingency</dt><dd>A reserve for unknowns and design changes.</dd>
+        <dt>Accuracy class</dt><dd>How close the final cost is likely to be (AACE guidance): Class 5 −50%/+100%, Class 4 −30%/+50%, Class 3 −20%/+30%, Class 2 −15%/+20%.</dd>
+        <dt>NRM1 / Uniformat</dt><dd>Standard ways to group cost by building element (substructure, frame, roof…).</dd>
+        <dt>Overlap</dt><dd>Where two elements occupy the same space (column through slab). Counted once.</dd>
+        <dt>Reconciliation</dt><dd>Our measured volumes compared with Revit's own values, to catch measurement problems.</dd>
+      </dl>
+      <h3>Common questions</h3>
+      <dl class="gloss">
+        <dt>Why is the cost per m² lower than usual?</dt><dd>Usually parts of the building are not in the model (MEP, external works). Look at the Scope check and add the suggested allowances.</dd>
+        <dt>Some elements are not priced.</dt><dd>Open Mapping and choose what each type is. Every element of that type follows.</dd>
+        <dt>A quantity looks wrong.</dt><dd>Click the element in 3D: you see the measured quantities, the formula and Revit's own volume. You can adjust a type's quantity with a written reason.</dd>
+        <dt>Furniture is not in the total.</dt><dd>Loose furniture is normally the client's separate budget. Built-in joinery is included. Tick "Include loose furniture" in Project settings if you need it.</dd>
+        <dt>How do I send a project to a colleague?</dt><dd>Project settings &gt; Download project file. They use "Open a project file" on the start page.</dd>
+        <dt>How do I share prices?</dt><dd>Prices &amp; rates &gt; Region &amp; sharing &gt; Download rate pack.</dd>
+      </dl>
+    </div>
   </div>
 </div>
 

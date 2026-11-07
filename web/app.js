@@ -4,7 +4,9 @@ import { LANGS, applyStatic, getLang, setLang, t } from "./i18n.js";
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
-const fmt = (n, d = 0) => (n === null || n === undefined || isNaN(n)) ? "–" : Number(n).toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
+// Numbers always use Western digits and the interface language for separators (estimators need consistent figures).
+const NUM_LOCALE = () => { try { return (localStorage.getItem("bim5d.lang") || "en") + "-u-nu-latn"; } catch { return "en"; } };
+const fmt = (n, d = 0) => (n === null || n === undefined || isNaN(n)) ? "–" : Number(n).toLocaleString(NUM_LOCALE(), { minimumFractionDigits: d, maximumFractionDigits: d });
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const TRADE_COLORS = ["#4e79a7", "#f28e2b", "#59a14f", "#e15759", "#76b7b2", "#edc948", "#b07aa1", "#ff9da7", "#9c755f", "#bab0ac", "#86bcb6", "#d4a6c8", "#8cd17d", "#f1ce63"];
 // Display units: quantities are stored metric; imperial is for display only.
@@ -118,7 +120,8 @@ async function init() {
   const regionOpts = Object.entries(lib.regions).map(([k, r]) => `<option value="${k}">${esc(r.name)} (${r.currency})</option>`).join("");
   $("#region").innerHTML = regionOpts;
   $("#startRegion").innerHTML = regionOpts;
-  $("#startRegion").value = localStorageGet("region") || "GLOBAL";
+  const loc = (navigator.language || "").split("-")[1]?.toUpperCase();
+  $("#startRegion").value = localStorageGet("region") || (loc && lib.regions[loc] ? loc : "GLOBAL");
   $("#langSel").innerHTML = Object.entries(LANGS).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
   $("#langSel").value = getLang();
   S.units = localStorageGet("units") || "metric";
@@ -139,7 +142,7 @@ async function loadProjects() {
     const status = !v ? "empty" : v.status === "ready" ? `${fmt(v.elements)} elements` : v.status === "error" ? "error" : "processing…";
     return `<div class="card" data-pid="${p.id}"><button class="del" data-del="${p.id}" title="Delete project">×</button>
       <h4>${esc(p.name)}</h4><div class="meta">${p.versions.length} revision${p.versions.length === 1 ? "" : "s"} · ${status}</div>
-      <div class="meta">${esc(S.lib.regions[p.settings.region]?.name || p.settings.region)} · ${new Date(p.created * 1000).toLocaleDateString()}</div></div>`;
+      <div class="meta">${esc(S.lib.regions[p.settings.region]?.name || p.settings.region)} · ${new Date(p.created * 1000).toLocaleDateString(NUM_LOCALE())}</div></div>`;
   }).join("");
   $("#projectSel").innerHTML = S.projects.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join("");
 }
@@ -277,6 +280,23 @@ function bars(obj) {
   return `<div class="bars">${Object.entries(obj).map(([k, v]) => `<div class="bar"><span title="${esc(k)}">${esc(k)}</span><div class="track"><div class="fill" style="width:${(v / max) * 100}%"></div></div><span class="v">${fmt(v)}</span></div>`).join("")}</div>`;
 }
 
+// "What to do next": the few actions that improve this estimate most, in plain words.
+function nextSteps(e) {
+  const c = e.checks, a = e.accuracy, items = [];
+  const unpricedTypes = e.groups.filter((g) => g.recipe === null && g.source === "none").length;
+  if (unpricedTypes) items.push([`${unpricedTypes} element type${unpricedTypes > 1 ? "s are" : " is"} not priced yet. Tell the tool what ${unpricedTypes > 1 ? "they are" : "it is"}.`, "Open Mapping", "goto:mapping"]);
+  if ((a.user_price_share || 0) < 0.5) items.push([`Prices are ${Math.round((a.assumed_price_share || 0) * 100)}% assumed and ${Math.round((a.estimated_price_share || 0) * 100)}% estimated. Confirm today's prices for labour, ready-mix, rebar, blocks and cement.`, "Enter prices", "rates"]);
+  const gap = e.scope.find((x) => !x.present && x.suggest && !e.allowances.some((al) => al.name === x.suggest.name));
+  if (gap) items.push([`${gap.name} ${gap.name.endsWith("s") ? "are" : "is"} not in the model. Add an allowance so the total is complete.`, `Add ${gap.suggest.value}% allowance`, "allow:" + JSON.stringify(gap.suggest)]);
+  if (c.duplicates.length) items.push([`${c.duplicates.length} element${c.duplicates.length > 1 ? "s look" : " looks"} duplicated in the model. Check before issuing.`, "Open Checks", "goto:checks"]);
+  else if (c.overlaps.length) items.push([`${c.overlaps.length} overlaps were found and counted once. Have a quick look.`, "Open Checks", "goto:checks"]);
+  const missing = e.checklist.filter((x) => x.status === "missing").length;
+  if (missing) items.push([`${missing} commonly forgotten item${missing > 1 ? "s are" : " is"} not covered.`, "Show list", "scroll:scope"]);
+  items.push(["When you are happy, send the client report or the Excel workbook.", "Client report", "report"]);
+  return `<div class="next"><b>What to do next</b><ol>${items.slice(0, 5).map(([txt, btn, act]) =>
+    `<li><span>${esc(txt)}</span> <button class="btn sm" data-next='${esc(act)}'>${esc(btn)}</button></li>`).join("")}</ol></div>`;
+}
+
 // The six steps an estimator goes through, with their status.
 function steps() {
   const e = S.est, c = e.checks;
@@ -329,11 +349,15 @@ function renderSummary() {
       <td><input type="number" step="any" data-al="${i}" data-f="value" value="${al.value}"></td><td class="n">${fmt(calc)}</td>
       <td><button class="btn sm" data-alrm="${i}" title="Remove">×</button></td></tr>`;
   }).join("");
+  const missingCount = e.scope.filter((x) => !x.present && x.suggest && !e.allowances.some((al) => al.name === x.suggest.name)).length
+    + e.checklist.filter((x) => x.status === "missing").length;
+  const gapsOpen = missingCount > 0;
   $("#tab-summary").innerHTML = `
     <div class="muted">${esc(S.project.name)} · ${esc(S.version.label)} · ${esc(e.region_name)}</div>
     <div class="total">${fmt(s.total)} <small>${e.currency}</small></div>
     <div class="acc acc${a.class}"><b>${esc(a.label)}</b> · likely between <b>${fmt(a.low)}</b> and <b>${fmt(a.high)}</b> ${e.currency} (${Math.round(a.low_pct * 100)}% / +${Math.round(a.high_pct * 100)}%)
       ${a.reasons.length ? `<ul>${a.reasons.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}</div>
+    ${nextSteps(e)}
     <h3>${t("Cost build-up")} (${e.currency})</h3>
     <table class="build">
       ${row("Measured work (from the model)", s.direct)}
@@ -348,12 +372,14 @@ function renderSummary() {
     </table>
     ${c.unclassified.length ? `<div class="callout">${fmt(c.unclassified.length)} elements have no price yet. <a href="#" data-goto="mapping">Open Mapping</a>.</div>` : ""}
     ${bench}${rebarNote}
-    <h3 id="scope">${t("Scope check: is the whole building in the model?")}</h3>
+    <details class="sec" id="scope" ${gapsOpen ? "open" : ""}><summary>${t("Scope check: is the whole building in the model?")} <span class="muted small">${missingCount ? missingCount + " to look at" : "all covered"}</span></summary>
     <table>${scopeRows}</table>
     <h3>${t("Commonly forgotten items")}</h3>
     <table class="check">${e.checklist.map((c) => `<tr><td>${c.status === "priced" ? '<span class="ok">✓</span>' : c.status === "allowance" ? '<span class="ok">≈</span>' : c.status === "note" ? '<span class="muted">i</span>' : '<span class="bad">✗</span>'} ${esc(c.name)}</td>
       <td class="n">${c.cost ? fmt(c.cost) : ""}</td>
       <td>${c.status === "missing" && c.suggest ? `<button class="btn sm" data-allow='${esc(JSON.stringify(c.suggest))}'>${t("Add")} ${c.suggest.value}%</button>` : c.note ? `<span class="muted small">${esc(c.note)}</span>` : c.status === "missing" ? `<span class="muted small">${t("missing")}</span>` : `<span class="muted small">${t(c.status)}</span>`}</td></tr>`).join("")}</table>
+    </details>
+    <details class="sec" ${(st.manual_items || []).length || (st.allowances || []).length ? "open" : ""}><summary>${t("Items measured by hand (not in the model)")} &amp; ${t("Allowances for work not in the model").toLowerCase()} <span class="muted small">${fmt(s.allowances + e.lines.filter((l) => l.recipe === "MANUAL").reduce((x, l) => x + l.amount, 0))} ${e.currency}</span></summary>
     <h3>${t("Items measured by hand (not in the model)")}</h3>
     <p class="muted small">Like a virtual takeoff: boundary walls, external works, anything not modelled. Pick a work item to use its rate, or type your own rate.</p>
     ${(st.manual_items || []).length ? `<table class="allow"><thead><tr><th>Description</th><th>Work item</th><th>Qty</th><th>Unit</th><th>Rate</th><th></th></tr></thead><tbody>${(st.manual_items || []).map((m, i) => `<tr>
@@ -367,11 +393,14 @@ function renderSummary() {
     <h3>${t("Allowances for work not in the model")}</h3>
     ${allowRows ? `<table class="allow"><thead><tr><th>Item</th><th>Basis</th><th>Value</th><th class="n">Amount</th><th></th></tr></thead><tbody>${allowRows}</tbody></table>` : '<p class="muted small">None yet.</p>'}
     <button class="btn sm" id="addAllow">+ Add allowance</button>
+    </details>
+    <details class="sec" open><summary>${t("By trade")} &amp; ${t("Elemental cost plan").toLowerCase()}</summary>
     <h3>${t("By trade")} (${e.currency})</h3>${bars(e.by_trade)}
     <h3>${t("Elemental cost plan")}</h3>
     <div class="seg" id="planSeg" style="display:inline-flex;margin-bottom:6px"><button data-plan="by_nrm1" class="on">NRM1</button><button data-plan="by_uniformat">Uniformat</button><button data-plan="by_level">Level</button></div>
     <div id="planBars">${bars(e.by_nrm1)}</div>
-    <h3>${t("Project settings")}</h3>
+    </details>
+    <details class="sec"><summary>${t("Project settings")} <span class="muted small">mark-ups, measurement rules, rebar, furniture</span></summary>
     <div class="settings">
       <label>Preliminaries %<input type="number" step="0.5" min="0" data-set="prelims_pct" value="${st.prelims_pct ?? reg.prelims_pct ?? 10}"></label>
       <label>Contingency %<input type="number" step="0.5" min="0" data-set="contingency_pct" value="${st.contingency_pct ?? reg.contingency_pct}"></label>
@@ -386,12 +415,17 @@ function renderSummary() {
       <label>Floor area for cost/m² (blank = from slabs)<input type="number" step="1" min="0" data-set="gfa_m2" value="${st.gfa_m2 ?? ""}" placeholder="${fmt(s.gfa)}"></label>
       <label>Project name<input type="text" data-set="name" value="${esc(S.project.name)}"></label>
       <label class="check"><input type="checkbox" data-set="deduct_overlaps" ${st.deduct_overlaps !== false ? "checked" : ""}> Deduct overlaps between elements</label>
+      <label class="check"><input type="checkbox" data-set="include_loose_ffe" ${st.include_loose_ffe ? "checked" : ""}> Include loose furniture${s.ffe_count ? ` (${s.ffe_count} items, ${fmt(s.ffe_outside)} ${e.currency})` : ""}</label>
+      <a class="btn sm" href="/api/projects/${S.project.id}/package.zip" style="grid-column: span 2; justify-self: start">Download project file (to send to a colleague)</a>
       <label class="check"><input type="checkbox" data-set="rates_verified" ${st.rates_verified ? "checked" : ""}> Rates checked against current market prices</label>
     </div>
+    </details>
+    <details class="sec"><summary>${t("Assumptions")} &amp; ${t("Exclusions").toLowerCase()} <span class="muted small">shown in the client report</span></summary>
     <h3>${t("Assumptions")}</h3><ul class="small">${e.assumptions.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
     <h3>${t("Exclusions")}</h3>
     <textarea id="exclusions" rows="6" class="full">${esc(e.exclusions.filter((x) => !x.endsWith("(not in the model)")).join("\n"))}</textarea>
-    <p class="muted small">One per line. Saved when you click outside the box.</p>`;
+    <p class="muted small">One per line. Saved when you click outside the box.</p>
+    </details>`;
   $("[data-set=rebar_mode]").value = st.rebar_mode || "ratio";
   $$("[data-set]", $("#tab-summary")).forEach((inp) => inp.addEventListener("change", () => {
     const k = inp.dataset.set;
@@ -403,6 +437,14 @@ function renderSummary() {
     $("#planBars").innerHTML = bars(S.est[b.dataset.plan]);
   }));
   $$("[data-goto]", $("#tab-summary")).forEach((x) => x.addEventListener("click", (ev) => { ev.preventDefault(); tab(x.dataset.goto); }));
+  $$("[data-next]", $("#tab-summary")).forEach((b) => b.addEventListener("click", () => {
+    const act = b.dataset.next;
+    if (act.startsWith("goto:")) return tab(act.slice(5));
+    if (act === "rates") return openRates(e.region, "prices");
+    if (act === "report") return openReport();
+    if (act.startsWith("scroll:")) { const d = $("#" + act.slice(7)); d.open = true; return d.scrollIntoView({ behavior: "smooth" }); }
+    if (act.startsWith("allow:")) { const l = JSON.parse(JSON.stringify(S.project.settings.allowances || [])); l.push(JSON.parse(act.slice(6))); return saveSettings({ allowances: l }); }
+  }));
   const allows = () => JSON.parse(JSON.stringify(S.project.settings.allowances || []));
   $$("[data-allow]", $("#tab-summary")).forEach((b) => b.addEventListener("click", () => { const l = allows(); l.push(JSON.parse(b.dataset.allow)); saveSettings({ allowances: l }); }));
   $("#addAllow").addEventListener("click", () => { const l = allows(); l.push({ name: "New allowance", kind: "lump", value: 0 }); saveSettings({ allowances: l }); });
@@ -450,7 +492,7 @@ async function renderChecks() {
   $$("[data-goto]", $("#tab-checks")).forEach((x) => x.addEventListener("click", (ev) => { ev.preventDefault(); tab(x.dataset.goto); }));
   try {
     const h = await api(`/api/projects/${S.project.id}/history`);
-    $("#historyBox").innerHTML = h.length ? `<table>${h.slice(0, 60).map((r) => `<tr><td class="small">${new Date(r.time * 1000).toLocaleString()}</td><td class="small"><b>${esc(r.what)}</b> ${esc(r.detail)}</td></tr>`).join("")}</table>` : "No changes yet.";
+    $("#historyBox").innerHTML = h.length ? `<table>${h.slice(0, 60).map((r) => `<tr><td class="small">${new Date(r.time * 1000).toLocaleString(NUM_LOCALE())}</td><td class="small"><b>${esc(r.what)}</b> ${esc(r.detail)}</td></tr>`).join("")}</table>` : "No changes yet.";
   } catch { $("#historyBox").textContent = ""; }
 }
 
@@ -469,7 +511,17 @@ function openReport() {
 // ---------- BOQ ----------
 function renderBoq() {
   const e = S.est;
-  let html = `<p class="muted">Click a row to highlight its elements in 3D.</p><table><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead><tbody>`;
+  const seg = `<div class="seg" id="boqSeg" style="display:inline-flex;margin-bottom:8px"><button data-v="items" class="${S.boqView !== "res" ? "on" : ""}">Work items</button><button data-v="res" class="${S.boqView === "res" ? "on" : ""}">Resources (materials, labour, plant)</button></div>`;
+  if (S.boqView === "res") {
+    const kindTag = (k) => k === "yours" ? `<span class="tag added">${t("your price")}</span>` : k === "assumed" ? `<span class="tag changed">${t("assumed")}</span>` : `<span class="tag">${t("estimated")}</span>`;
+    $("#tab-boq").innerHTML = seg + `<p class="muted">Total labour, materials and plant behind the rates: for ordering, planning and seeing which prices matter most. "+10%" shows what a 10% price rise of that resource adds.</p>
+      <table><thead><tr><th>Resource</th><th class="n">Quantity</th><th class="n">Cost</th><th class="n">Share</th><th class="n">+10%</th></tr></thead><tbody>
+      ${e.resources.map((r) => `<tr><td>${esc(r.name)} ${kindTag(r.kind)}</td><td class="n">${fmt(r.qty, r.qty < 100 ? 1 : 0)} ${esc(r.unit)}</td><td class="n">${fmt(r.cost)}</td><td class="n">${(r.share * 100).toFixed(1)}%</td><td class="n">${fmt(r.cost * 0.1)}</td></tr>`).join("")}
+      </tbody></table>`;
+    $$("#boqSeg button").forEach((b) => b.addEventListener("click", () => { S.boqView = b.dataset.v; renderBoq(); }));
+    return;
+  }
+  let html = seg + `<p class="muted">Click a row to highlight its elements in 3D.</p><table><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead><tbody>`;
   let trade = null;
   for (const b of e.boq) {
     if (b.trade !== trade) { trade = b.trade; html += `<tr><td colspan="4"><b>${esc(trade)}</b></td></tr>`; }
@@ -478,6 +530,7 @@ function renderBoq() {
   }
   html += `</tbody><tfoot><tr><th>Direct cost</th><th></th><th></th><th class="n">${fmt(e.summary.direct)}</th></tr></tfoot></table>`;
   $("#tab-boq").innerHTML = html;
+  $$("#boqSeg button").forEach((b) => b.addEventListener("click", () => { S.boqView = b.dataset.v; renderBoq(); }));
   $$("tr[data-wi]", $("#tab-boq")).forEach((tr) => tr.addEventListener("click", () => {
     const on = tr.classList.contains("sel");
     $$("tr.sel", $("#tab-boq")).forEach((x) => x.classList.remove("sel"));
@@ -944,6 +997,20 @@ $("#showAll").addEventListener("click", () => { S.highlight = null; $$("tr.sel")
 $("#fitBtn").addEventListener("click", () => viewer.fit(S.highlight ? [...S.highlight] : null));
 $("#langSel").addEventListener("change", (e) => { setLang(e.target.value); if (S.est) refresh(); if (S.lib) loadProjects(); });
 $("#unitSel").addEventListener("change", (e) => { S.units = e.target.value; localStorageSet("units", S.units); if (S.est) { renderBoq(); if (S.selected) renderElement(S.selected); } });
+$("#helpBtn").addEventListener("click", () => { $("#helpDlg").hidden = false; });
+$("#helpClose").addEventListener("click", () => { $("#helpDlg").hidden = true; });
+$("#demoBtn").addEventListener("click", async () => {
+  const r = await api(`/api/projects/sample/Ifc2x3_Duplex_Architecture.ifc?region=${$("#startRegion").value}`, { method: "POST" });
+  await loadProjects();
+  go(r.project_id, r.version_id);
+});
+$("#projImport").addEventListener("change", async (ev) => {
+  const f = ev.target.files[0]; if (!f) return;
+  const fd = new FormData(); fd.append("file", f);
+  try { const r = await api("/api/projects/import", { method: "POST", body: fd }); await loadProjects(); go(r.project_id); }
+  catch (err) { toast(err.message); }
+  ev.target.value = "";
+});
 $("#addCountry").addEventListener("click", () => openRates($("#startRegion").value || "GLOBAL", "region"));
 $("#export").addEventListener("click", () => { location.href = `/api/projects/${S.project.id}/export.xlsx?version=${S.version.id}`; });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") { S.highlight = null; S.selected = null; $$("tr.sel").forEach((x) => x.classList.remove("sel")); paint(); } });

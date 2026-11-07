@@ -49,7 +49,7 @@
 <div class="bar"><span>Cost estimate report · click the dashed fields to edit them</span><button onclick="window.print()">Print / Save as PDF</button></div>
 <div class="page" id="page">Loading…</div>
 <script>
-const fmt = (n, d = 0) => (n === null || n === undefined) ? "–" : Number(n).toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmt = (n, d = 0) => (n === null || n === undefined) ? "–" : Number(n).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const h = new URLSearchParams(location.hash.slice(1));
 const pid = h.get("p"), vid = h.get("v");
@@ -83,7 +83,7 @@ const pid = h.get("p"), vid = h.get("v");
       <div>Project<br><b contenteditable>${esc(p.name)}</b></div>
       <div>Client<br><b contenteditable>Client name</b></div>
       <div>Prepared by<br><b contenteditable>Estimator name</b></div>
-      <div>Date<br><b contenteditable>${new Date().toLocaleDateString()}</b></div>
+      <div>Date<br><b contenteditable>${new Date().toLocaleDateString("en-GB")}</b></div>
       <div>Model revision<br><b>${esc(v.label)} · ${esc(v.file_name || "")}</b></div>
       <div>Region / currency<br><b>${esc(e.region_name)} · ${cur}</b></div>
     </div>

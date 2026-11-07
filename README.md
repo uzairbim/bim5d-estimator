@@ -23,6 +23,16 @@ The browser opens at http://localhost:8000. Pick your region, drop an IFC file o
 To share it with others for free (own computers, a free website, GitHub), see
 [docs/SHARE_FOR_FREE.md](docs/SHARE_FOR_FREE.md).
 
+## Made to be easy
+
+- **Try the demo** in one click; your country is pre-selected from your computer's language settings.
+- **What to do next**: the top of the Summary lists the few actions that improve the estimate most, each
+  with a button (price, mapping, allowance, checks, report).
+- **Help (?)**: quick start, every term explained in plain words, common questions.
+- **Clear messages** when a file cannot be read, saying exactly how to re-export from Revit.
+- **Project file**: send a whole project (models + settings) to a colleague; they open it in one click.
+- **Print-ready Excel** (A4, fit to width, headers repeated, page numbers) and a PDF client report.
+
 ## Works in any country: the rate builder
 
 Nobody publishes a free, up-to-date, worldwide price list, so the tool does what estimators do:
@@ -51,6 +61,8 @@ cost rests on your own prices. Type over any assumed price and it becomes yours.
 | **Measures every element** from its 3D shape (volume, wall face, plan area, length, pipe size) and repairs badly exported shapes. 98–100% of element volumes agree within 5% with Revit's own values on the samples. |
 | **Rooms → finishes**: floor finish, skirting (perimeter minus doors), wall paint or tiles (perimeter × height minus openings), ceiling paint, wet-area waterproofing, by room type (bathroom, kitchen, plant room, balcony…). No double counting with modelled ceilings/floors or with wall finishes. |
 | **Derived quantities nobody should forget**: excavation, blinding, backfill, hardcore, anti-termite, DPM, slab edge formwork, roof upstands, lintels, window sills, sealant, reveals, external render and paint (external walls), steel paint, pipe and duct insulation. |
+| **Resource summary** (bill of materials): total labour hours, cement bags, rebar tonnes, blocks, ready-mix… with each resource's share of the cost and the effect of a 10% price rise. |
+| **Sensible defaults like a senior estimator**: loose furniture shown but excluded (client FF&E budget), built-in joinery included; solar panels, small vs large mechanical units, lifts, sockets and sensors recognised; taps not double counted with basins; parts of walls and floors priced; names in English, German, Dutch, French, Spanish, Italian, Portuguese and Arabic recognised. |
 | **Missing-items checklist** shows what is priced, covered by an allowance, or missing, with one-click allowances. **Manual items** (virtual takeoff) for anything not in the model. |
 | **Measurement standards**: NRM2, POMI, IS 1200 (India: one-face deduction for 0.5–3 m² openings) or exact net. |
 | **Overlaps**: exact 3D intersection (column through slab, beam in slab, wall through column) deducted once, following measurement practice; duplicates flagged. |

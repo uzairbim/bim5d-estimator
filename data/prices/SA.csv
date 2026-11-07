@@ -26,10 +26,12 @@ M-GRT,5,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-GYP,18,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-HRD,35,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-INS,25,ASSUMED indicative market price 2026-11 - verify,2026-11
+M-JOIN,1100,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-LIFT,120000,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-LINT,45,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-LUM,250,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-MECH,12000,ASSUMED indicative market price 2026-11 - verify,2026-11
+M-MECH-S,1500,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-MESH,12,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-PE,2,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-PFIT,30,ASSUMED indicative market price 2026-11 - verify,2026-11
@@ -40,6 +42,7 @@ M-PIPE-S,25,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-PLY,40,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-PNT,14,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-PRM,12,ASSUMED indicative market price 2026-11 - verify,2026-11
+M-PV,650,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-RAIL,350,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-RBR,2900,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-RMC,270,ASSUMED indicative market price 2026-11 - verify,2026-11

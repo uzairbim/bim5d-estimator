@@ -28,7 +28,9 @@ MISC_METAL,Metal member,2.1 Frame,B10 Superstructure,4 Envelope & walls
 FLOOR_FINISH,Floor finish,3.2 Floor finishes,C30 Interior finishes,6 Finishes
 CEILING,Ceiling,3.3 Ceiling finishes,C30 Interior finishes,6 Finishes
 FINISH_GENERIC,Finish (other),3.1 Wall finishes,C30 Interior finishes,6 Finishes
-FFE,Furniture / fittings,4 Fittings furnishings and equipment,E20 Furnishings,7 Fit-out
+LOOSE_FFE,Loose furniture (client FF&E),4 Fittings furnishings and equipment,E20 Furnishings,7 Fit-out
+JOINERY,Built-in joinery / cabinets,4 Fittings furnishings and equipment,E20 Furnishings,7 Fit-out
+SOLAR_PV,Solar PV panel,5.8 Electrical installations,D50 Electrical,5 Services
 APPLIANCE,Appliance,4 Fittings furnishings and equipment,E10 Equipment,7 Fit-out
 LIFT,Lift,5.10 Lift and conveyor installations,D10 Conveying,5 Services
 PIPE,Pipe,5.4 Water installations,D20 Plumbing,5 Services
@@ -55,3 +57,5 @@ ROOM_KITCHEN,Room finishes (kitchen),3.1 Wall finishes,C30 Interior finishes,6 F
 ROOM_TECH,Room finishes (technical / store / garage),3.1 Wall finishes,C30 Interior finishes,6 Finishes
 ROOM_EXTERNAL,Room finishes (balcony / terrace),3.2 Floor finishes,C30 Interior finishes,6 Finishes
 ROOM_STAIR,Room finishes (stair hall),3.1 Wall finishes,C30 Interior finishes,6 Finishes
+SCREED_LAYER,Screed (modelled as floor),3.2 Floor finishes,C30 Interior finishes,6 Finishes
+LINTEL_ELEMENT,Lintel (modelled),2.5 External walls,B20 Exterior enclosure,4 Envelope & walls

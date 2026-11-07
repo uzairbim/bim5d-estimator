@@ -166,6 +166,13 @@ def to_xlsx(title, est, sched=None):
            [[x["name"], "yes" if x["present"] else "NO", x["cost"],
              (f"{x['suggest']['name']} {x['suggest']['value']}%" if x.get("suggest") else "")]
             for x in est.get("scope", [])], money_cols=(f"Cost ({cur})",), widths=[30, 12, 16, 46])
+    if est.get("resources"):
+        _sheet(wb, "Resources", ["Code", "Resource", "Unit", "Total quantity", f"Price ({cur})",
+                                 f"Cost ({cur})", "% of measured work", "+10% price adds", "Price basis"],
+               [[r["resource"], r["name"], r["unit"], r["qty"], r["price"], r["cost"], round(r["share"] * 100, 1),
+                 round(r["cost"] * 0.1, 2), r.get("kind") or ""] for r in est["resources"]],
+               money_cols=(f"Price ({cur})", f"Cost ({cur})", "+10% price adds"),
+               widths=[10, 46, 8, 16, 14, 16, 12, 16, 12])
     if est.get("checklist"):
         _sheet(wb, "Checklist", ["Item", "Status", f"Cost ({cur})", "Work items", "Note"],
                [[x["name"], x["status"], x["cost"], ", ".join(x["codes"]), x.get("note") or
@@ -193,6 +200,19 @@ def to_xlsx(title, est, sched=None):
             ["Rebar from ratios (kg)", c["rebar"]["ratio_kg"], ""],
             ["Rebar modelled as bars (kg)", c["rebar"]["modeled_kg"], ""]],
            widths=[30, 10, 80])
+    # Print-ready: landscape, fit to one page wide, header row repeated, page numbers.
+    for sh in wb.worksheets:
+        sh.page_setup.orientation = "landscape" if sh.max_column > 4 else "portrait"
+        sh.page_setup.paperSize = sh.PAPERSIZE_A4
+        sh.page_setup.fitToWidth = 1
+        sh.page_setup.fitToHeight = 0
+        sh.sheet_properties.pageSetUpPr.fitToPage = True
+        sh.print_options.gridLines = False
+        sh.page_margins.left = sh.page_margins.right = 0.4
+        if sh.title != "Summary":
+            sh.print_title_rows = "1:1"
+        sh.oddFooter.center.text = f"{title} - {sh.title} - page &P of &N"
+        sh.oddFooter.center.size = 8
     buf = BytesIO()
     wb.save(buf)
     return buf.getvalue()

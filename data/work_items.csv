@@ -81,3 +81,6 @@ CLG-PNT,Paint to ceilings / soffits,m2,Finishes,09 91 23
 FLR-HRD,Floor hardener / epoxy to technical rooms,m2,Finishes,09 67 00
 PIP-INS,Pipe insulation,m,Plumbing & HVAC,22 07 19
 DUCT-INS,Duct insulation,m2,Plumbing & HVAC,23 07 13
+JOIN,Built-in joinery / cabinets (per metre run),m,FF&E,06 41 00
+SOLAR,Solar PV panel installed incl. mounting,nr,Electrical,48 14 00
+MECH-SM,Small mechanical unit (radiator / fan coil / small fan / pump),nr,Plumbing & HVAC,23 82 00

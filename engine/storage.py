@@ -31,7 +31,8 @@ DEFAULT_SETTINGS = {"region": "SA", "rebar_mode": "ratio", "mappings": {},
                     "duration_months": 12, "start": None,
                     "deduct_overlaps": True, "min_deduct_m2": 0.5, "rates_verified": False,
                     "allowances": [], "adjustments": {}, "assumptions": [], "exclusions": None,
-                    "gfa_m2": None, "standard": None, "finishes_from": "auto", "manual_items": []}
+                    "gfa_m2": None, "standard": None, "finishes_from": "auto", "manual_items": [],
+                    "include_loose_ffe": False}
 
 
 def log(project_id, what, detail=""):
@@ -175,6 +176,8 @@ def _process(vid):
     try:
         data = extract(str(folder / "model.ifc"),
                        progress=lambda f: _set_version(vid, progress=round(f * 0.9, 2)))
+        if not any(e["ifc_class"] != "IfcSpace" for e in data["elements"]):
+            raise ValueError("NO_ELEMENTS")
         found, _ = overlaps.find(data["elements"], data["meshes"])
         for e in data["elements"]:
             e["overlaps"] = found.get(e["guid"], [])
@@ -183,8 +186,70 @@ def _process(vid):
         _write_geometry(folder, data["meshes"])
         _set_version(vid, status="ready", progress=1.0, elements=len(data["elements"]),
                      schema=data["schema"], model_name=data["project"])
-    except Exception as e:  # keep the error so the user can see it
-        _set_version(vid, status="error", error=str(e)[:500])
+    except Exception as e:  # keep a clear message so the user knows what to do
+        _set_version(vid, status="error", error=friendly_error(e))
+
+
+def friendly_error(e):
+    msg = str(e)
+    if msg == "NO_ELEMENTS":
+        return ("The file has no 3D building elements. In Revit, export IFC from a 3D view and untick "
+                "'Export only elements visible in view', then upload again.")
+    low = msg.lower()
+    if "unable to parse" in low or "parse" in low or "token" in low or "not a valid" in low or "schema" in low:
+        return ("This file could not be read as IFC. Export it again from Revit (File > Export > IFC, "
+                f"IFC 2x3 Coordination View 2.0 or IFC4 Reference View) and upload the new file. Details: {msg[:200]}")
+    if "memory" in low:
+        return ("The model is too large for this computer's memory. Export a smaller part (one building "
+                f"or one discipline) or use a computer with more memory. Details: {msg[:200]}")
+    return f"Something went wrong while reading the model: {msg[:300]}"
+
+
+# ---- project files (to send a whole project to a colleague) ---------------------------
+def export_package(pid):
+    """A zip with the project's settings and every model revision."""
+    import io
+    import zipfile
+    p = get_project(pid)
+    if not p:
+        raise KeyError(pid)
+    buf = io.BytesIO()
+    meta = {"format": "bim5d-project", "version": 1, "name": p["name"], "settings": p["settings"],
+            "revisions": []}
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        for i, v in enumerate(p["versions"]):
+            src = ROOT / v["id"] / "model.ifc"
+            if not src.is_file():
+                continue
+            arc = f"models/{i + 1:02d}_{(v.get('file_name') or 'model.ifc').replace('/', '_')}"
+            z.write(src, arc)
+            meta["revisions"].append({"label": v["label"], "file": arc, "file_name": v.get("file_name")})
+        z.writestr("project.json", json.dumps(meta, indent=1, ensure_ascii=False))
+    return p["name"], buf.getvalue()
+
+
+def import_package(data):
+    import io
+    import tempfile
+    import zipfile
+    try:
+        z = zipfile.ZipFile(io.BytesIO(data))
+        meta = json.loads(z.read("project.json").decode("utf-8"))
+    except Exception:
+        raise ValueError("This is not a BIM 5D project file (.zip exported from the app).")
+    if meta.get("format") != "bim5d-project":
+        raise ValueError("This is not a BIM 5D project file.")
+    settings = {k: v for k, v in (meta.get("settings") or {}).items() if k in DEFAULT_SETTINGS}
+    pid = create_project(meta.get("name") or "Imported project", settings)
+    for rev in meta.get("revisions") or []:
+        name = rev.get("file", "")
+        if not name.startswith("models/") or ".." in name:
+            continue
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".ifc") as tmp:
+            tmp.write(z.read(name))
+        add_version(pid, tmp.name, rev.get("file_name") or name.split("/")[-1], label=rev.get("label"), move=True)
+    log(pid, "project imported", meta.get("name", ""))
+    return pid
 
 
 def _write_geometry(folder, meshes):

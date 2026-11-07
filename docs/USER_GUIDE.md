@@ -34,6 +34,36 @@ class moves from Class 4 to Class 3 once at least half the cost uses your own pr
 The "your prices" percentage on each rate, and the accuracy class, show how much of the estimate rests on
 your own prices.
 
+## Fastest way to start
+
+1. Start page: check the **Region** (pre-selected from your computer) and click **Try the demo**.
+2. Read the **What to do next** box at the top of the Summary and click its buttons in order.
+3. When you are ready, upload your own IFC file the same way.
+
+The **?** button (top right) explains every term and answers common questions.
+
+## Sending a project to a colleague
+
+Summary → Project settings → **Download project file**. It contains the model revisions and all your
+choices (mappings, allowances, manual items, settings). Your colleague clicks **Open a project file** on
+the start page. Prices are shared separately as a rate pack (Prices & rates → Region & sharing).
+
+## Resources (bill of materials)
+
+BOQ tab → **Resources**: total labour hours, cement bags, rebar tonnes, blocks, ready-mix and so on, with
+each one's share of the cost and what a 10% price rise would add. Use it to order materials, plan labour
+and see which prices to confirm first. The Excel workbook has the same table.
+
+## Defaults a senior estimator would use
+
+- Loose furniture (beds, sofas, chairs, tables) is listed but **not** in the total: it is normally the
+  client's separate FF&E budget. Built-in joinery (kitchen cabinets, vanities, wardrobes) is included.
+  Tick **Include loose furniture** in Project settings to add it.
+- Taps and mixers are part of the sanitary fixture, not priced twice.
+- Small mechanical units (radiators, fan coils) and large plant (boilers, chillers, AHUs) have different rates.
+- In a model without walls (e.g. an MEP model) room finishes are not priced, so they are not double
+  counted with the architectural model.
+
 ## 2. Create a project
 
 Open the app, pick the **region**, and drop the .ifc file. The first time, a large model takes about

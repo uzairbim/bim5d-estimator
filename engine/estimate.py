@@ -378,6 +378,7 @@ def _env(el, give, rule, ctx):
     # context flags
     q["ext"] = 1.0 if el.get("external") else 0.0
     q["rooms_on"] = ctx["rooms_on"]
+    q["lintels_modeled"] = ctx.get("lintels", 0.0)
     host = ctx["by_guid"].get(el.get("host") or "")
     if host is not None:
         q["host_masonry"] = 1.0 if ctx["recipes"].get(host["guid"]) in MASONRY else 0.0
@@ -404,6 +405,7 @@ def estimate(elements, region, lib=None, settings=None):
     reg.setdefault("escalation_pct", 0)
     mappings = settings.get("mappings") or {}
     rebar_mode = settings.get("rebar_mode") or "ratio"
+    include_ffe = bool(settings.get("include_loose_ffe"))
     deduct = settings.get("deduct_overlaps", True) is not False
     std_code = settings.get("standard") or reg.get("standard") or "NRM2"
     rule = dict(STANDARDS.get(std_code, STANDARDS["NRM2"]))
@@ -418,17 +420,20 @@ def estimate(elements, region, lib=None, settings=None):
     give, overlap_records = _deductions(elements, recipes, deduct)
     n_rooms = sum(1 for e in elements if e["ifc_class"] == "IfcSpace" and recipes.get(e["guid"]))
     finishes_from = settings.get("finishes_from") or "auto"
-    rooms_on = 1.0 if (finishes_from == "rooms" or (finishes_from == "auto" and n_rooms >= 3)) else 0.0
+    has_walls = any(e["ifc_class"] in ("IfcWall", "IfcWallStandardCase", "IfcCurtainWall") for e in elements)
+    rooms_on = 1.0 if (finishes_from == "rooms" or (finishes_from == "auto" and n_rooms >= 3 and has_walls)) else 0.0
     if not rooms_on:   # rooms switched off: don't price room finishes either
         for e in elements:
             if e["ifc_class"] == "IfcSpace" and recipes.get(e["guid"]):
                 cls[e["guid"]] = (None, "excluded")
                 recipes[e["guid"]] = None
-    ctx = {"rooms_on": rooms_on, "recipes": recipes, "by_guid": {e["guid"]: e for e in elements}}
+    ctx = {"rooms_on": rooms_on, "recipes": recipes, "by_guid": {e["guid"]: e for e in elements},
+           "lintels": 1.0 if "LINTEL_ELEMENT" in set(recipes.values()) else 0.0}
 
     lines, per_element, groups = [], {}, {}
     unclassified, flagged, excluded = [], [], []
     modeled_rebar_kg = ratio_rebar_kg = 0.0
+    ffe_outside, ffe_count = 0.0, 0
     recon = []
 
     for el in elements:
@@ -444,7 +449,13 @@ def estimate(elements, region, lib=None, settings=None):
                                     "adjust": adjust.get(key)})
         g["count"] += 1
         g["guids"].append(el["guid"])
-        av = (el.get("authored") or {}).get("volume")
+        au = el.get("authored") or {}
+        av = au.get("volume")
+        if not av and au.get("volume_qto") and q0.get("volume"):
+            # IFC base quantities are often written in the wrong unit (x1000);
+            # only use them when they are of the same order as the measured volume.
+            ratio = q0["volume"] / au["volume_qto"]
+            av = au["volume_qto"] if 0.2 < ratio < 5 else None
         if av and q0.get("volume") and recipe is not None and q0.get("check") == 0:
             recon.append((el["guid"], q0["volume"], av))
         if recipe is None:
@@ -469,6 +480,11 @@ def estimate(elements, region, lib=None, settings=None):
                 modeled_rebar_kg += qty
                 if rebar_mode != "modeled":
                     continue
+            if opt == "loose_ffe" and not include_ffe:
+                rd0 = lib.rate_detail(region, item["work_item"])
+                ffe_outside += qty * (rd0["material"] + rd0["labour"] + rd0["equipment"])
+                ffe_count += 1
+                continue
             waste = float(item["waste_pct"] or 0)
             qty_w = qty * (1 + waste / 100)
             rd = lib.rate_detail(region, item["work_item"])
@@ -524,6 +540,23 @@ def estimate(elements, region, lib=None, settings=None):
             "nrm1": m.get("nrm1") or "8 External works" if "extern" in (m.get("description") or "").lower() else (m.get("nrm1") or "Manual items"),
             "uniformat": "Manual items", "stage": "9 Other",
         })
+
+    # Resource summary (bill of materials): totals of labour, materials and plant behind the
+    # built-up rates, for procurement and to see which prices drive the cost.
+    res_tot = {}
+    for l in lines:
+        if l.get("recipe") == "MANUAL" and l.get("rate_source") == "your rate":
+            continue
+        rd = lib.rate_detail(region, l["work_item"])
+        for b in rd.get("build") or []:
+            r = res_tot.setdefault(b["resource"], {"resource": b["resource"], "name": b["name"], "unit": b["unit"],
+                                                  "qty": 0.0, "cost": 0.0, "price": b["price"], "kind": b.get("kind")})
+            r["qty"] += l["qty"] * b["qty"]
+            r["cost"] += l["qty"] * b["cost"]
+    tot_direct = sum(l["amount"] for l in lines) or 1.0
+    resources = sorted(({**r, "qty": round(r["qty"], 3), "cost": round(r["cost"], 2),
+                         "share": round(r["cost"] / tot_direct, 4)} for r in res_tot.values()),
+                       key=lambda r: -r["cost"])
 
     # Bill of quantities: one row per work item.
     boq = {}
@@ -669,6 +702,9 @@ def estimate(elements, region, lib=None, settings=None):
         assumptions.append(
             f"Prices: {user_share:.0%} confirmed by you, {assumed_share:.0%} assumed indicative market prices "
             f"(late 2026, not quotations), {estimated_share:.0%} estimated from US price levels.")
+    if ffe_count:
+        assumptions.append(f"Loose furniture ({ffe_count} items, about {ffe_outside:,.0f} {reg['currency']}) is "
+                           "excluded: it is normally the client's separate FF&E budget. Built-in joinery is included.")
     assumptions += [a for a in settings.get("assumptions") or [] if a]
     exclusions = settings.get("exclusions")
     if exclusions is None:
@@ -686,6 +722,7 @@ def estimate(elements, region, lib=None, settings=None):
         "summary": {"direct": direct, "allowances": allow_total, "prelims": prelims,
                     "contingency": contingency, "overhead": overhead, "profit": profit,
                     "escalation": escalation, "tax": tax, "tax_name": reg["tax_name"], "total": total,
+                    "ffe_outside": round(ffe_outside, 2), "ffe_count": ffe_count,
                     "prelims_pct": reg["prelims_pct"], "escalation_pct": reg["escalation_pct"],
                     "contingency_pct": reg.get("contingency_pct", 0),
                     "overhead_pct": reg["overhead_pct"], "profit_pct": reg["profit_pct"],
@@ -699,6 +736,7 @@ def estimate(elements, region, lib=None, settings=None):
         "by_nrm1": by_nrm1, "by_uniformat": group_sorted("uniformat"),
         "by_stage": group_sorted("stage"),
         "boq": boq, "lines": lines, "per_element": per_element, "groups": group_list,
+        "resources": resources,
         "settings": {"rebar_mode": rebar_mode, "deduct_overlaps": deduct, "min_deduct_m2": min_open},
         "checks": {"elements": len(elements),
                    "priced": len(elements) - len(unclassified) - len(excluded),

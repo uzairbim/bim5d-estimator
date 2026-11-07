@@ -223,7 +223,7 @@ def update_project(pid: str, changes: dict = Body(...)):
                "contingency_pct", "tax_pct", "prelims_pct", "escalation_pct", "duration_months",
                "start", "deduct_overlaps", "min_deduct_m2", "rates_verified", "allowances",
                "adjustments", "assumptions", "exclusions", "gfa_m2", "standard", "finishes_from",
-               "manual_items"}
+               "manual_items", "include_loose_ffe"}
     bad = set(changes) - allowed
     if bad:
         raise HTTPException(400, f"Unknown settings: {', '.join(sorted(bad))}")
@@ -236,6 +236,23 @@ def update_project(pid: str, changes: dict = Body(...)):
 def delete_project(pid: str):
     storage.delete_project(pid)
     return {"ok": True}
+
+
+@app.get("/api/projects/{pid}/package.zip")
+def project_package(pid: str):
+    _project(pid)
+    name, data = storage.export_package(pid)
+    return Response(data, media_type="application/zip",
+                    headers={"Content-Disposition": f'attachment; filename="{_safe_name(name)}.bim5d.zip"'})
+
+
+@app.post("/api/projects/import")
+async def project_import(file: UploadFile):
+    try:
+        pid = storage.import_package(await file.read())
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return {"project_id": pid}
 
 
 @app.delete("/api/versions/{vid}")

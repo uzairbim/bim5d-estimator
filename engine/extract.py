@@ -328,12 +328,25 @@ def extract(path, with_mesh=True, progress=None):
                     ops = _openings(el, scale, settings)
                 else:
                     ops = []
+                kind = _kind(el, typ)
+                part_of = None
+                if el.is_a("IfcBuildingElementPart"):
+                    host = uel.get_aggregate(el)
+                    if host is None:
+                        for rel in getattr(el, "Decomposes", []) or []:
+                            host = rel.RelatingObject
+                    if host is not None and host.is_a("IfcElement"):
+                        part_of = host
+                        kind = host.is_a()
+                        htyp = uel.get_type(host)
+                        typ = htyp or typ
                 elements[el.GlobalId] = {
                     "guid": el.GlobalId,
                     "ifc_class": el.is_a(),
-                    "kind": _kind(el, typ),
+                    "kind": kind,
+                    "part_of": part_of.GlobalId if part_of is not None else None,
                     "predefined": str(getattr(el, "PredefinedType", "") or ""),
-                    "name": el.Name or "",
+                    "name": ((part_of.Name or "") + " / " if part_of is not None else "") + (el.Name or ""),
                     "type": (typ.Name if typ else "") or "",
                     "level": level,
                     "level_elev": elev,
