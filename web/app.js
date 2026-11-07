@@ -111,6 +111,7 @@ function paint() {
     return { color, opacity, visible, emissive: g === S.selected ? 0x2244ff : 0x000000 };
   });
   for (const m of viewer.ghosts.values()) m.visible = !!cmp && (!S.level || S.els[m.userData.guid]?.level === S.level);
+  viewer.redraw();
 }
 
 // ---------- start page ----------
@@ -284,17 +285,17 @@ function bars(obj) {
 function nextSteps(e) {
   const c = e.checks, a = e.accuracy, items = [];
   const unpricedTypes = e.groups.filter((g) => g.recipe === null && g.source === "none").length;
-  if (unpricedTypes) items.push([`${unpricedTypes} element type${unpricedTypes > 1 ? "s are" : " is"} not priced yet. Tell the tool what ${unpricedTypes > 1 ? "they are" : "it is"}.`, "Open Mapping", "goto:mapping"]);
-  if ((a.user_price_share || 0) < 0.5) items.push([`Prices are ${Math.round((a.assumed_price_share || 0) * 100)}% assumed and ${Math.round((a.estimated_price_share || 0) * 100)}% estimated. Confirm today's prices for labour, ready-mix, rebar, blocks and cement.`, "Enter prices", "rates"]);
+  if (unpricedTypes) items.push([t("Element types not priced yet: {n}. Tell the tool what they are.", { n: unpricedTypes }), t("Open Mapping"), "goto:mapping"]);
+  if ((a.user_price_share || 0) < 0.5) items.push([t("Prices: {a}% assumed, {e}% estimated. Confirm today's prices for labour, ready-mix, rebar, blocks and cement.", { a: Math.round((a.assumed_price_share || 0) * 100), e: Math.round((a.estimated_price_share || 0) * 100) }), t("Enter prices"), "rates"]);
   const gap = e.scope.find((x) => !x.present && x.suggest && !e.allowances.some((al) => al.name === x.suggest.name));
-  if (gap) items.push([`${gap.name} ${gap.name.endsWith("s") ? "are" : "is"} not in the model. Add an allowance so the total is complete.`, `Add ${gap.suggest.value}% allowance`, "allow:" + JSON.stringify(gap.suggest)]);
-  if (c.duplicates.length) items.push([`${c.duplicates.length} element${c.duplicates.length > 1 ? "s look" : " looks"} duplicated in the model. Check before issuing.`, "Open Checks", "goto:checks"]);
-  else if (c.overlaps.length) items.push([`${c.overlaps.length} overlaps were found and counted once. Have a quick look.`, "Open Checks", "goto:checks"]);
+  if (gap) items.push([t("Not in the model: {name}. Add an allowance so the total is complete.", { name: gap.name }), t("Add {v}% allowance", { v: gap.suggest.value }), "allow:" + JSON.stringify(gap.suggest)]);
+  if (c.duplicates.length) items.push([t("Elements that look duplicated: {n}. Check them before issuing.", { n: c.duplicates.length }), t("Open Checks"), "goto:checks"]);
+  else if (c.overlaps.length) items.push([t("Overlaps found and counted once: {n}. Have a quick look.", { n: c.overlaps.length }), t("Open Checks"), "goto:checks"]);
   const missing = e.checklist.filter((x) => x.status === "missing").length;
-  if (missing) items.push([`${missing} commonly forgotten item${missing > 1 ? "s are" : " is"} not covered.`, "Show list", "scroll:scope"]);
-  items.push(["When you are happy, send the client report or the Excel workbook.", "Client report", "report"]);
-  return `<div class="next"><b>What to do next</b><ol>${items.slice(0, 5).map(([txt, btn, act]) =>
-    `<li><span>${esc(txt)}</span> <button class="btn sm" data-next='${esc(act)}'>${esc(btn)}</button></li>`).join("")}</ol></div>`;
+  if (missing) items.push([t("Commonly forgotten items not covered: {n}.", { n: missing }), t("Show list"), "scroll:scope"]);
+  items.push([t("When you are happy, send the client report or the Excel workbook."), t("Client report"), "report"]);
+  return `<div class="next"><b>${t("What to do next")}</b><ol>${items.slice(0, 5).map(([txt, btn, act]) =>
+    `<li><span dir="auto">${esc(txt)}</span> <button class="btn sm" data-next='${esc(act)}'>${esc(btn)}</button></li>`).join("")}</ol></div>`;
 }
 
 // The six steps an estimator goes through, with their status.
@@ -333,14 +334,14 @@ function renderSummary() {
   let bench = "";
   if (s.per_m2 && s.benchmark) {
     const b = s.benchmark, inside = s.per_m2 >= b.low && s.per_m2 <= b.high;
-    bench = `<div class="callout ${inside ? "ok" : ""}">Cost per m²: <b>${fmt(s.per_m2)} ${e.currency}</b> on ${fmt(s.gfa)} m² floor area. Typical for <i>${esc(b.label)}</i>: ${fmt(b.low)}–${fmt(b.high)}. ${inside ? "Inside the usual range." : s.per_m2 < b.low ? "Lower than usual: check the scope list below for parts not in the model." : "Higher than usual: check rates and quantities."}</div>`;
+    bench = `<div class="callout ${inside ? "ok" : ""}">${t("Cost per m²")}: <b>${fmt(s.per_m2)} ${e.currency}</b> on ${fmt(s.gfa)} m² floor area. Typical for <i>${esc(b.label)}</i>: ${fmt(b.low)}–${fmt(b.high)}. ${inside ? t("Inside the usual range.") : s.per_m2 < b.low ? t("Lower than usual: check the scope list below for parts not in the model.") : t("Higher than usual: check rates and quantities.")}</div>`;
   }
   const rb = c.rebar;
   const rebarNote = (rb.modeled_kg > 0) ? `<div class="callout">Rebar: modelled bars <b>${fmt(rb.modeled_kg)} kg</b>, ratios give <b>${fmt(rb.ratio_kg)} kg</b>. Using <b>${rb.mode === "modeled" ? "modelled bars" : "ratios"}</b>.${rb.modeled_kg < rb.ratio_kg * 0.5 ? " The modelled rebar looks incomplete." : ""}</div>` : "";
   const scopeRows = e.scope.map((x) => {
     const added = x.suggest && e.allowances.some((al) => al.name === x.suggest.name);
     return `<tr><td>${x.present ? '<span class="ok">✓</span>' : '<span class="bad">✗</span>'} ${esc(x.name)}</td><td class="n">${x.present ? fmt(x.cost) : ""}</td>
-      <td>${!x.present && x.suggest ? (added ? '<span class="tag">allowance added</span>' : `<button class="btn sm" data-allow='${esc(JSON.stringify(x.suggest))}'>Add ${x.suggest.value}% allowance</button>`) : (x.present ? "" : '<span class="muted small">not in model</span>')}</td></tr>`;
+      <td>${!x.present && x.suggest ? (added ? '<span class="tag">allowance added</span>' : `<button class="btn sm" data-allow='${esc(JSON.stringify(x.suggest))}'>${t("Add {v}% allowance", { v: x.suggest.value })}</button>`) : (x.present ? "" : '<span class="muted small">not in model</span>')}</td></tr>`;
   }).join("");
   const allowRows = (st.allowances || []).map((al, i) => {
     const calc = e.allowances[i]?.amount;
@@ -352,23 +353,29 @@ function renderSummary() {
   const missingCount = e.scope.filter((x) => !x.present && x.suggest && !e.allowances.some((al) => al.name === x.suggest.name)).length
     + e.checklist.filter((x) => x.status === "missing").length;
   const gapsOpen = missingCount > 0;
-  $("#tab-summary").innerHTML = `
+  // Keep the sections the user opened or closed, and the scroll position, when the summary redraws.
+  const host = $("#tab-summary");
+  const wasOpen = S._sumPid === S.project.id ? $$("details.sec", host).map((d) => d.open) : [];
+  const scrollers = [];
+  for (let n = host; n; n = n.parentElement) if (n.scrollTop) scrollers.push([n, n.scrollTop]);
+  S._sumPid = S.project.id;
+  host.innerHTML = `
     <div class="muted">${esc(S.project.name)} · ${esc(S.version.label)} · ${esc(e.region_name)}</div>
     <div class="total">${fmt(s.total)} <small>${e.currency}</small></div>
-    <div class="acc acc${a.class}"><b>${esc(a.label)}</b> · likely between <b>${fmt(a.low)}</b> and <b>${fmt(a.high)}</b> ${e.currency} (${Math.round(a.low_pct * 100)}% / +${Math.round(a.high_pct * 100)}%)
-      ${a.reasons.length ? `<ul>${a.reasons.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}</div>
+    <div class="acc acc${a.class}"><b dir="auto">${esc(a.label)}</b> · ${t("likely between")} <b>${fmt(a.low)}</b> ${t("and")} <b>${fmt(a.high)}</b> ${e.currency} (${Math.round(a.low_pct * 100)}% / +${Math.round(a.high_pct * 100)}%)
+      ${a.reasons.length ? `<ul>${a.reasons.map((r) => `<li dir="auto">${esc(r)}</li>`).join("")}</ul>` : ""}</div>
     ${nextSteps(e)}
     <h3>${t("Cost build-up")} (${e.currency})</h3>
     <table class="build">
-      ${row("Measured work (from the model)", s.direct)}
-      ${row("Allowances (work not modelled)", s.allowances)}
-      ${row(`Preliminaries ${s.prelims_pct}%`, s.prelims)}
-      ${row(`Contingency ${s.contingency_pct}%`, s.contingency)}
-      ${row(`Overhead ${s.overhead_pct}%`, s.overhead)}
-      ${row(`Profit ${s.profit_pct}%`, s.profit)}
-      ${row(`Escalation ${s.escalation_pct}%`, s.escalation)}
+      ${row(t("Measured work (from the model)"), s.direct)}
+      ${row(t("Allowances (work not modelled)"), s.allowances)}
+      ${row(`${t("Preliminaries")} ${s.prelims_pct}%`, s.prelims)}
+      ${row(`${t("Contingency")} ${s.contingency_pct}%`, s.contingency)}
+      ${row(`${t("Overhead")} ${s.overhead_pct}%`, s.overhead)}
+      ${row(`${t("Profit")} ${s.profit_pct}%`, s.profit)}
+      ${row(`${t("Escalation")} ${s.escalation_pct}%`, s.escalation)}
       ${row(`${esc(s.tax_name)} ${s.tax_pct}%`, s.tax)}
-      <tr class="tot"><td>Total</td><td class="n">${fmt(s.total)}</td></tr>
+      <tr class="tot"><td>${t("Total")}</td><td class="n">${fmt(s.total)}</td></tr>
     </table>
     ${c.unclassified.length ? `<div class="callout">${fmt(c.unclassified.length)} elements have no price yet. <a href="#" data-goto="mapping">Open Mapping</a>.</div>` : ""}
     ${bench}${rebarNote}
@@ -426,6 +433,8 @@ function renderSummary() {
     <textarea id="exclusions" rows="6" class="full">${esc(e.exclusions.filter((x) => !x.endsWith("(not in the model)")).join("\n"))}</textarea>
     <p class="muted small">One per line. Saved when you click outside the box.</p>
     </details>`;
+  $$("details.sec", host).forEach((d, i) => { if (i < wasOpen.length) d.open = wasOpen[i]; });
+  scrollers.forEach(([n, top]) => (n.scrollTop = top));
   $("[data-set=rebar_mode]").value = st.rebar_mode || "ratio";
   $$("[data-set]", $("#tab-summary")).forEach((inp) => inp.addEventListener("change", () => {
     const k = inp.dataset.set;

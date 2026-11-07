@@ -68,6 +68,7 @@ cost rests on your own prices. Type over any assumed price and it becomes yours.
 | **Overlaps**: exact 3D intersection (column through slab, beam in slab, wall through column) deducted once, following measurement practice; duplicates flagged. |
 | **Classifies** elements with editable rules (IFC class + keywords, Uniformat codes, system types; English, German and Arabic keywords). Architecture, structure, MEP; IFC2x3 and IFC4. **Mapping screen** + optional AI suggestions for unknown types. |
 | **Estimate**: BOQ by trade, NRM1 and Uniformat cost plans, cost per m² with benchmark, preliminaries, contingency, OH&P, escalation, VAT/GST, accuracy class and range (AACE guidance) with reasons. |
+| **Client report** with the main cost drivers (top items, and what a 10% rise in each key price adds). Large models (7,000+ elements) stay responsive: the 3D view only redraws when something changes. |
 | **4D** sequence with 3D playback and S-curve cash flow; **revision comparison**; **client report** (PDF); **Excel** workbook with formulas; **audit trail**. |
 | **Languages**: English, العربية, اردو, Español, Français (right-to-left supported). **Units**: metric or imperial display. |
 

@@ -15,7 +15,13 @@
     "contingency_pct": 5,
     "prelims_pct": 10,
     "escalation_pct": 0,
-    "standard": "NRM2"
+    "standard": "NRM2",
+    "benchmark": {
+      "label": "Mid-range building, whole building, world middle (assumed)",
+      "low": 900,
+      "high": 2500,
+      "unit": "m2 GFA"
+    }
   },
   "SA": {
     "name": "Saudi Arabia",
@@ -56,7 +62,13 @@
     "labour_factor": 0.28,
     "material_factor": 0.85,
     "plant_factor": 0.85,
-    "standard": "NRM2"
+    "standard": "NRM2",
+    "benchmark": {
+      "label": "Mid-range house, whole building incl. MEP (assumed typical level, late 2026)",
+      "low": 2700,
+      "high": 4300,
+      "unit": "m2 GFA"
+    }
   },
   "PK": {
     "name": "Pakistan",
@@ -73,7 +85,13 @@
     "labour_factor": 0.06,
     "material_factor": 0.45,
     "plant_factor": 0.45,
-    "standard": "NRM2"
+    "standard": "NRM2",
+    "benchmark": {
+      "label": "Mid-range house, whole building incl. MEP (assumed typical level, late 2026)",
+      "low": 60000,
+      "high": 95000,
+      "unit": "m2 GFA"
+    }
   },
   "IN": {
     "name": "India",
@@ -90,7 +108,13 @@
     "labour_factor": 0.06,
     "material_factor": 0.45,
     "plant_factor": 0.45,
-    "standard": "IS1200"
+    "standard": "IS1200",
+    "benchmark": {
+      "label": "Mid-range house, whole building incl. MEP (assumed typical level, late 2026)",
+      "low": 22000,
+      "high": 38000,
+      "unit": "m2 GFA"
+    }
   },
   "GB": {
     "name": "United Kingdom",
@@ -107,7 +131,13 @@
     "labour_factor": 1.1,
     "material_factor": 1.1,
     "plant_factor": 1.1,
-    "standard": "NRM2"
+    "standard": "NRM2",
+    "benchmark": {
+      "label": "Mid-range house, whole building incl. MEP (assumed typical level, late 2026)",
+      "low": 1900,
+      "high": 2800,
+      "unit": "m2 GFA"
+    }
   },
   "DE": {
     "name": "Germany",
@@ -124,7 +154,13 @@
     "labour_factor": 1.2,
     "material_factor": 1.05,
     "plant_factor": 1.05,
-    "standard": "NRM2"
+    "standard": "NRM2",
+    "benchmark": {
+      "label": "Mid-range house, whole building incl. MEP (assumed typical level, late 2026)",
+      "low": 2300,
+      "high": 3500,
+      "unit": "m2 GFA"
+    }
   },
   "US": {
     "name": "United States",
@@ -141,6 +177,12 @@
     "labour_factor": 1.0,
     "material_factor": 1.0,
     "plant_factor": 1.0,
-    "standard": "NRM2"
+    "standard": "NRM2",
+    "benchmark": {
+      "label": "Mid-range house, whole building incl. MEP (assumed typical level, late 2026)",
+      "low": 1950,
+      "high": 3250,
+      "unit": "m2 GFA"
+    }
   }
 }

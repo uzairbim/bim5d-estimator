@@ -8,6 +8,7 @@ Anyone can set up their own country:
   4. share the result as a "rate pack" file.
 """
 import csv
+import math
 import datetime as dt
 import json
 import threading
@@ -103,9 +104,12 @@ def save_prices(region, rows, lib=None):
         code = str(r.get("resource", "")).strip()
         if code not in lib.resources or r.get("price") in (None, ""):
             continue
-        price = float(r["price"])
-        if price < 0:
-            raise ValueError(f"Price for {code} is negative")
+        try:
+            price = float(r["price"])
+        except (TypeError, ValueError):
+            raise ValueError(f"Price for {code} is not a number")
+        if not math.isfinite(price) or price < 0:
+            raise ValueError(f"Price for {code} must be a positive number")
         clean.append({"resource": code, "price": round(price, 6),
                       "source": str(r.get("source") or "user")[:80],
                       "date": str(r.get("date") or dt.date.today().isoformat())[:10]})

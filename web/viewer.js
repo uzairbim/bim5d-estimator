@@ -29,13 +29,21 @@ export class Viewer {
     new ResizeObserver(() => this._resize()).observe(host);
     this._resize();
     this._pickEvents();
-    const loop = () => { this.controls.update(); this.renderer.render(this.scene, this.camera); requestAnimationFrame(loop); };
+    // Draw only when something changed: large models stay responsive and laptops stay cool.
+    this.dirty = true;
+    this.controls.addEventListener("change", () => (this.dirty = true));
+    const loop = () => {
+      this.controls.update();
+      if (this.dirty) { this.dirty = false; this.renderer.render(this.scene, this.camera); }
+      requestAnimationFrame(loop);
+    };
     loop();
   }
 
   _theme() {
     const dark = matchMedia("(prefers-color-scheme: dark)").matches;
     this.scene.background = new THREE.Color(dark ? 0x0f131a : 0xeef1f5);
+    this.dirty = true;
   }
 
   _resize() {
@@ -43,7 +51,10 @@ export class Viewer {
     this.renderer.setSize(w, h);
     this.camera.aspect = w / Math.max(h, 1);
     this.camera.updateProjectionMatrix();
+    this.dirty = true;
   }
+
+  redraw() { this.dirty = true; }
 
   _pickEvents() {
     const ray = new THREE.Raycaster();
@@ -106,6 +117,7 @@ export class Viewer {
       this.ghostGroup.add(mesh);
       this.ghosts.set(guid, mesh);
     }
+    this.dirty = true;
   }
 
   clearGhosts() {
@@ -119,6 +131,7 @@ export class Viewer {
     for (const m of this.meshes.values()) { m.geometry.dispose(); m.material.dispose(); }
     this.group.clear();
     this.meshes.clear();
+    this.dirty = true;
   }
 
   fit(guids) {
@@ -134,6 +147,7 @@ export class Viewer {
     this.camera.position.copy(c.clone().add(dir.multiplyScalar(r * 1.1)));
     this.camera.near = r / 2000; this.camera.far = r * 40;
     this.camera.updateProjectionMatrix();
+    this.dirty = true;
   }
 
   // style: (guid) -> {color: THREE.Color|hex|css, visible: bool, opacity: number, emissive: hex}
@@ -148,7 +162,8 @@ export class Viewer {
       m.material.depthWrite = op >= 1;
       m.material.emissive.set(s.emissive ?? 0x000000);
     }
+    this.dirty = true;
   }
 
-  screenshot() { return this.renderer.domElement.toDataURL("image/png"); }
+  screenshot() { this.renderer.render(this.scene, this.camera); return this.renderer.domElement.toDataURL("image/png"); }
 }

@@ -155,7 +155,10 @@ def get_pack(code: str, author: str = ""):
 @app.post("/api/regions/import")
 async def post_pack(file: UploadFile, as_code: Optional[str] = Form(None)):
     try:
-        pack = json.loads((await file.read()).decode("utf-8"))
+        raw = await file.read((20 << 20) + 1)
+        if len(raw) > 20 << 20:
+            raise ValueError("A rate pack must be smaller than 20 MB.")
+        pack = json.loads(raw.decode("utf-8"))
         res = regions_mod.import_pack(pack, as_code)
     except (ValueError, json.JSONDecodeError) as e:
         raise HTTPException(400, str(e))
@@ -227,9 +230,13 @@ def update_project(pid: str, changes: dict = Body(...)):
     bad = set(changes) - allowed
     if bad:
         raise HTTPException(400, f"Unknown settings: {', '.join(sorted(bad))}")
+    try:
+        settings = storage.update_settings(pid, dict(changes))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     if "name" in changes:
         storage.rename_project(pid, str(changes["name"])[:120])
-    return storage.update_settings(pid, changes)
+    return settings
 
 
 @app.delete("/api/projects/{pid}")
@@ -249,7 +256,10 @@ def project_package(pid: str):
 @app.post("/api/projects/import")
 async def project_import(file: UploadFile):
     try:
-        pid = storage.import_package(await file.read())
+        data = await file.read((MAX_UPLOAD_MB << 20) + 1)
+        if len(data) > MAX_UPLOAD_MB << 20:
+            raise ValueError(f"The project file is larger than {MAX_UPLOAD_MB} MB.")
+        pid = storage.import_package(data)
     except ValueError as e:
         raise HTTPException(400, str(e))
     return {"project_id": pid}
@@ -396,6 +406,8 @@ async def import_rates(region: str, file: UploadFile):
 
 @app.get("/api/rates/{region}/template.xlsx")
 def rates_template(region: str):
+    if region not in Library().regions:
+        raise HTTPException(404, "Unknown region")
     data = rates.template_xlsx(region)
     return Response(data, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     headers={"Content-Disposition": f'attachment; filename="rates_{region}.xlsx"'})

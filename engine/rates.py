@@ -1,5 +1,6 @@
 """Read, edit and import the rate library for a region."""
 import csv
+import math
 import io
 from pathlib import Path
 
@@ -48,8 +49,8 @@ def save(region, rows, lib=None):
             vals = [round(float(r.get(f) or 0), 4) for f in ("material", "labour", "equipment")]
         except (TypeError, ValueError):
             raise ValueError(f"Rate for {code} is not a number")
-        if min(vals) < 0:
-            raise ValueError(f"Rate for {code} is negative")
+        if min(vals) < 0 or not all(math.isfinite(v) for v in vals):
+            raise ValueError(f"Rate for {code} must be a positive number")
         clean.append({"work_item": code, "material": vals[0], "labour": vals[1],
                       "equipment": vals[2], "source": str(r.get("source") or "user").strip()[:80]})
     path = _region_file(lib, region)

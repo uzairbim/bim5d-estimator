@@ -43,6 +43,8 @@
     [contenteditable] { border: 0; }
     @page { size: A4; margin: 14mm 13mm; }
   }
+  .note { color: #555; font-size: 11px; margin: 0 0 6px; }
+  .muted { color: #777; font-size: 10px; }
 </style>
 </head>
 <body>
@@ -109,12 +111,21 @@ const pid = h.get("p"), vid = h.get("v");
       <tr class="sub"><td>Measured work</td><td class="n">${fmt(s.direct)}</td><td class="n">100%</td><td class="n">${perm2(s.direct)}</td></tr>
     </tbody></table>
 
+    <h2>4. Main cost drivers</h2>
+    <p class="note">The items and prices that move the total most. Confirm these first.</p>
+    <table><thead><tr><th>Work item</th><th class="n">Quantity</th><th class="n">Rate</th><th class="n">${cur}</th><th class="n">% of measured</th></tr></thead><tbody>
+      ${[...e.boq].sort((x, y) => y.amount - x.amount).slice(0, 10).map((b) => `<tr><td>${esc(b.description)}</td><td class="n">${fmt(b.qty, 1)} ${esc(b.unit)}</td><td class="n">${fmt(b.rate, 2)}</td><td class="n">${fmt(b.amount)}</td><td class="n">${pct(b.amount, s.direct)}</td></tr>`).join("")}
+    </tbody></table>
+    ${(e.resources || []).length ? `<table><thead><tr><th>Resource</th><th class="n">Quantity</th><th class="n">Price used</th><th class="n">% of measured</th><th class="n">+10% price adds (incl. mark-ups)</th></tr></thead><tbody>
+      ${[...e.resources].sort((x, y) => y.cost - x.cost).slice(0, 6).map((r) => `<tr><td>${esc(r.name)}${r.kind === "user" ? "" : ` <span class="muted">(${esc(r.kind)})</span>`}</td><td class="n">${fmt(r.qty, 1)} ${esc(r.unit)}</td><td class="n">${fmt(r.price, 2)}</td><td class="n">${pct(r.cost, s.direct)}</td><td class="n">${fmt(r.cost * 0.1 * (s.total / (s.direct || 1)))}</td></tr>`).join("")}
+    </tbody></table>` : ""}
+
     <div class="two">
-      <div><h2>4. By trade</h2><table><tbody>${Object.entries(e.by_trade).map(([k, x]) => `<tr><td>${esc(k)}</td><td class="n">${fmt(x)}</td></tr>`).join("")}</tbody></table></div>
-      <div><h2>5. By level</h2><table><tbody>${Object.entries(e.by_level).map(([k, x]) => `<tr><td>${esc(k)}</td><td class="n">${fmt(x)}</td></tr>`).join("")}</tbody></table></div>
+      <div><h2>5. By trade</h2><table><tbody>${Object.entries(e.by_trade).map(([k, x]) => `<tr><td>${esc(k)}</td><td class="n">${fmt(x)}</td></tr>`).join("")}</tbody></table></div>
+      <div><h2>6. By level</h2><table><tbody>${Object.entries(e.by_level).map(([k, x]) => `<tr><td>${esc(k)}</td><td class="n">${fmt(x)}</td></tr>`).join("")}</tbody></table></div>
     </div>
 
-    <h2>6. Scope and allowances</h2>
+    <h2>7. Scope and allowances</h2>
     <table><thead><tr><th>Part of the building</th><th>In the model</th><th class="n">${cur}</th></tr></thead><tbody>
       ${e.scope.map((x) => `<tr><td>${esc(x.name)}</td><td>${x.present ? "Yes" : '<span class="warn">No</span>'}</td><td class="n">${x.present ? fmt(x.cost) : ""}</td></tr>`).join("")}
     </tbody></table>
@@ -123,13 +134,13 @@ const pid = h.get("p"), vid = h.get("v");
     <p><b>Commonly forgotten items</b></p>
     <table><tbody>${(e.checklist || []).map((x) => `<tr><td>${esc(x.name)}</td><td>${x.status === "priced" ? "Priced" : x.status === "allowance" ? "Allowance" : x.status === "note" ? esc(x.note) : '<span class="warn">Not included</span>'}</td><td class="n">${x.cost ? fmt(x.cost) : ""}</td></tr>`).join("")}</tbody></table>
 
-    <h2>7. Basis of estimate and assumptions</h2>
+    <h2>8. Basis of estimate and assumptions</h2>
     <ul>${e.assumptions.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
 
-    <h2>8. Exclusions</h2>
+    <h2>9. Exclusions</h2>
     <ul>${e.exclusions.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
 
-    <h2>9. Quality checks on the model</h2>
+    <h2>10. Quality checks on the model</h2>
     <table><tbody>
       <tr><td>Elements in the model / priced</td><td class="n">${fmt(c.elements)} / ${fmt(c.priced)}</td></tr>
       <tr><td>Not priced (needs mapping)</td><td class="n">${fmt(c.unclassified.length)}</td></tr>

@@ -187,7 +187,7 @@ shows the cost difference by trade and per element, with the reason (for example
 ## 9. Client report
 
 Click **Client report**. A clean A4 report opens: summary with the accuracy range and cost per m²,
-cost build-up, NRM1 elemental summary, trade and level summaries, scope and allowances, assumptions,
+cost build-up, NRM1 elemental summary, **main cost drivers** (the 10 biggest items and the prices that move the total most), trade and level summaries, scope and allowances, assumptions,
 exclusions and model quality checks, with a 3D picture. Click the dashed fields to type the client
 and estimator names, then **Print / Save as PDF**.
 

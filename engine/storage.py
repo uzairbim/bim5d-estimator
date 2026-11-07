@@ -9,6 +9,7 @@ projects/
 """
 import gzip
 import json
+import math
 import shutil
 import sqlite3
 import threading
@@ -33,6 +34,58 @@ DEFAULT_SETTINGS = {"region": "SA", "rebar_mode": "ratio", "mappings": {},
                     "allowances": [], "adjustments": {}, "assumptions": [], "exclusions": None,
                     "gfa_m2": None, "standard": None, "finishes_from": "auto", "manual_items": [],
                     "include_loose_ffe": False}
+
+
+_PCT = ("overhead_pct", "profit_pct", "contingency_pct", "tax_pct", "prelims_pct", "escalation_pct")
+_CHOICES = {"rebar_mode": ("ratio", "modeled"), "finishes_from": ("auto", "rooms", "walls"),
+            "standard": (None, "NRM2", "POMI", "IS1200", "EXACT")}
+_TYPES = {"mappings": dict, "adjustments": dict, "allowances": list, "assumptions": list,
+          "manual_items": list, "deduct_overlaps": bool, "rates_verified": bool, "include_loose_ffe": bool}
+
+
+def _number(k, v, lo, hi, allow_none=True):
+    if v is None or v == "":
+        if allow_none:
+            return None
+        raise ValueError(f"{k} needs a value")
+    try:
+        v = float(v)
+    except (TypeError, ValueError):
+        raise ValueError(f"{k} must be a number")
+    if not math.isfinite(v) or v < lo or v > hi:
+        raise ValueError(f"{k} must be between {lo:g} and {hi:g}")
+    return v
+
+
+def clean_settings(changes):
+    """Check setting values so a typo gives a clear message instead of a broken estimate."""
+    out = {}
+    for k, v in changes.items():
+        if k in _PCT:
+            v = _number(k, v, -50 if k == "escalation_pct" else 0, 100)
+        elif k == "duration_months":
+            v = int(_number(k, v, 1, 240, allow_none=False))
+        elif k == "min_deduct_m2":
+            v = _number(k, v, 0, 50)
+            v = 0.5 if v is None else v
+        elif k == "gfa_m2":
+            v = _number(k, v, 0, 1e8)
+            v = v or None
+        elif k in _CHOICES:
+            v = v or None if k == "standard" else v
+            if v not in _CHOICES[k]:
+                raise ValueError(f"{k} must be one of: {', '.join(x for x in _CHOICES[k] if x)}")
+        elif k in _TYPES:
+            if k in ("mappings", "adjustments") and v is None:
+                v = {}
+            if not isinstance(v, _TYPES[k]):
+                raise ValueError(f"{k} has the wrong format")
+        elif k in ("region", "name", "start") and v is not None:
+            v = str(v)[:120]
+        elif k == "exclusions" and v is not None and not isinstance(v, list):
+            raise ValueError("exclusions has the wrong format")
+        out[k] = v
+    return out
 
 
 def log(project_id, what, detail=""):
@@ -103,6 +156,7 @@ def update_settings(pid, changes):
     if not p:
         raise KeyError(pid)
     s = p["settings"]
+    changes = clean_settings(changes)
     for field in ("mappings", "adjustments"):   # merge; a value of None removes an entry
         if field in changes:
             m = dict(s.get(field) or {})
@@ -228,6 +282,9 @@ def export_package(pid):
     return p["name"], buf.getvalue()
 
 
+MAX_PACKAGE_BYTES = 2 << 30   # 2 GB of models once unpacked
+
+
 def import_package(data):
     import io
     import tempfile
@@ -239,14 +296,24 @@ def import_package(data):
         raise ValueError("This is not a BIM 5D project file (.zip exported from the app).")
     if meta.get("format") != "bim5d-project":
         raise ValueError("This is not a BIM 5D project file.")
+    names = [r.get("file", "") for r in meta.get("revisions") or [] if isinstance(r, dict)]
+    if sum(z.getinfo(n).file_size for n in z.namelist() if n in names) > MAX_PACKAGE_BYTES:
+        raise ValueError("The models in this project file are too large to open.")
     settings = {k: v for k, v in (meta.get("settings") or {}).items() if k in DEFAULT_SETTINGS}
+    try:
+        settings = clean_settings(settings)
+    except ValueError as e:
+        raise ValueError(f"This project file has an invalid setting ({e}).")
     pid = create_project(meta.get("name") or "Imported project", settings)
     for rev in meta.get("revisions") or []:
         name = rev.get("file", "")
         if not name.startswith("models/") or ".." in name:
             continue
+        if name not in z.namelist():
+            continue
         with tempfile.NamedTemporaryFile(delete=False, suffix=".ifc") as tmp:
-            tmp.write(z.read(name))
+            with z.open(name) as src:
+                shutil.copyfileobj(src, tmp, 1 << 20)
         add_version(pid, tmp.name, rev.get("file_name") or name.split("/")[-1], label=rev.get("label"), move=True)
     log(pid, "project imported", meta.get("name", ""))
     return pid
