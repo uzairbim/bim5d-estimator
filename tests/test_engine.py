@@ -38,10 +38,15 @@ def test_slab_quantities_match_its_layers(house):
     assert q["volume"] == pytest.approx(q["footprint"] * 0.47, rel=0.02)
 
 
-def test_wall_volume_is_face_times_thickness(duplex):
+def test_party_wall_matches_revit(duplex):
+    # Exported as an open surface model with mixed winding; must still match Revit.
     wall = next(e for e in duplex if "Party Wall" in e["name"] and e["qty"]["length"] > 16)
-    q = wall["qty"]
-    assert 0.1 < q["volume"] / q["side"] < 0.4   # thickness in metres
+    assert wall["qty"]["volume"] == pytest.approx(wall["authored"]["volume"], rel=0.06)
+
+
+def test_quantities_agree_with_revit(duplex, lib):
+    rec = estimate(duplex, "SA", lib)["checks"]["reconciliation"]
+    assert rec["compared"] > 80 and rec["share"] >= 0.95
 
 
 def test_no_volume_bigger_than_bounding_box(duplex):
@@ -128,7 +133,8 @@ def test_mapping_overrides_rule(duplex, lib):
 
 def test_summary_adds_up(duplex, lib):
     s = estimate(duplex, "SA", lib)["summary"]
-    sub = s["direct"] + s["contingency"] + s["overhead"] + s["profit"]
+    sub = (s["direct"] + s["allowances"] + s["prelims"] + s["contingency"] + s["overhead"]
+           + s["profit"] + s["escalation"])
     assert s["total"] == pytest.approx(sub * (1 + s["tax_pct"] / 100), abs=1)
     assert s["tax_pct"] == 15  # Saudi VAT
 
@@ -191,3 +197,62 @@ def test_excel_export(duplex, lib):
     est = estimate(duplex, "SA", lib)
     wb = load_workbook(BytesIO(to_xlsx("Test", est, build(duplex, est, 12))))
     assert {"Summary", "BOQ", "Element costs", "Elemental NRM1", "Cash flow", "Mapping"} <= set(wb.sheetnames)
+
+
+# ---- estimator rules ---------------------------------------------------------------
+def _el(guid, cls, name, qty, overlaps=(), openings=()):
+    return {"guid": guid, "ifc_class": cls, "kind": cls, "name": name, "type": "", "level": "L1",
+            "materials": [], "layers": [], "qty": {"count": 1, **qty},
+            "overlaps": [list(o) for o in overlaps], "openings": list(openings)}
+
+
+def test_column_through_slab_is_deducted_from_column(lib):
+    col = _el("c", "IfcColumn", "Concrete column", {"volume": 1.0, "length": 3, "perimeter": 2}, [("s", 0.1)])
+    slab = _el("s", "IfcSlab", "Slab", {"volume": 10.0, "footprint": 50}, [("c", 0.1)])
+    est = estimate([col, slab], "US", lib)
+    con = {l["guid"]: l["net_qty"] for l in est["lines"] if l["work_item"].startswith("CON-")}
+    assert con["c"] == pytest.approx(0.9) and con["s"] == pytest.approx(10.0)
+    assert est["checks"]["overlap_m3"] == pytest.approx(0.1)
+    off = estimate([col, slab], "US", lib, {"deduct_overlaps": False})
+    assert {l["guid"]: l["net_qty"] for l in off["lines"] if l["work_item"].startswith("CON-")}["c"] == 1.0
+
+
+def test_steel_keeps_weight_concrete_is_reduced(lib):
+    beam = _el("b", "IfcBeam", "Steel beam IPE300", {"volume": 0.01, "length": 6}, [("s", 0.005)])
+    slab = _el("s", "IfcSlab", "Slab", {"volume": 10.0, "footprint": 50}, [("b", 0.005)])
+    est = estimate([beam, slab], "US", lib)
+    q = {l["work_item"]: l["net_qty"] for l in est["lines"]}
+    assert q["STL-STR"] == pytest.approx(78.5)          # full steel weight
+    assert q["CON-SLB"] == pytest.approx(9.995)
+
+
+def test_small_openings_not_deducted(lib):
+    wall = _el("w", "IfcWall", "Block wall 200", {"volume": 2.0, "side": 10.0}, openings=(0.3, 2.0))
+    est = estimate([wall], "US", lib)
+    blk = next(l for l in est["lines"] if l["work_item"] == "MAS-BLK")
+    assert blk["net_qty"] == pytest.approx(10.3)          # 0.3 m2 opening added back, 2.0 stays deducted
+    est = estimate([wall], "US", lib, {"min_deduct_m2": 0})
+    assert next(l for l in est["lines"] if l["work_item"] == "MAS-BLK")["net_qty"] == pytest.approx(10.0)
+
+
+def test_accuracy_class_reflects_sample_rates_and_scope(duplex, lib):
+    a = estimate(duplex, "US", lib)["accuracy"]
+    assert a["class"] == 5 and a["low"] < a["high"]       # all rates are samples
+
+
+def test_scope_gap_suggests_mep_allowance(duplex, lib):
+    est = estimate(duplex, "SA", lib)
+    mep = next(s for s in est["scope"] if s["name"] == "MEP services")
+    assert not mep["present"] and mep["suggest"]["value"] == 25
+    with_allow = estimate(duplex, "SA", lib, {"allowances": [{"name": "MEP services allowance", "kind": "pct", "value": 25}]})
+    assert with_allow["summary"]["allowances"] == pytest.approx(with_allow["summary"]["direct"] * 0.25, rel=1e-6)
+
+
+def test_adjustment_factor(duplex, lib):
+    wall = next(e for e in duplex if "Brick on Block" in e["name"])
+    key = group_key(wall)
+    base = estimate(duplex, "SA", lib)
+    adj = estimate(duplex, "SA", lib, {"adjustments": {key: {"factor": 1.1, "reason": "test"}}})
+    b = sum(l["net_qty"] for l in base["lines"] if l["guid"] == wall["guid"] and l["work_item"] == "MAS-BRK")
+    a = sum(l["net_qty"] for l in adj["lines"] if l["guid"] == wall["guid"] and l["work_item"] == "MAS-BRK")
+    assert a == pytest.approx(b * 1.1, rel=1e-3)

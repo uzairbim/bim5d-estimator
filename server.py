@@ -141,7 +141,9 @@ def project(pid: str):
 def update_project(pid: str, changes: dict = Body(...)):
     _project(pid)
     allowed = {"name", "region", "rebar_mode", "mappings", "overhead_pct", "profit_pct",
-               "contingency_pct", "tax_pct", "duration_months", "start"}
+               "contingency_pct", "tax_pct", "prelims_pct", "escalation_pct", "duration_months",
+               "start", "deduct_overlaps", "min_deduct_m2", "rates_verified", "allowances",
+               "adjustments", "assumptions", "exclusions", "gfa_m2"}
     bad = set(changes) - allowed
     if bad:
         raise HTTPException(400, f"Unknown settings: {', '.join(sorted(bad))}")
@@ -212,6 +214,12 @@ def get_estimate(pid: str, version: Optional[str] = None, region: Optional[str] 
     return est
 
 
+@app.get("/api/projects/{pid}/history")
+def project_history(pid: str):
+    _project(pid)
+    return storage.history(pid)
+
+
 @app.get("/api/projects/{pid}/compare")
 def get_compare(pid: str, a: str, b: str, region: Optional[str] = None):
     p = _project(pid)
@@ -271,6 +279,7 @@ def put_rates(region: str, rows: list = Body(...)):
         n = rates.save(region, rows, lib)
     except ValueError as e:
         raise HTTPException(400, str(e))
+    storage.log("", "rates saved", f"{region}: {n} local rates")
     return {"saved": n}
 
 
@@ -284,6 +293,7 @@ async def import_rates(region: str, file: UploadFile):
         n = rates.import_rows(region, rows, lib)
     except ValueError as e:
         raise HTTPException(400, str(e))
+    storage.log("", "rates imported", f"{region}: {len(rows)} rows from {file.filename}")
     return {"imported": len(rows), "saved": n}
 
 

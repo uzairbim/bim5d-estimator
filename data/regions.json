@@ -1,5 +1,5 @@
 {
-  "_note": "SAMPLE settings. Exchange rates, location factors and benchmarks are rough placeholders - set your own. Base rates are in USD; a region file in rates/ (local currency) overrides them item by item.",
+  "_note": "SAMPLE settings. Exchange rates, location factors and benchmarks are rough placeholders - set your own. Base rates are in USD; a region file in rates/ (local currency) overrides them item by item. prelims_pct is a typical placeholder (8-15% is common); set yours.",
   "SA": {
     "name": "Saudi Arabia",
     "currency": "SAR",
@@ -16,7 +16,10 @@
       "low": 4100,
       "high": 4800,
       "unit": "m2 GFA"
-    }
+    },
+    "prelims_pct": 10,
+    "escalation_pct": 0,
+    "escalation_note": "Tender price inflation forecast for Saudi Arabia in 2026: 4-7% (AESG). Set escalation to the midpoint of the construction period."
   },
   "AE": {
     "name": "United Arab Emirates",
@@ -27,7 +30,9 @@
     "tax_pct": 5,
     "overhead_pct": 10,
     "profit_pct": 10,
-    "contingency_pct": 5
+    "contingency_pct": 5,
+    "prelims_pct": 10,
+    "escalation_pct": 0
   },
   "PK": {
     "name": "Pakistan",
@@ -38,7 +43,9 @@
     "tax_pct": 0,
     "overhead_pct": 10,
     "profit_pct": 10,
-    "contingency_pct": 5
+    "contingency_pct": 5,
+    "prelims_pct": 10,
+    "escalation_pct": 0
   },
   "IN": {
     "name": "India",
@@ -49,7 +56,9 @@
     "tax_pct": 18,
     "overhead_pct": 10,
     "profit_pct": 10,
-    "contingency_pct": 5
+    "contingency_pct": 5,
+    "prelims_pct": 10,
+    "escalation_pct": 0
   },
   "GB": {
     "name": "United Kingdom",
@@ -60,7 +69,9 @@
     "tax_pct": 20,
     "overhead_pct": 12,
     "profit_pct": 8,
-    "contingency_pct": 5
+    "contingency_pct": 5,
+    "prelims_pct": 10,
+    "escalation_pct": 0
   },
   "DE": {
     "name": "Germany",
@@ -71,7 +82,9 @@
     "tax_pct": 19,
     "overhead_pct": 12,
     "profit_pct": 8,
-    "contingency_pct": 5
+    "contingency_pct": 5,
+    "prelims_pct": 10,
+    "escalation_pct": 0
   },
   "US": {
     "name": "United States",
@@ -82,6 +95,8 @@
     "tax_pct": 0,
     "overhead_pct": 10,
     "profit_pct": 10,
-    "contingency_pct": 5
+    "contingency_pct": 5,
+    "prelims_pct": 10,
+    "escalation_pct": 0
   }
 }

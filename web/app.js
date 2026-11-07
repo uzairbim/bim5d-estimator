@@ -69,6 +69,7 @@ function paint() {
   else if (S.mode === "check") legend = `<div class="key"><span class="sw" style="background:#15803d"></span>Priced</div><div class="key"><span class="sw" style="background:#f59e0b"></span>Shape needs review</div><div class="key"><span class="sw" style="background:#dc2626"></span>Not priced</div><div class="key"><span class="sw" style="background:#9aa4b2"></span>Excluded</div>`;
   else if (cmp) legend = `<div class="key"><span class="sw" style="background:#16a34a"></span>Added</div><div class="key"><span class="sw" style="background:#f59e0b"></span>Changed</div><div class="key"><span class="sw" style="background:#dc2626"></span>Removed</div>`;
   $("#legend").innerHTML = legend;
+  $("#showAll").hidden = !S.highlight;
 
   viewer.paint((g) => {
     const el = S.els[g];
@@ -236,17 +237,19 @@ async function refresh() {
   for (const l of est.lines) if (!best[l.guid] || l.amount > best[l.guid]) { best[l.guid] = l.amount; S._mainTrade[l.guid] = l.trade; }
   const unpriced = est.groups.filter((g) => g.recipe === null && g.source === "none").length;
   $("#mapBadge").hidden = !unpriced; $("#mapBadge").textContent = unpriced;
-  renderSummary(); renderBoq(); renderMapping(); renderTime(); renderCompare();
+  renderSteps(); renderSummary(); renderBoq(); renderMapping(); renderChecks(); renderTime(); renderCompare();
   if (S.selected) renderElement(S.selected);
   paint();
 }
 
 async function saveSettings(changes) {
+  toast("Updating the estimate…");
   try {
     await api(`/api/projects/${S.project.id}`, { method: "PATCH", json: changes });
     S.project = await api(`/api/projects/${S.project.id}`);
     if (S.compare) S.compare = null;
     await refresh();
+    toast("Estimate updated.");
   } catch (err) { toast(err.message); }
 }
 
@@ -257,58 +260,168 @@ function bars(obj) {
   return `<div class="bars">${Object.entries(obj).map(([k, v]) => `<div class="bar"><span title="${esc(k)}">${esc(k)}</span><div class="track"><div class="fill" style="width:${(v / max) * 100}%"></div></div><span class="v">${fmt(v)}</span></div>`).join("")}</div>`;
 }
 
+// The six steps an estimator goes through, with their status.
+function steps() {
+  const e = S.est, c = e.checks;
+  const unpriced = c.unclassified.length;
+  const sample = e.accuracy.sample_rate_share;
+  const gaps = e.scope.filter((x) => !x.present && x.suggest && !e.allowances.some((a) => a.name === x.suggest.name)).length;
+  const rec = c.reconciliation;
+  const issues = c.duplicates.length + c.geometry_flagged.length + (rec.share !== null && rec.share < 0.95 ? 1 : 0);
+  return [
+    { n: 1, label: "Model", tab: "summary", ok: true, tip: `${fmt(c.elements)} elements measured` },
+    { n: 2, label: "Map", tab: "mapping", ok: !unpriced, tip: unpriced ? `${unpriced} elements not priced` : "All elements priced" },
+    { n: 3, label: "Rates", tab: "rates", ok: sample < 0.01, tip: sample >= 0.01 ? `${Math.round(sample * 100)}% of cost on sample rates` : "Your rates in use" },
+    { n: 4, label: "Scope", tab: "summary#scope", ok: !gaps, tip: gaps ? `${gaps} missing parts without allowance` : "Scope covered" },
+    { n: 5, label: "Check", tab: "checks", ok: !issues, tip: issues ? "Review overlaps, duplicates and outliers" : "No issues found" },
+    { n: 6, label: "Report", tab: "report", ok: false, tip: "Client report and Excel" },
+  ];
+}
+function renderSteps() {
+  $("#steps").innerHTML = steps().map((s) => `<button class="step ${s.ok ? "done" : ""}" data-step="${s.tab}" title="${esc(s.tip)}"><span class="num">${s.ok ? "✓" : s.n}</span>${s.label}</button>`).join("");
+  $$("#steps [data-step]").forEach((b) => b.addEventListener("click", () => {
+    const t = b.dataset.step;
+    if (t === "rates") return openRates();
+    if (t === "report") return openReport();
+    const [tb, anchor] = t.split("#");
+    tab(tb);
+    if (anchor) $("#" + anchor)?.scrollIntoView({ behavior: "smooth" });
+  }));
+}
+
 function renderSummary() {
   const e = S.est, s = e.summary, c = e.checks, st = S.project.settings, reg = S.lib.regions[e.region];
-  const sample = e.boq.some((b) => String(b.rate_source).startsWith("SAMPLE"));
-  const unpriced = c.unclassified.length;
+  const a = e.accuracy;
+  const row = (label, v, cls = "") => v ? `<tr class="${cls}"><td>${label}</td><td class="n">${fmt(v)}</td></tr>` : "";
   let bench = "";
   if (s.per_m2 && s.benchmark) {
     const b = s.benchmark, inside = s.per_m2 >= b.low && s.per_m2 <= b.high;
-    bench = `<div class="callout ${inside ? "ok" : ""}">Cost per m² floor area: <b>${fmt(s.per_m2)} ${e.currency}</b> on ${fmt(s.gfa)} m².
-      Typical for <i>${esc(b.label)}</i>: ${fmt(b.low)}–${fmt(b.high)}. ${inside ? "Inside the usual range." : s.per_m2 < b.low ? "Lower than usual, often because services, external works or finishes are not modelled yet." : "Higher than usual. Check rates and quantities."}</div>`;
-  } else if (s.per_m2) bench = `<p class="muted">Cost per m² floor area: <b>${fmt(s.per_m2)} ${e.currency}</b> on ${fmt(s.gfa)} m².</p>`;
-  const rb = c.rebar;
-  let rebarNote = "";
-  if (rb.modeled_kg > 0 || rb.mode === "modeled") {
-    rebarNote = `<div class="callout">Rebar: the model contains <b>${fmt(rb.modeled_kg)} kg</b> of modelled bars; ratios give <b>${fmt(rb.ratio_kg)} kg</b>. Now using <b>${rb.mode === "modeled" ? "modelled bars" : "ratios"}</b>.${rb.mode === "modeled" && rb.modeled_kg < rb.ratio_kg * 0.5 ? " The modelled rebar looks incomplete." : ""} Change it in the settings below.</div>`;
+    bench = `<div class="callout ${inside ? "ok" : ""}">Cost per m²: <b>${fmt(s.per_m2)} ${e.currency}</b> on ${fmt(s.gfa)} m² floor area. Typical for <i>${esc(b.label)}</i>: ${fmt(b.low)}–${fmt(b.high)}. ${inside ? "Inside the usual range." : s.per_m2 < b.low ? "Lower than usual: check the scope list below for parts not in the model." : "Higher than usual: check rates and quantities."}</div>`;
   }
+  const rb = c.rebar;
+  const rebarNote = (rb.modeled_kg > 0) ? `<div class="callout">Rebar: modelled bars <b>${fmt(rb.modeled_kg)} kg</b>, ratios give <b>${fmt(rb.ratio_kg)} kg</b>. Using <b>${rb.mode === "modeled" ? "modelled bars" : "ratios"}</b>.${rb.modeled_kg < rb.ratio_kg * 0.5 ? " The modelled rebar looks incomplete." : ""}</div>` : "";
+  const scopeRows = e.scope.map((x) => {
+    const added = x.suggest && e.allowances.some((al) => al.name === x.suggest.name);
+    return `<tr><td>${x.present ? '<span class="ok">✓</span>' : '<span class="bad">✗</span>'} ${esc(x.name)}</td><td class="n">${x.present ? fmt(x.cost) : ""}</td>
+      <td>${!x.present && x.suggest ? (added ? '<span class="tag">allowance added</span>' : `<button class="btn sm" data-allow='${esc(JSON.stringify(x.suggest))}'>Add ${x.suggest.value}% allowance</button>`) : (x.present ? "" : '<span class="muted small">not in model</span>')}</td></tr>`;
+  }).join("");
+  const allowRows = (st.allowances || []).map((al, i) => {
+    const calc = e.allowances[i]?.amount;
+    return `<tr><td><input type="text" data-al="${i}" data-f="name" value="${esc(al.name)}"></td>
+      <td><select data-al="${i}" data-f="kind"><option value="pct" ${al.kind === "pct" ? "selected" : ""}>% of measured</option><option value="lump" ${al.kind === "lump" ? "selected" : ""}>Lump sum</option><option value="per_m2" ${al.kind === "per_m2" ? "selected" : ""}>per m²</option></select></td>
+      <td><input type="number" step="any" data-al="${i}" data-f="value" value="${al.value}"></td><td class="n">${fmt(calc)}</td>
+      <td><button class="btn sm" data-alrm="${i}" title="Remove">×</button></td></tr>`;
+  }).join("");
   $("#tab-summary").innerHTML = `
     <div class="muted">${esc(S.project.name)} · ${esc(S.version.label)} · ${esc(e.region_name)}</div>
     <div class="total">${fmt(s.total)} <small>${e.currency}</small></div>
-    <div class="muted">Total including ${esc(s.tax_name)} ${s.tax_pct}%</div>
-    <div class="kpis">
-      <div class="kpi"><span>Direct cost (measured work)</span><b>${fmt(s.direct)}</b></div>
-      <div class="kpi"><span>Contingency ${s.contingency_pct}% · overhead ${s.overhead_pct}% · profit ${s.profit_pct}%</span><b>${fmt(s.contingency + s.overhead + s.profit)}</b></div>
-      <div class="kpi ${unpriced ? "warn" : ""}"><span>Elements priced</span><b>${fmt(c.priced)} / ${fmt(c.elements)}</b></div>
-      <div class="kpi ${c.geometry_flagged.length ? "warn" : ""}"><span>Shapes to review</span><b>${fmt(c.geometry_flagged.length)}</b></div>
-    </div>
-    ${unpriced ? `<div class="callout">${fmt(unpriced)} elements have no price yet. <a href="#" data-goto="mapping">Open Mapping</a> to choose what they are.</div>` : ""}
+    <div class="acc acc${a.class}"><b>${esc(a.label)}</b> · likely between <b>${fmt(a.low)}</b> and <b>${fmt(a.high)}</b> ${e.currency} (${Math.round(a.low_pct * 100)}% / +${Math.round(a.high_pct * 100)}%)
+      ${a.reasons.length ? `<ul>${a.reasons.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}</div>
+    <h3>Cost build-up (${e.currency})</h3>
+    <table class="build">
+      ${row("Measured work (from the model)", s.direct)}
+      ${row("Allowances (work not modelled)", s.allowances)}
+      ${row(`Preliminaries ${s.prelims_pct}%`, s.prelims)}
+      ${row(`Contingency ${s.contingency_pct}%`, s.contingency)}
+      ${row(`Overhead ${s.overhead_pct}%`, s.overhead)}
+      ${row(`Profit ${s.profit_pct}%`, s.profit)}
+      ${row(`Escalation ${s.escalation_pct}%`, s.escalation)}
+      ${row(`${esc(s.tax_name)} ${s.tax_pct}%`, s.tax)}
+      <tr class="tot"><td>Total</td><td class="n">${fmt(s.total)}</td></tr>
+    </table>
+    ${c.unclassified.length ? `<div class="callout">${fmt(c.unclassified.length)} elements have no price yet. <a href="#" data-goto="mapping">Open Mapping</a>.</div>` : ""}
     ${bench}${rebarNote}
+    <h3 id="scope">Scope check: is the whole building in the model?</h3>
+    <table>${scopeRows}</table>
+    <h3>Allowances for work not in the model</h3>
+    ${allowRows ? `<table class="allow"><thead><tr><th>Item</th><th>Basis</th><th>Value</th><th class="n">Amount</th><th></th></tr></thead><tbody>${allowRows}</tbody></table>` : '<p class="muted small">None yet.</p>'}
+    <button class="btn sm" id="addAllow">+ Add allowance</button>
     <h3>By trade (${e.currency})</h3>${bars(e.by_trade)}
     <h3>Elemental cost plan</h3>
     <div class="seg" id="planSeg" style="display:inline-flex;margin-bottom:6px"><button data-plan="by_nrm1" class="on">NRM1</button><button data-plan="by_uniformat">Uniformat</button><button data-plan="by_level">Level</button></div>
     <div id="planBars">${bars(e.by_nrm1)}</div>
     <h3>Project settings</h3>
     <div class="settings">
+      <label>Preliminaries %<input type="number" step="0.5" min="0" data-set="prelims_pct" value="${st.prelims_pct ?? reg.prelims_pct ?? 10}"></label>
       <label>Contingency %<input type="number" step="0.5" min="0" data-set="contingency_pct" value="${st.contingency_pct ?? reg.contingency_pct}"></label>
       <label>Overhead %<input type="number" step="0.5" min="0" data-set="overhead_pct" value="${st.overhead_pct ?? reg.overhead_pct}"></label>
       <label>Profit %<input type="number" step="0.5" min="0" data-set="profit_pct" value="${st.profit_pct ?? reg.profit_pct}"></label>
+      <label>Escalation %<input type="number" step="0.5" min="0" data-set="escalation_pct" value="${st.escalation_pct ?? reg.escalation_pct ?? 0}" title="${esc(reg.escalation_note || "")}"></label>
       <label>${esc(reg.tax_name)} %<input type="number" step="0.5" min="0" data-set="tax_pct" value="${st.tax_pct ?? reg.tax_pct}"></label>
       <label>Rebar based on<select data-set="rebar_mode"><option value="ratio">Ratios (kg per m³)</option><option value="modeled">Modelled rebar bars</option></select></label>
+      <label>Don't deduct openings up to (m²)<input type="number" step="0.1" min="0" data-set="min_deduct_m2" value="${st.min_deduct_m2 ?? 0.5}"></label>
+      <label>Floor area for cost/m² (blank = from slabs)<input type="number" step="1" min="0" data-set="gfa_m2" value="${st.gfa_m2 ?? ""}" placeholder="${fmt(s.gfa)}"></label>
       <label>Project name<input type="text" data-set="name" value="${esc(S.project.name)}"></label>
+      <label class="check"><input type="checkbox" data-set="deduct_overlaps" ${st.deduct_overlaps !== false ? "checked" : ""}> Deduct overlaps between elements</label>
+      <label class="check"><input type="checkbox" data-set="rates_verified" ${st.rates_verified ? "checked" : ""}> Rates checked against current market prices</label>
     </div>
-    ${sample ? `<p class="note">Rates marked SAMPLE are placeholders. Click <b>Rates</b> at the top to enter your own prices.</p>` : ""}`;
+    <h3>Assumptions</h3><ul class="small">${e.assumptions.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+    <h3>Exclusions</h3>
+    <textarea id="exclusions" rows="6" class="full">${esc(e.exclusions.filter((x) => !x.endsWith("(not in the model)")).join("\n"))}</textarea>
+    <p class="muted small">One per line. Saved when you click outside the box.</p>`;
   $("[data-set=rebar_mode]").value = st.rebar_mode || "ratio";
   $$("[data-set]", $("#tab-summary")).forEach((inp) => inp.addEventListener("change", () => {
     const k = inp.dataset.set;
-    const v = inp.type === "number" ? (inp.value === "" ? null : Number(inp.value)) : inp.value;
+    const v = inp.type === "checkbox" ? inp.checked : inp.type === "number" ? (inp.value === "" ? null : Number(inp.value)) : inp.value;
     saveSettings({ [k]: v });
   }));
   $$("#planSeg button").forEach((b) => b.addEventListener("click", () => {
     $$("#planSeg button").forEach((x) => x.classList.toggle("on", x === b));
     $("#planBars").innerHTML = bars(S.est[b.dataset.plan]);
   }));
-  $$("[data-goto]", $("#tab-summary")).forEach((a) => a.addEventListener("click", (ev) => { ev.preventDefault(); tab(a.dataset.goto); }));
+  $$("[data-goto]", $("#tab-summary")).forEach((x) => x.addEventListener("click", (ev) => { ev.preventDefault(); tab(x.dataset.goto); }));
+  const allows = () => JSON.parse(JSON.stringify(S.project.settings.allowances || []));
+  $$("[data-allow]", $("#tab-summary")).forEach((b) => b.addEventListener("click", () => { const l = allows(); l.push(JSON.parse(b.dataset.allow)); saveSettings({ allowances: l }); }));
+  $("#addAllow").addEventListener("click", () => { const l = allows(); l.push({ name: "New allowance", kind: "lump", value: 0 }); saveSettings({ allowances: l }); });
+  $$("[data-alrm]", $("#tab-summary")).forEach((b) => b.addEventListener("click", () => { const l = allows(); l.splice(Number(b.dataset.alrm), 1); saveSettings({ allowances: l }); }));
+  $$("[data-al]", $("#tab-summary")).forEach((inp) => inp.addEventListener("change", () => {
+    const l = allows(); const i = Number(inp.dataset.al);
+    l[i][inp.dataset.f] = inp.dataset.f === "value" ? Number(inp.value) || 0 : inp.value;
+    saveSettings({ allowances: l });
+  }));
+  $("#exclusions").addEventListener("change", (ev) => saveSettings({ exclusions: ev.target.value.split("\n").map((x) => x.trim()).filter(Boolean) }));
+}
+
+// ---------- checks ----------
+async function renderChecks() {
+  const e = S.est, c = e.checks, rec = c.reconciliation;
+  const name = (g) => esc(S.els[g]?.name || g);
+  const methods = { 1: "rough estimate from bounding box", 3: "taken from the model's own volume" };
+  const est = c.geometry_flagged.map((g) => `<tr class="click" data-g="${g}"><td>${name(g)}<br><span class="muted small">${methods[S.els[g]?.qty.check] || ""}</span></td></tr>`).join("");
+  const overl = [...c.overlaps].sort((x, y) => y.volume - x.volume).slice(0, 150).map((o) => `<tr class="click" data-pair="${o.a},${o.b}"><td>${name(o.a)}<br>${name(o.b)}</td><td class="n">${fmt(o.volume, 3)} m³</td><td class="small">${o.kind === "same type" ? '<span class="tag changed">duplicate?</span>' : ""} from <b>${esc((S.els[o.loser]?.kind || "").replace("Ifc", ""))}</b></td></tr>`).join("");
+  const outl = rec.outliers.map((r) => `<tr class="click" data-g="${r.guid}"><td>${name(r.guid)}</td><td class="n">${fmt(r.measured, 3)}</td><td class="n">${fmt(r.authored, 3)}</td><td class="n ${Math.abs(r.diff_pct) > 20 ? "bad" : ""}">${r.diff_pct > 0 ? "+" : ""}${r.diff_pct}%</td></tr>`).join("");
+  $("#tab-checks").innerHTML = `
+    <p class="muted">A senior estimator never trusts model quantities blindly. These checks show where the model needs a look before the estimate is issued.</p>
+    <h3>1 · Quantities vs the model's own values</h3>
+    ${rec.compared ? `<div class="callout ${rec.share >= 0.95 ? "ok" : ""}"><b>${rec.within_5pct} of ${rec.compared}</b> element volumes (${Math.round(rec.share * 100)}%) agree within 5% with the volumes Revit calculated.</div>
+      ${outl ? `<table><thead><tr><th>Element</th><th class="n">Measured m³</th><th class="n">Revit m³</th><th class="n">Diff</th></tr></thead><tbody>${outl}</tbody></table>` : ""}` : '<p class="muted">The model has no volumes of its own to compare with.</p>'}
+    <h3>2 · Overlaps (${c.overlaps.length}, ${fmt(c.overlap_m3, 2)} m³)</h3>
+    <p class="muted small">${e.settings.deduct_overlaps ? "Shared volume is deducted once, from the element that normally stops at the other (column under slab, beam below slab, wall between frame). Steel keeps its weight." : "Overlaps are NOT being deducted (see settings)."} ${c.duplicates.length ? `<b class="bad">${c.duplicates.length} overlaps are between elements of the same type, often a duplicated element.</b>` : ""}</p>
+    ${overl ? `<table><tbody>${overl}</tbody></table>` : '<p class="muted">No overlaps found.</p>'}
+    <h3>3 · Shapes that could not be measured exactly (${c.geometry_flagged.length})</h3>
+    ${est ? `<table><tbody>${est}</tbody></table>` : '<p class="muted">None.</p>'}
+    <h3>4 · Not priced (${c.unclassified.length}) and excluded (${c.excluded.length})</h3>
+    <p class="muted small">Set these in <a href="#" data-goto="mapping">Mapping</a>.</p>
+    <h3>5 · Change history</h3><div id="historyBox" class="muted small">Loading…</div>`;
+  $$("tr[data-g]", $("#tab-checks")).forEach((tr) => tr.addEventListener("click", () => { viewer.fit([tr.dataset.g]); select(tr.dataset.g, false); }));
+  $$("tr[data-pair]", $("#tab-checks")).forEach((tr) => tr.addEventListener("click", () => { const g = tr.dataset.pair.split(","); S.highlight = new Set(g); viewer.fit(g); paint(); }));
+  $$("[data-goto]", $("#tab-checks")).forEach((x) => x.addEventListener("click", (ev) => { ev.preventDefault(); tab(x.dataset.goto); }));
+  try {
+    const h = await api(`/api/projects/${S.project.id}/history`);
+    $("#historyBox").innerHTML = h.length ? `<table>${h.slice(0, 60).map((r) => `<tr><td class="small">${new Date(r.time * 1000).toLocaleString()}</td><td class="small"><b>${esc(r.what)}</b> ${esc(r.detail)}</td></tr>`).join("")}</table>` : "No changes yet.";
+  } catch { $("#historyBox").textContent = ""; }
+}
+
+function openReport() {
+  // Picture of the whole building coloured by cost, then put the view back.
+  const keep = { pos: viewer.camera.position.clone(), target: viewer.controls.target.clone(),
+                 mode: S.mode, hl: S.highlight, sel: S.selected, time: S.time, level: S.level };
+  S.mode = "cost"; S.highlight = null; S.selected = null; S.time = null; S.level = "";
+  viewer.fit(); paint(); viewer.controls.update(); viewer.renderer.render(viewer.scene, viewer.camera);
+  try { localStorage.setItem("bim5d.snapshot", viewer.renderer.domElement.toDataURL("image/jpeg", 0.85)); } catch { /* ignore */ }
+  Object.assign(S, { mode: keep.mode, highlight: keep.hl, selected: keep.sel, time: keep.time, level: keep.level });
+  viewer.camera.position.copy(keep.pos); viewer.controls.target.copy(keep.target); paint();
+  window.open(`/report.html#p=${S.project.id}&v=${S.version.id}`, "_blank");
 }
 
 // ---------- BOQ ----------
@@ -428,6 +541,10 @@ function renderElement(guid) {
     <div class="settings" style="grid-template-columns:1fr">
       <label>Priced as (applies to all ${g ? g.count : ""} elements of this type)<select id="elMap">${recipeOptions((S.project.settings.mappings || {})[el.group] || pe.recipe || "")}</select></label>
     </div>
+    <div class="settings" style="grid-template-columns:110px 1fr">
+      <label>Adjust qty ×<input type="number" step="0.01" min="0" id="adjF" value="${(S.project.settings.adjustments || {})[el.group]?.factor ?? 1}"></label>
+      <label>Reason (required for an adjustment)<input type="text" id="adjR" value="${esc((S.project.settings.adjustments || {})[el.group]?.reason || "")}" placeholder="e.g. slab thickened per structural drawing S-201"></label>
+    </div>
     <h3>Cost breakdown</h3>
     <table><thead><tr><th>Work item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead><tbody>
     ${lines.map((l) => `<tr><td>${esc(l.description)}<br><span class="muted small" title="Quantity formula">= ${esc(l.formula)}${l.waste_pct ? ` + ${l.waste_pct}% waste` : ""}</span></td><td class="n">${fmt(l.qty, 2)} ${l.unit}</td><td class="n">${fmt(l.rate, 2)}</td><td class="n">${fmt(l.amount)}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">${pe.source === "excluded" ? "Excluded from the estimate." : "Not priced. Choose what it is above."}</td></tr>`}
@@ -435,13 +552,23 @@ function renderElement(guid) {
     <h3>Measured from the 3D shape</h3>
     <table>${[["Volume", q.volume, "m³", "volume"], ["Wall face (one side)", q.side, "m²", "side"], ["Plan area", q.footprint, "m²", "footprint"], ["Length", q.length, "m", "length"], ["Height", q.height, "m", "height"], ["Section size", q.section, "m", "section"]]
       .map(([k, v, u, n]) => `<tr><td>${k} <span class="muted small">${n}</span></td><td class="n">${fmt(v, 3)} ${u}</td></tr>`).join("")}</table>
-    ${q.check ? '<p class="note">The 3D shape is not a closed solid, so its volume is estimated. Check this element in Revit.</p>' : ""}
+    ${el.authored?.volume ? `<p class="muted small">Revit's own volume: <b>${fmt(el.authored.volume, 3)} m³</b> (${q.volume ? (q.volume / el.authored.volume - 1 > 0 ? "+" : "") + fmt((q.volume / el.authored.volume - 1) * 100, 1) + "% difference" : ""}).</p>` : ""}
+    ${pe.overlap_m3 ? `<p class="callout">${fmt(pe.overlap_m3, 3)} m³ deducted because it overlaps other elements that keep that volume.</p>` : ""}
+    ${pe.openings_kept_m2 ? `<p class="muted small">${fmt(pe.openings_kept_m2, 2)} m² of small openings not deducted (measurement rule).</p>` : ""}
+    ${q.check === 2 ? '<p class="note">Exported as a surface, not a solid: volume = face × material layer thickness.</p>' : q.check === 3 ? "<p class=\"note\">Shape could not be measured; Revit's own volume is used.</p>" : q.check === 1 ? '<p class="note">Shape could not be measured; volume is a rough estimate. Check this element in Revit.</p>' : ""}
     ${t ? `<p class="muted">Built in weeks ${fmt(t[0], 1)}–${fmt(t[1], 1)} of the 4D sequence.</p>` : ""}
     <h3>Materials</h3><p>${el.materials.map((m) => `<span class="tag">${esc(m)}</span>`).join(" ") || '<span class="muted">none in model</span>'}</p>
     ${(el.layers || []).length ? `<table>${el.layers.map((l) => `<tr><td>${esc(l.name)}</td><td class="n">${fmt(l.t * 1000)} mm</td></tr>`).join("")}</table>` : ""}
     ${el.classification?.length ? `<h3>Classification</h3><p>${el.classification.map((c) => `<span class="tag">${esc(c)}</span>`).join(" ")}</p>` : ""}
     ${Object.keys(el.props || {}).length ? `<h3>Properties</h3><table>${Object.entries(el.props).map(([k, v]) => `<tr><td>${esc(k.replaceAll("_", " "))}</td><td>${esc(v)}</td></tr>`).join("")}</table>` : ""}`;
   $("#elMap").addEventListener("change", (ev) => saveSettings({ mappings: { [el.group]: ev.target.value || null } }));
+  const saveAdj = () => {
+    const f = Number($("#adjF").value) || 1, r = $("#adjR").value.trim();
+    if (f !== 1 && !r) { toast("Write a reason for the adjustment first."); $("#adjR").focus(); return; }
+    saveSettings({ adjustments: { [el.group]: f === 1 ? null : { factor: f, reason: r } } });
+  };
+  $("#adjF").addEventListener("change", saveAdj);
+  $("#adjR").addEventListener("change", () => { if (Number($("#adjF").value) !== 1) saveAdj(); });
 }
 
 // ---------- 4D ----------
@@ -596,6 +723,7 @@ function drawRates() {
   }));
 }
 $("#ratesBtn").addEventListener("click", openRates);
+$("#reportBtn").addEventListener("click", () => openReport());
 $("#rateSearch").addEventListener("input", drawRates);
 $("#rateClose").addEventListener("click", () => {
   if (S.ratesDirty && !confirm("Close without saving your rate changes?")) return;
@@ -637,6 +765,7 @@ function setMode(m) {
 }
 $$("#colorMode button").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
 $("#levelSel").addEventListener("change", (e) => { S.level = e.target.value; paint(); });
+$("#showAll").addEventListener("click", () => { S.highlight = null; $$("tr.sel").forEach((x) => x.classList.remove("sel")); viewer.fit(); paint(); });
 $("#fitBtn").addEventListener("click", () => viewer.fit(S.highlight ? [...S.highlight] : null));
 $("#export").addEventListener("click", () => { location.href = `/api/projects/${S.project.id}/export.xlsx?version=${S.version.id}`; });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") { S.highlight = null; S.selected = null; $$("tr.sel").forEach((x) => x.classList.remove("sel")); paint(); } });

@@ -1,6 +1,7 @@
 priority,ifc_class,keywords,recipe
 10,IfcFooting,,RC_FOOTING
 10,IfcPile,,RC_PILE
+3,IfcSlab|IfcCovering,^[^:]*:[^:]*(insulation|dämmung|isolation),INSULATION_LAYER
 5,IfcSlab,\broof\b.*(wood|joist|timber)|(wood|joist|timber).*\broof\b,ROOF_LIGHT
 6,IfcSlab,\broof\b|\bROOF\b,ROOF_RC
 7,IfcSlab,finish floor|ceramic|tile|wood - flooring|carpet|vinyl|fliese|parkett|teppich|dielen|\bfb [0-9],FLOOR_FINISH

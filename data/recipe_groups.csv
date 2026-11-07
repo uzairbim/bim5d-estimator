@@ -48,3 +48,4 @@ LIGHT,Light fitting,5.8 Electrical installations,D50 Electrical,7 Fit-out
 OUTLET,Socket / switch,5.8 Electrical installations,D50 Electrical,7 Fit-out
 ELEC_DEVICE,Electrical panel / device,5.8 Electrical installations,D50 Electrical,5 Services
 GENERIC_ITEM,Other item (allowance),4 Fittings furnishings and equipment,E10 Equipment,7 Fit-out
+INSULATION_LAYER,Insulation layer (modelled as floor),2.2 Upper floors,B10 Superstructure,2 Frame & floors

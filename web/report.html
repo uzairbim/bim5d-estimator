@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cost Estimate Report</title>
+<style>
+  :root { --ink: #1d2433; --muted: #5b6475; --line: #d9dde5; --accent: #1f4e8c; --soft: #f4f6f9; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9ecf1; color: var(--ink); font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .bar { position: sticky; top: 0; background: #1d2433; color: #fff; padding: 8px 16px; display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; z-index: 2; }
+  .bar button { background: #fff; color: #1d2433; border: 0; border-radius: 6px; padding: 7px 14px; font: inherit; font-weight: 600; cursor: pointer; }
+  .page { background: #fff; width: min(210mm, 100%); margin: 16px auto; padding: 16mm 15mm; box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+  h1 { font-size: 22px; margin: 0; color: var(--accent); }
+  h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .05em; color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 4px; margin: 22px 0 10px; }
+  .meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 4px 16px; margin: 12px 0; color: var(--muted); }
+  .meta b { color: var(--ink); }
+  [contenteditable] { border-bottom: 1px dashed var(--line); outline: none; min-width: 40px; display: inline-block; }
+  .headline { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 10px; margin: 10px 0; }
+  .box { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+  .box .k { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  .box .v { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .box .s { color: var(--muted); font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { padding: 5px 6px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th { background: var(--soft); font-weight: 600; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.tot td { font-weight: 700; border-top: 2px solid var(--ink); }
+  tr.sub td { font-weight: 600; background: var(--soft); }
+  .snap { width: 100%; max-height: 90mm; object-fit: contain; border: 1px solid var(--line); border-radius: 6px; background: #eef1f5; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  ul { margin: 4px 0; padding-left: 18px; }
+  li { margin: 2px 0; }
+  .warn { color: #b45309; }
+  .foot { color: var(--muted); font-size: 11px; margin-top: 20px; border-top: 1px solid var(--line); padding-top: 8px; }
+  @media (max-width: 700px) { .headline, .two { grid-template-columns: 1fr; } .page { padding: 16px; } }
+  @media print {
+    body { background: #fff; }
+    .bar { display: none; }
+    .page { box-shadow: none; margin: 0; width: auto; padding: 0; }
+    h2 { break-after: avoid; }
+    table, .box { break-inside: avoid; }
+    [contenteditable] { border: 0; }
+    @page { size: A4; margin: 14mm 13mm; }
+  }
+</style>
+</head>
+<body>
+<div class="bar"><span>Cost estimate report · click the dashed fields to edit them</span><button onclick="window.print()">Print / Save as PDF</button></div>
+<div class="page" id="page">Loading…</div>
+<script>
+const fmt = (n, d = 0) => (n === null || n === undefined) ? "–" : Number(n).toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const h = new URLSearchParams(location.hash.slice(1));
+const pid = h.get("p"), vid = h.get("v");
+
+(async () => {
+  const [p, e] = await Promise.all([
+    fetch(`/api/projects/${pid}`).then((r) => r.json()),
+    fetch(`/api/projects/${pid}/estimate?version=${vid}`).then((r) => r.json()),
+  ]);
+  const v = p.versions.find((x) => x.id === vid) || p.versions[p.versions.length - 1];
+  const s = e.summary, a = e.accuracy, c = e.checks, cur = e.currency, rec = c.reconciliation;
+  let snap = null;
+  try { snap = localStorage.getItem("bim5d.snapshot"); } catch { /* ignore */ }
+  document.title = `${p.name} - Cost Estimate`;
+  const pct = (x, tot) => tot ? (x / tot * 100).toFixed(1) + "%" : "";
+  const perm2 = (x) => s.gfa ? fmt(x / s.gfa) : "–";
+  const nrm = Object.entries(e.by_nrm1);
+  const build = [
+    ["Measured work (quantified from the BIM model)", s.direct],
+    ["Allowances for work not in the model", s.allowances],
+    [`Preliminaries (${s.prelims_pct}%)`, s.prelims],
+    [`Contingency (${s.contingency_pct}%)`, s.contingency],
+    [`Contractor's overhead (${s.overhead_pct}%)`, s.overhead],
+    [`Contractor's profit (${s.profit_pct}%)`, s.profit],
+    [`Escalation (${s.escalation_pct}%)`, s.escalation],
+    [`${s.tax_name} (${s.tax_pct}%)`, s.tax],
+  ].filter((r) => r[1]);
+  document.getElementById("page").innerHTML = `
+    <h1>Cost Estimate Report</h1>
+    <div class="meta">
+      <div>Project<br><b contenteditable>${esc(p.name)}</b></div>
+      <div>Client<br><b contenteditable>Client name</b></div>
+      <div>Prepared by<br><b contenteditable>Estimator name</b></div>
+      <div>Date<br><b contenteditable>${new Date().toLocaleDateString()}</b></div>
+      <div>Model revision<br><b>${esc(v.label)} · ${esc(v.file_name || "")}</b></div>
+      <div>Region / currency<br><b>${esc(e.region_name)} · ${cur}</b></div>
+    </div>
+
+    <h2>1. Summary</h2>
+    <div class="headline">
+      <div class="box"><div class="k">Estimated total cost</div><div class="v">${fmt(s.total)} ${cur}</div><div class="s">including ${esc(s.tax_name)} ${s.tax_pct}%</div></div>
+      <div class="box"><div class="k">Expected range</div><div class="v" style="font-size:15px">${fmt(a.low)} – ${fmt(a.high)}</div><div class="s">${esc(a.label)} (${Math.round(a.low_pct * 100)}% / +${Math.round(a.high_pct * 100)}%)</div></div>
+      <div class="box"><div class="k">Cost per m² GFA</div><div class="v">${s.per_m2 ? fmt(s.per_m2) : "–"}</div><div class="s">${fmt(s.gfa)} m² gross floor area</div></div>
+    </div>
+    ${snap ? `<img class="snap" src="${snap}" alt="3D model coloured by cost">` : ""}
+    ${a.reasons.length ? `<p><b>To narrow the range:</b></p><ul>${a.reasons.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}
+
+    <h2>2. Cost build-up</h2>
+    <table><thead><tr><th>Item</th><th class="n">${cur}</th><th class="n">% of total</th></tr></thead><tbody>
+      ${build.map(([k, x]) => `<tr><td>${esc(k)}</td><td class="n">${fmt(x)}</td><td class="n">${pct(x, s.total)}</td></tr>`).join("")}
+      <tr class="tot"><td>Total</td><td class="n">${fmt(s.total)}</td><td class="n">100%</td></tr>
+    </tbody></table>
+
+    <h2>3. Elemental summary (RICS NRM1)</h2>
+    <table><thead><tr><th>Element</th><th class="n">${cur}</th><th class="n">% of measured</th><th class="n">${cur}/m² GFA</th></tr></thead><tbody>
+      ${nrm.map(([k, x]) => `<tr><td>${esc(k)}</td><td class="n">${fmt(x)}</td><td class="n">${pct(x, s.direct)}</td><td class="n">${perm2(x)}</td></tr>`).join("")}
+      <tr class="sub"><td>Measured work</td><td class="n">${fmt(s.direct)}</td><td class="n">100%</td><td class="n">${perm2(s.direct)}</td></tr>
+    </tbody></table>
+
+    <div class="two">
+      <div><h2>4. By trade</h2><table><tbody>${Object.entries(e.by_trade).map(([k, x]) => `<tr><td>${esc(k)}</td><td class="n">${fmt(x)}</td></tr>`).join("")}</tbody></table></div>
+      <div><h2>5. By level</h2><table><tbody>${Object.entries(e.by_level).map(([k, x]) => `<tr><td>${esc(k)}</td><td class="n">${fmt(x)}</td></tr>`).join("")}</tbody></table></div>
+    </div>
+
+    <h2>6. Scope and allowances</h2>
+    <table><thead><tr><th>Part of the building</th><th>In the model</th><th class="n">${cur}</th></tr></thead><tbody>
+      ${e.scope.map((x) => `<tr><td>${esc(x.name)}</td><td>${x.present ? "Yes" : '<span class="warn">No</span>'}</td><td class="n">${x.present ? fmt(x.cost) : ""}</td></tr>`).join("")}
+    </tbody></table>
+    ${e.allowances.length ? `<p><b>Allowances included</b></p><table><tbody>${e.allowances.map((x) => `<tr><td>${esc(x.name)}</td><td>${x.kind === "pct" ? x.value + "% of measured work" : x.kind === "per_m2" ? fmt(x.value) + " " + cur + "/m²" : "lump sum"}</td><td class="n">${fmt(x.amount)}</td></tr>`).join("")}</tbody></table>` : ""}
+
+    <h2>7. Basis of estimate and assumptions</h2>
+    <ul>${e.assumptions.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+
+    <h2>8. Exclusions</h2>
+    <ul>${e.exclusions.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+
+    <h2>9. Quality checks on the model</h2>
+    <table><tbody>
+      <tr><td>Elements in the model / priced</td><td class="n">${fmt(c.elements)} / ${fmt(c.priced)}</td></tr>
+      <tr><td>Not priced (needs mapping)</td><td class="n">${fmt(c.unclassified.length)}</td></tr>
+      <tr><td>Excluded (site context, decor)</td><td class="n">${fmt(c.excluded.length)}</td></tr>
+      <tr><td>Volumes agreeing within 5% with Revit's own values</td><td class="n">${rec.compared ? `${rec.within_5pct} of ${rec.compared} (${Math.round(rec.share * 100)}%)` : "n/a"}</td></tr>
+      <tr><td>Overlaps found and deducted once</td><td class="n">${c.overlaps.length} (${fmt(c.overlap_m3, 2)} m³)</td></tr>
+      <tr><td>Possible duplicate elements</td><td class="n">${c.duplicates.length}</td></tr>
+      <tr><td>Shapes not measured exactly</td><td class="n">${c.geometry_flagged.length}</td></tr>
+      <tr><td>Reinforcement basis</td><td class="n">${c.rebar.mode === "modeled" ? "modelled bars" : "ratio allowance"}</td></tr>
+    </tbody></table>
+    <p class="foot">Quantities measured automatically from the IFC model (each element's 3D shape, in metres) and priced with the rate library shown in the detailed workbook. The accuracy range follows the AACE 18R-97 estimate classes as guidance. Full detail per element, with quantity formulas and rate sources, is in the Excel workbook.</p>`;
+})().catch((err) => { document.getElementById("page").textContent = "Could not load the report: " + err.message; });
+</script>
+</body>
+</html>

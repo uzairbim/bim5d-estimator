@@ -20,6 +20,7 @@
     <select id="versionSel" title="Model revision"></select>
     <select id="region" title="Region and currency"></select>
     <button id="ratesBtn" class="btn">Rates</button>
+    <button id="reportBtn" class="btn">Client report</button>
     <button id="export" class="btn primary">Export Excel</button>
   </div>
 </header>
@@ -65,16 +66,19 @@
       </div>
       <select id="levelSel" title="Show one level"><option value="">All levels</option></select>
       <button id="fitBtn" class="btn sm" title="Zoom to fit">Fit</button>
+      <button id="showAll" class="btn sm primary" hidden>Show all</button>
     </div>
     <div class="legend" id="legend"></div>
     <div id="busy" class="busy" hidden><div class="spin"></div><span id="busyText">Reading model…</span><div class="bar-outer"><div id="busyBar" class="bar-inner"></div></div></div>
   </section>
 
   <aside class="panel">
+    <div class="steps" id="steps"></div>
     <nav class="tabs">
       <button data-tab="summary" class="on">Summary</button>
       <button data-tab="boq">BOQ</button>
       <button data-tab="mapping">Mapping <span id="mapBadge" class="badge" hidden></span></button>
+      <button data-tab="checks">Checks</button>
       <button data-tab="element">Element</button>
       <button data-tab="time">4D</button>
       <button data-tab="compare">Compare</button>
@@ -82,6 +86,7 @@
     <div id="tab-summary" class="tab on"></div>
     <div id="tab-boq" class="tab"></div>
     <div id="tab-mapping" class="tab"></div>
+    <div id="tab-checks" class="tab"></div>
     <div id="tab-element" class="tab"><p class="muted">Click an element in the 3D view.</p></div>
     <div id="tab-time" class="tab"></div>
     <div id="tab-compare" class="tab"></div>

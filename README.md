@@ -26,7 +26,11 @@ set up as the default region.
 | **4D**: automatic construction sequence (substructure → frame floor by floor → roof → envelope → services → finishes), 3D playback, S-curve cash flow. |
 | **Revision comparison**: upload a new export, see added / removed / changed elements and the cost difference by trade. |
 | **Rebar**: from ratios or from modelled bars, with a check showing both. |
-| **Transparency**: every cost line shows its formula, waste and rate source. Model checks flag unpriced elements and broken shapes. |
+| **Accuracy checks like a senior estimator**: exact 3D overlap deduction (no double counting), NRM2 opening rule, reconciliation with Revit's own volumes (98–100% within 5% on the samples), duplicate detection, repair of badly exported shapes. |
+| **Scope and allowances**: shows which parts of the building are missing from the model and adds suggested allowances; preliminaries, contingency, OH&P, escalation, VAT. |
+| **Accuracy class and range** (AACE 18R-97 guidance) with the reasons and what to fix to narrow it. |
+| **Client report** (print / PDF) with assumptions and exclusions; **audit trail** of every change; quantity adjustments only with a written reason. |
+| **Transparency**: every cost line shows its formula, waste and rate source. |
 | **Excel export**: Summary, NRM1, Uniformat, BOQ, element costs, mapping, programme, cash flow with S-curve chart, model checks. |
 
 ## Run it
@@ -70,6 +74,7 @@ Revit ─IFC─▶ extract.py ─▶ estimate.py ──────────�
 | `engine/storage.py` | Projects and revisions on disk (SQLite + compressed files), background processing. |
 | `engine/schedule.py` | Automatic 4D sequence and monthly cash flow. |
 | `engine/compare.py` | Revision comparison by IFC GlobalId. |
+| `engine/overlaps.py` | Exact 3D overlap volumes between solid elements (manifold3d). |
 | `engine/rates.py` | Rate table, editing, Excel/CSV import. |
 | `engine/ai.py` | Optional AI suggestions (Claude) for element types no rule matches. |
 | `engine/export.py` | Excel workbook. |

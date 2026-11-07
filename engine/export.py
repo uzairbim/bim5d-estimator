@@ -60,11 +60,14 @@ def to_xlsx(title, est, sched=None):
     ws.append(["Rates marked SAMPLE are placeholders - replace them with your own before use."])
     ws["A3"].font = Font(italic=True, color="AA0000")
     ws.append([])
-    rows = [("Direct cost (measured work)", s["direct"]),
-            (f"Contingency ({s['contingency_pct']}%)", s["contingency"]),
-            (f"Overhead ({s['overhead_pct']}%)", s["overhead"]),
-            (f"Profit ({s['profit_pct']}%)", s["profit"]),
-            (f"{s['tax_name']} ({s['tax_pct']}%)", s["tax"]),
+    rows = [("Measured work (from the model)", s["direct"]),
+            ("Allowances (work not modelled)", s["allowances"]),
+            (f"Preliminaries ({s['prelims_pct']:g}%)", s["prelims"]),
+            (f"Contingency ({s['contingency_pct']:g}%)", s["contingency"]),
+            (f"Overhead ({s['overhead_pct']:g}%)", s["overhead"]),
+            (f"Profit ({s['profit_pct']:g}%)", s["profit"]),
+            (f"Escalation ({s['escalation_pct']:g}%)", s["escalation"]),
+            (f"{s['tax_name']} ({s['tax_pct']:g}%)", s["tax"]),
             ("TOTAL", s["total"])]
     for label, val in rows:
         ws.append([label, val])
@@ -80,6 +83,13 @@ def to_xlsx(title, est, sched=None):
     b = s.get("benchmark")
     if b:
         ws.append([f"Benchmark: {b['label']}", f"{b['low']:,} - {b['high']:,} {cur}/{b['unit']}"])
+    a = est.get("accuracy")
+    if a:
+        ws.append([])
+        ws.append([f"Accuracy: {a['label']}", f"{a['low']:,.0f} - {a['high']:,.0f} {cur}  ({a['low_pct']:+.0%} / {a['high_pct']:+.0%})"])
+        ws.cell(ws.max_row, 1).font = BOLD
+        for r in a["reasons"]:
+            ws.append(["", r])
     c = est["checks"]
     ws.append([])
     ws.append(["Elements priced", f"{c['priced']} of {c['elements']}"])
@@ -145,6 +155,30 @@ def to_xlsx(title, est, sched=None):
         chart.width, chart.height = 18, 9
         cf.add_chart(chart, "E2")
 
+    notes = [["Assumption", x] for x in est.get("assumptions", [])] + \
+            [["Exclusion", x] for x in est.get("exclusions", [])]
+    _sheet(wb, "Assumptions", ["Type", "Text"], notes, widths=[14, 110])
+    if est.get("allowances"):
+        _sheet(wb, "Allowances", ["Allowance", "Basis", "Value", f"Amount ({cur})", "Note"],
+               [[x.get("name"), x.get("kind"), x.get("value"), x["amount"], x.get("note", "")]
+                for x in est["allowances"]], money_cols=(f"Amount ({cur})",), widths=[40, 10, 10, 16, 50])
+    _sheet(wb, "Scope check", ["Part of the building", "In the model", f"Cost ({cur})", "Suggested allowance"],
+           [[x["name"], "yes" if x["present"] else "NO", x["cost"],
+             (f"{x['suggest']['name']} {x['suggest']['value']}%" if x.get("suggest") else "")]
+            for x in est.get("scope", [])], money_cols=(f"Cost ({cur})",), widths=[30, 12, 16, 46])
+    rec = c.get("reconciliation") or {}
+    if rec.get("compared"):
+        _sheet(wb, "Reconciliation", ["GlobalId", "Measured m³", "Model's own m³", "Difference %"],
+               [[r["guid"], r["measured"], r["authored"], r["diff_pct"]] for r in rec["outliers"]],
+               widths=[26, 14, 16, 14])
+        wsr = wb["Reconciliation"]
+        wsr.insert_rows(1, 2)
+        wsr["A1"] = (f"{rec['within_5pct']} of {rec['compared']} element volumes agree within 5% with the "
+                     f"model's own values. Elements outside 5% are listed below.")
+    if c.get("overlaps"):
+        _sheet(wb, "Overlaps", ["Element A", "Element B", "Overlap m³", "Deducted from", "Type"],
+               [[o["a"], o["b"], o["volume"], o["loser"], o["kind"]] for o in c["overlaps"]],
+               widths=[26, 26, 12, 26, 12])
     _sheet(wb, "Model checks", ["Check", "Count", "GlobalIds"],
            [["Elements read", c["elements"], ""],
             ["Elements priced", c["priced"], ""],

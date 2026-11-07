@@ -151,40 +151,143 @@ def check_formula(text):
 # ---- the estimate --------------------------------------------------------------
 FLOOR_RECIPES = {"RC_SLAB", "SLAB_ON_GRADE", "TIMBER_FLOOR"}
 
+# Who keeps the shared volume when two elements overlap (lower number keeps it).
+# Follows normal measurement practice: slabs measured through, columns stop at the
+# slab soffit, beams measured below the slab, walls between frame members.
+# Steel always keeps its weight; the concrete around it is reduced instead.
+OVERLAP_PRIORITY = {
+    "STEEL_MEMBER": -1, "STEEL_PLATE": -1,
+    "RC_PILE": 0, "RC_FOOTING": 0,
+    "SLAB_ON_GRADE": 1, "RC_SLAB": 1, "ROOF_RC": 1, "TIMBER_FLOOR": 1, "ROOF_LIGHT": 1,
+    "RC_COLUMN": 2, "RC_BEAM": 3, "RC_WALL": 4, "STAIR_RC": 4,
+    "CAVITY_WALL": 5, "BLOCK_WALL": 5, "BRICK_WALL": 5, "DRYWALL": 6,
+}
+
+# AACE 18R-97 style classes used to express the expected accuracy range.
+ACCURACY = {
+    5: ("Class 5 - concept", -0.50, 1.00),
+    4: ("Class 4 - feasibility", -0.30, 0.50),
+    3: ("Class 3 - budget", -0.20, 0.30),
+    2: ("Class 2 - control / tender check", -0.15, 0.20),
+}
+
+DEFAULT_EXCLUSIONS = [
+    "Land, legal and authority fees",
+    "Design and supervision fees",
+    "Loose furniture and equipment unless modelled",
+    "Utility connections and off-site infrastructure",
+    "Client contingency and finance costs",
+]
+
+# What a complete building normally contains, and what to suggest when it is missing.
+SCOPE = [
+    ("Substructure", ("1 Substructure",), "Foundations allowance", 8),
+    ("Frame and upper floors", ("2.1 Frame", "2.2 Upper floors"), None, None),
+    ("Roof", ("2.3 Roof",), None, None),
+    ("External walls / envelope", ("2.5 External walls", "2.6 Windows and external doors"), None, None),
+    ("Internal walls and doors", ("2.7 Internal walls and partitions", "2.8 Internal doors"), None, None),
+    ("Internal finishes", ("3.1 Wall finishes", "3.2 Floor finishes", "3.3 Ceiling finishes"),
+     "Internal finishes allowance", 12),
+    ("MEP services", ("5.",), "MEP services allowance (not modelled)", 25),
+    ("External works", ("8",), "External works allowance", 5),
+]
+
+
+def _deductions(elements, recipes, deduct):
+    """Overlap volume each element gives up, and the overlap records."""
+    give = defaultdict(float)
+    records, seen = [], set()
+    if not deduct:
+        return give, records
+    for e in elements:
+        for other, vol in e.get("overlaps") or []:
+            pair = tuple(sorted((e["guid"], other)))
+            if pair in seen:
+                continue
+            seen.add(pair)
+            ra, rb = recipes.get(pair[0]), recipes.get(pair[1])
+            pa, pb = OVERLAP_PRIORITY.get(ra), OVERLAP_PRIORITY.get(rb)
+            if pa is None or pb is None:
+                continue
+            if pa == pb:
+                loser, kind = pair[1], "same type" if ra == rb else "overlap"
+            else:
+                loser, kind = (pair[1] if pa < pb else pair[0]), "overlap"
+            give[loser] += vol
+            records.append({"a": pair[0], "b": pair[1], "volume": vol, "loser": loser, "kind": kind})
+    return give, records
+
+
+def _env(el, give, min_open):
+    """Quantities used by the formulas, after overlap and opening rules."""
+    q = dict(el["qty"])
+    d = give.get(el["guid"], 0.0)
+    if d > 0 and q.get("volume", 0) > 0:
+        d = min(d, q["volume"] * 0.95)
+        f = (q["volume"] - d) / q["volume"]
+        q["volume_gross"] = q["volume"]
+        for k in ("volume", "side", "area", "surface"):
+            if k in q:
+                q[k] = q[k] * f
+        q["overlap"] = d
+    small = sum(a for a in el.get("openings") or [] if a <= min_open)
+    q["openings_small"] = small
+    q["side_m"] = q.get("side", 0.0) + small          # face measured to the rule
+    q["footprint_m"] = q.get("footprint", 0.0) + small
+    return q
+
 
 def estimate(elements, region, lib=None, settings=None):
     lib = lib or Library()
     settings = settings or {}
     reg = dict(lib.regions[region])
-    for k in ("overhead_pct", "profit_pct", "contingency_pct", "tax_pct"):
+    for k in ("overhead_pct", "profit_pct", "contingency_pct", "tax_pct", "prelims_pct", "escalation_pct"):
         if settings.get(k) is not None:
             reg[k] = float(settings[k])
+    reg.setdefault("prelims_pct", 10)
+    reg.setdefault("escalation_pct", 0)
     mappings = settings.get("mappings") or {}
     rebar_mode = settings.get("rebar_mode") or "ratio"
+    deduct = settings.get("deduct_overlaps", True) is not False
+    min_open = float(settings.get("min_deduct_m2") if settings.get("min_deduct_m2") is not None else 0.5)
+    adjust = settings.get("adjustments") or {}
+
+    # classify first (overlap rules depend on how each element is priced)
+    cls = {e["guid"]: lib.classify(e, mappings) for e in elements}
+    give, overlap_records = _deductions(elements, {g: r for g, (r, _) in cls.items()}, deduct)
 
     lines, per_element, groups = [], {}, {}
     unclassified, flagged, excluded = [], [], []
     modeled_rebar_kg = ratio_rebar_kg = 0.0
+    recon = []
 
     for el in elements:
-        recipe, source = lib.classify(el, mappings)
-        if el["qty"].get("check"):
+        recipe, source = cls[el["guid"]]
+        q0 = el["qty"]
+        if q0.get("check") in (1.0, 3.0):
             flagged.append(el["guid"])
         key = group_key(el)
         g = groups.setdefault(key, {"key": key, "kind": el.get("kind") or el["ifc_class"],
                                     "type": key.split("|", 1)[1], "count": 0, "total": 0.0,
                                     "recipe": recipe, "source": source, "guids": [],
-                                    "sample": el["guid"], "materials": el.get("materials", [])[:4]})
+                                    "sample": el["guid"], "materials": el.get("materials", [])[:4],
+                                    "adjust": adjust.get(key)})
         g["count"] += 1
         g["guids"].append(el["guid"])
+        av = (el.get("authored") or {}).get("volume")
+        if av and q0.get("volume") and recipe is not None and q0.get("check") == 0:
+            recon.append((el["guid"], q0["volume"], av))
         if recipe is None:
             (excluded if source == "excluded" else unclassified).append(el["guid"])
             per_element[el["guid"]] = {"recipe": None, "source": source, "total": 0.0}
             continue
+        env = _env(el, give, min_open)
+        adj = adjust.get(key) or {}
+        factor = float(adj.get("factor") or 1.0)
         grp = lib.groups.get(recipe, {})
         el_total = 0.0
         for item in lib.recipes.get(recipe, []):
-            qty = evaluate(item["_expr"], el["qty"], el.get("layers", []))
+            qty = evaluate(item["_expr"], env, el.get("layers", [])) * factor
             if qty <= 0:
                 continue
             opt = (item.get("option") or "").strip()
@@ -206,7 +309,8 @@ def estimate(elements, region, lib=None, settings=None):
                 "level": el["level"], "recipe": recipe, "work_item": item["work_item"],
                 "description": wi.get("description", item["work_item"]),
                 "trade": wi.get("trade", "Other"), "unit": wi.get("unit", ""),
-                "formula": item["qty"], "net_qty": round(qty, 4), "waste_pct": waste,
+                "formula": item["qty"] + (f" x {factor:g} (adjusted)" if factor != 1 else ""),
+                "net_qty": round(qty, 4), "waste_pct": waste,
                 "qty": round(qty_w, 4), "material": round(qty_w * mat, 2),
                 "labour": round(qty_w * lab, 2), "equipment": round(qty_w * eqp, 2),
                 "rate": round(unit_rate, 2), "amount": round(qty_w * unit_rate, 2),
@@ -217,7 +321,9 @@ def estimate(elements, region, lib=None, settings=None):
             lines.append(line)
             el_total += line["amount"]
         per_element[el["guid"]] = {"recipe": recipe, "source": source, "total": round(el_total, 2),
-                                   "stage": grp.get("stage", "9 Other")}
+                                   "stage": grp.get("stage", "9 Other"),
+                                   "overlap_m3": round(env.get("overlap", 0.0), 4),
+                                   "openings_kept_m2": round(env.get("openings_small", 0.0), 3)}
         g["total"] += el_total
 
     # Bill of quantities: one row per work item.
@@ -241,18 +347,113 @@ def estimate(elements, region, lib=None, settings=None):
     def group_sorted(key):
         return dict(sorted(group(key).items()))
 
+    by_nrm1 = group_sorted("nrm1")
     direct = round(sum(l["amount"] for l in lines), 2)
-    contingency = round(direct * reg.get("contingency_pct", 0) / 100, 2)
-    overhead = round((direct + contingency) * reg["overhead_pct"] / 100, 2)
-    profit = round((direct + contingency + overhead) * reg["profit_pct"] / 100, 2)
-    subtotal = direct + contingency + overhead + profit
+
+    # Gross floor area from floor slabs (not roofs), for cost per m2 and allowances.
+    gfa = sum(e["qty"]["footprint"] for e in elements
+              if per_element.get(e["guid"], {}).get("recipe") in FLOOR_RECIPES)
+    if settings.get("gfa_m2"):
+        gfa = float(settings["gfa_m2"])
+
+    # ---- scope coverage and allowances --------------------------------------
+    scope = []
+    for name, prefixes, allowance, pct in SCOPE:
+        cost = sum(v for k, v in by_nrm1.items() if any(k.startswith(p) for p in prefixes))
+        scope.append({"name": name, "cost": round(cost, 2), "present": cost > 0,
+                      "suggest": None if cost > 0 or not allowance else
+                      {"name": allowance, "kind": "pct", "value": pct}})
+    allowances = []
+    for a in settings.get("allowances") or []:
+        kind, val = a.get("kind", "lump"), float(a.get("value") or 0)
+        amount = direct * val / 100 if kind == "pct" else val * gfa if kind == "per_m2" else val
+        allowances.append({**a, "amount": round(amount, 2)})
+    allow_total = round(sum(a["amount"] for a in allowances), 2)
+
+    construction = direct + allow_total
+    prelims = round(construction * reg["prelims_pct"] / 100, 2)
+    contingency = round((construction + prelims) * reg.get("contingency_pct", 0) / 100, 2)
+    overhead = round((construction + prelims + contingency) * reg["overhead_pct"] / 100, 2)
+    profit = round((construction + prelims + contingency + overhead) * reg["profit_pct"] / 100, 2)
+    escalation = round((construction + prelims + contingency + overhead + profit)
+                       * reg["escalation_pct"] / 100, 2)
+    subtotal = construction + prelims + contingency + overhead + profit + escalation
     tax = round(subtotal * reg["tax_pct"] / 100, 2)
     total = round(subtotal + tax, 2)
 
-    # Gross floor area from floor slabs (not roofs), for cost per m2.
-    gfa = sum(e["qty"]["footprint"] for e in elements
-              if per_element.get(e["guid"], {}).get("recipe") in FLOOR_RECIPES)
-    bench = reg.get("benchmark")
+    # ---- reconciliation with the authoring tool's own quantities -------------
+    within = [abs(o / a - 1) <= 0.05 for _, o, a in recon]
+    outliers = sorted(({"guid": g_, "measured": round(o, 4), "authored": round(a, 4),
+                        "diff_pct": round((o / a - 1) * 100, 1)} for g_, o, a in recon
+                       if abs(o / a - 1) > 0.05), key=lambda r: -abs(r["diff_pct"]))
+    reconciliation = {"compared": len(recon), "within_5pct": sum(within),
+                      "share": round(sum(within) / len(recon), 3) if recon else None,
+                      "outliers": outliers[:50]}
+
+    # ---- accuracy class ---------------------------------------------------------
+    sample_cost = sum(b["amount"] for b in boq if str(b["rate_source"]).upper().startswith("SAMPLE"))
+    sample_share = sample_cost / direct if direct else 1.0
+    unpriced_share = len(unclassified) / max(len(elements), 1)
+    flagged_cost = sum(per_element[g_]["total"] for g_ in flagged if g_ in per_element)
+    missing = [s_["name"] for s_ in scope if not s_["present"] and s_["name"] in
+               ("MEP services", "Internal finishes", "Substructure")]
+    covered = {a.get("name", "").split(" ")[0] for a in allowances}
+    missing_uncovered = [m for m in missing if m.split(" ")[0] not in covered and
+                         not any(m.split(" ")[0].lower() in a.get("name", "").lower() for a in allowances)]
+    reasons = []
+    if sample_share > 0.5:
+        cls_ = 5
+        reasons.append(f"{sample_share:.0%} of the cost uses SAMPLE rates. Enter real rates.")
+    elif missing_uncovered or unpriced_share > 0.1:
+        cls_ = 4
+        if missing_uncovered:
+            reasons.append("Not in the model and no allowance yet: " + ", ".join(missing_uncovered) + ".")
+        if unpriced_share > 0.1:
+            reasons.append(f"{unpriced_share:.0%} of elements are not priced. Use Mapping.")
+    else:
+        cls_ = 3
+        if sample_share > 0:
+            reasons.append(f"{sample_share:.0%} of the cost still uses SAMPLE rates.")
+        if direct and flagged_cost / direct > 0.05:
+            reasons.append("More than 5% of the cost is on shapes that could not be measured exactly.")
+        if reconciliation["share"] is not None and reconciliation["share"] < 0.9:
+            reasons.append("Less than 90% of quantities agree with the model's own values. Check the outliers.")
+        if not reasons and settings.get("rates_verified"):
+            cls_ = 2
+    if cls_ > 2 and not reasons:
+        reasons.append("Confirm your rates are current market prices (tick 'Rates checked') to reach Class 2.")
+    label, lo_pct, hi_pct = ACCURACY[cls_]
+    accuracy = {"class": cls_, "label": label, "low_pct": lo_pct, "high_pct": hi_pct,
+                "low": round(total * (1 + lo_pct), -2), "high": round(total * (1 + hi_pct), -2),
+                "reasons": reasons, "sample_rate_share": round(sample_share, 3)}
+
+    # ---- assumptions & exclusions -------------------------------------------------
+    ov_total = sum(r["volume"] for r in overlap_records)
+    rb = {"modeled_kg": round(modeled_rebar_kg), "ratio_kg": round(ratio_rebar_kg), "mode": rebar_mode}
+    assumptions = [
+        "Quantities are measured from the 3D model. Work that is not modelled is excluded "
+        "unless it is listed as an allowance.",
+        ("Reinforcement is taken from the modelled bars." if rebar_mode == "modeled" else
+         "Reinforcement is an allowance by ratio (kg per m³ of concrete) until bar schedules are available."),
+        f"Openings up to {min_open:g} m² are not deducted from masonry and finishes (NRM2 practice).",
+        (f"Overlaps between elements are deducted once ({len(overlap_records)} overlaps, {ov_total:.2f} m³): "
+         "slabs measured through, columns to slab soffit, beams below slab, walls between frame members."
+         if deduct else "Overlaps between elements are NOT deducted."),
+        f"Waste allowances are included in quantities as shown per item.",
+        f"Preliminaries {reg['prelims_pct']:g}%, contingency {reg.get('contingency_pct', 0):g}%, "
+        f"overhead {reg['overhead_pct']:g}%, profit {reg['profit_pct']:g}%, escalation {reg['escalation_pct']:g}%.",
+        f"{reg['tax_name']} at {reg['tax_pct']:g}% is included in the total.",
+        f"Prices in {reg['currency']} at the date of the rates used.",
+    ]
+    if sample_share > 0:
+        assumptions.append(f"{sample_share:.0%} of the measured cost uses SAMPLE placeholder rates.")
+    assumptions += [a for a in settings.get("assumptions") or [] if a]
+    exclusions = settings.get("exclusions")
+    if exclusions is None:
+        exclusions = DEFAULT_EXCLUSIONS
+    exclusions = list(exclusions) + [f"{s_['name']} (not in the model)" for s_ in scope
+                                     if not s_["present"] and not s_["suggest"]
+                                     and s_["name"] not in ("Roof",)]
 
     group_list = sorted(groups.values(), key=lambda g: (g["recipe"] is not None, -g["total"]))
     for g in group_list:
@@ -260,22 +461,27 @@ def estimate(elements, region, lib=None, settings=None):
 
     return {
         "region": region, "region_name": reg["name"], "currency": reg["currency"],
-        "summary": {"direct": direct, "contingency": contingency, "overhead": overhead,
-                    "profit": profit, "tax": tax, "tax_name": reg["tax_name"], "total": total,
+        "summary": {"direct": direct, "allowances": allow_total, "prelims": prelims,
+                    "contingency": contingency, "overhead": overhead, "profit": profit,
+                    "escalation": escalation, "tax": tax, "tax_name": reg["tax_name"], "total": total,
+                    "prelims_pct": reg["prelims_pct"], "escalation_pct": reg["escalation_pct"],
                     "contingency_pct": reg.get("contingency_pct", 0),
                     "overhead_pct": reg["overhead_pct"], "profit_pct": reg["profit_pct"],
                     "tax_pct": reg["tax_pct"], "gfa": round(gfa, 1),
                     "per_m2": round(total / gfa, 2) if gfa > 1 else None,
-                    "benchmark": bench},
+                    "benchmark": reg.get("benchmark")},
+        "accuracy": accuracy, "scope": scope, "allowances": allowances,
+        "assumptions": assumptions, "exclusions": exclusions,
         "by_trade": group("trade"), "by_level": group("level"),
-        "by_nrm1": group_sorted("nrm1"), "by_uniformat": group_sorted("uniformat"),
+        "by_nrm1": by_nrm1, "by_uniformat": group_sorted("uniformat"),
         "by_stage": group_sorted("stage"),
         "boq": boq, "lines": lines, "per_element": per_element, "groups": group_list,
-        "settings": {"rebar_mode": rebar_mode},
+        "settings": {"rebar_mode": rebar_mode, "deduct_overlaps": deduct, "min_deduct_m2": min_open},
         "checks": {"elements": len(elements),
                    "priced": len(elements) - len(unclassified) - len(excluded),
                    "unclassified": unclassified, "excluded": excluded,
-                   "geometry_flagged": flagged,
-                   "rebar": {"modeled_kg": round(modeled_rebar_kg), "ratio_kg": round(ratio_rebar_kg),
-                             "mode": rebar_mode}},
+                   "geometry_flagged": flagged, "rebar": rb,
+                   "overlaps": overlap_records, "overlap_m3": round(ov_total, 3),
+                   "duplicates": [r for r in overlap_records if r["kind"] == "same type"],
+                   "reconciliation": reconciliation},
     }

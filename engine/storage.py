@@ -20,13 +20,35 @@ from pathlib import Path
 import numpy as np
 
 from .extract import extract
+from . import overlaps
 
 ROOT = Path(__file__).resolve().parent.parent / "projects"
 _lock = threading.Lock()
 
 DEFAULT_SETTINGS = {"region": "SA", "rebar_mode": "ratio", "mappings": {},
                     "overhead_pct": None, "profit_pct": None, "contingency_pct": None,
-                    "tax_pct": None, "duration_months": 12, "start": None}
+                    "tax_pct": None, "prelims_pct": None, "escalation_pct": None,
+                    "duration_months": 12, "start": None,
+                    "deduct_overlaps": True, "min_deduct_m2": 0.5, "rates_verified": False,
+                    "allowances": [], "adjustments": {}, "assumptions": [], "exclusions": None,
+                    "gfa_m2": None}
+
+
+def log(project_id, what, detail=""):
+    """Record a change so the estimate has an audit trail."""
+    with _lock, _db() as con:
+        con.execute("INSERT INTO history VALUES (?,?,?,?)",
+                    (time.time(), project_id or "", what, str(detail)[:500]))
+
+
+def history(project_id=None, limit=200):
+    with _lock, _db() as con:
+        if project_id:
+            rows = con.execute("SELECT * FROM history WHERE project_id IN (?, '') ORDER BY time DESC LIMIT ?",
+                               (project_id, limit))
+        else:
+            rows = con.execute("SELECT * FROM history ORDER BY time DESC LIMIT ?", (limit,))
+        return [dict(r) for r in rows]
 
 
 def _db():
@@ -36,6 +58,8 @@ def _db():
     con.executescript("""
         CREATE TABLE IF NOT EXISTS projects (
             id TEXT PRIMARY KEY, name TEXT, created REAL, settings TEXT);
+        CREATE TABLE IF NOT EXISTS history (
+            time REAL, project_id TEXT, what TEXT, detail TEXT);
         CREATE TABLE IF NOT EXISTS versions (
             id TEXT PRIMARY KEY, project_id TEXT, label TEXT, file_name TEXT, created REAL,
             status TEXT, progress REAL, error TEXT, elements INTEGER, schema TEXT, model_name TEXT);
@@ -78,14 +102,20 @@ def update_settings(pid, changes):
     if not p:
         raise KeyError(pid)
     s = p["settings"]
-    if "mappings" in changes:  # merge; a value of None removes a mapping
-        m = dict(s.get("mappings") or {})
-        for k, v in (changes.pop("mappings") or {}).items():
-            if v:
-                m[k] = v
-            else:
-                m.pop(k, None)
-        s["mappings"] = m
+    for field in ("mappings", "adjustments"):   # merge; a value of None removes an entry
+        if field in changes:
+            m = dict(s.get(field) or {})
+            for k, v in (changes.pop(field) or {}).items():
+                if v:
+                    m[k] = v
+                    log(pid, f"{field[:-1]} set", f"{k.split('|', 1)[-1]} -> {v if isinstance(v, str) else json.dumps(v)}")
+                else:
+                    m.pop(k, None)
+                    log(pid, f"{field[:-1]} removed", k.split("|", 1)[-1])
+            s[field] = m
+    for k, v in changes.items():
+        if s.get(k) != v and k not in ("name",):
+            log(pid, "setting changed", f"{k}: {json.dumps(s.get(k))} -> {json.dumps(v)}"[:500])
     s.update(changes)
     with _lock, _db() as con:
         con.execute("UPDATE projects SET settings=? WHERE id=?", (json.dumps(s), pid))
@@ -135,6 +165,7 @@ def add_version(pid, src_path, file_name, label=None, move=False):
         con.execute("INSERT INTO versions VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                     (vid, pid, label or f"Rev {n}", file_name, time.time(),
                      "processing", 0.0, None, 0, None, None))
+    log(pid, "model uploaded", file_name)
     threading.Thread(target=_process, args=(vid,), daemon=True).start()
     return vid
 
@@ -143,7 +174,10 @@ def _process(vid):
     folder = ROOT / vid
     try:
         data = extract(str(folder / "model.ifc"),
-                       progress=lambda f: _set_version(vid, progress=round(f, 2)))
+                       progress=lambda f: _set_version(vid, progress=round(f * 0.9, 2)))
+        found, _ = overlaps.find(data["elements"], data["meshes"])
+        for e in data["elements"]:
+            e["overlaps"] = found.get(e["guid"], [])
         with gzip.open(folder / "elements.json.gz", "wt", encoding="utf-8") as f:
             json.dump(data["elements"], f)
         _write_geometry(folder, data["meshes"])

@@ -17,6 +17,17 @@
 Open the app, pick the **region**, and drop the .ifc file. The first time, a large model takes about
 a minute to measure; after that it opens instantly. Or choose a **sample** to try it.
 
+## The six steps (shown at the top of the panel)
+
+1. **Model**: upload; quantities are measured automatically.
+2. **Map**: give every unknown element type a meaning.
+3. **Rates**: enter your rates (sample rates keep the estimate at Class 5).
+4. **Scope**: check which parts of the building are not in the model and add allowances.
+5. **Check**: review overlaps, possible duplicates and quantities that differ from Revit's own values.
+6. **Report**: print the client report (PDF) and export the Excel workbook.
+
+A step turns green when it is done.
+
 ## 3. Read the summary
 
 - **Total** includes contingency, overhead, profit and VAT (15% in Saudi Arabia).
@@ -25,6 +36,28 @@ a minute to measure; after that it opens instantly. Or choose a **sample** to tr
   of the building (services, external works) are not modelled yet.
 - **Elemental cost plan**: switch between NRM1, Uniformat and Level.
 - **Project settings**: change contingency, overhead, profit, tax and rebar basis for this project.
+
+## Accuracy: how to read and improve it
+
+The summary shows an **accuracy class** and the range the final cost is likely to fall in
+(AACE 18R-97 classes as guidance):
+
+| Class | Range | When |
+|---|---|---|
+| 5 | -50% / +100% | most rates are still sample placeholders |
+| 4 | -30% / +50% | important scope missing (MEP, finishes, foundations) without an allowance, or >10% elements unpriced |
+| 3 | -20% / +30% | model priced with your rates, scope covered |
+| 2 | -15% / +20% | all checks pass and you confirm rates are current market prices |
+
+The list under the class says exactly what to do to narrow the range.
+
+**What the tool already does for accuracy**
+- Measures each element from its 3D shape and repairs badly exported shapes.
+- Compares every measured volume with Revit's own value (Checks tab); 95%+ agreement is normal.
+- Deducts overlapping volume once (column through slab, beam in slab, wall through column).
+- Applies the NRM2 rule for small openings (up to 0.5 m², editable).
+- Lets you adjust the quantity of a type (Element tab), but only with a written reason.
+- Logs every change (Checks tab → Change history).
 
 ## 4. Mapping: tell it what unknown elements are
 
@@ -66,7 +99,14 @@ In **Compare**, click **Upload new revision** and choose the new IFC export of t
 Then compare the two revisions: added elements are green, changed orange, removed red. The table
 shows the cost difference by trade and per element, with the reason (for example "volume 8.2 → 12.3").
 
-## 9. Export
+## 9. Client report
+
+Click **Client report**. A clean A4 report opens: summary with the accuracy range and cost per m²,
+cost build-up, NRM1 elemental summary, trade and level summaries, scope and allowances, assumptions,
+exclusions and model quality checks, with a 3D picture. Click the dashed fields to type the client
+and estimator names, then **Print / Save as PDF**.
+
+## 10. Export
 
 **Export Excel** downloads the full estimate: summary, NRM1 and Uniformat cost plans, BOQ, every
 element's cost lines with formulas, mapping, programme, cash flow with an S-curve chart, and model checks.

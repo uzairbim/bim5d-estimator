@@ -53,6 +53,18 @@ What exists, what quantity surveyors struggle with, and the design decisions tha
 - Practitioners advise reviewing AI classifications and spot-checking quantities.
   → *AI is optional, only for types the rules miss, and suggestions need a click to accept.*
 
+## 6. Accuracy: what goes wrong and how this tool handles it
+
+| Problem (evidence) | What the tool does |
+|---|---|
+| **Overlaps and double counting** are the largest quantity error source: one study measured -23% to +31% error from overlapping objects and double counting; RICS asks "do columns stop at the underside of slabs?". | Exact 3D intersection of every pair of solid elements (manifold3d). The shared volume is deducted once, following measurement practice: slab measured through, column to slab soffit, beam below slab, wall between frame members; steel keeps its weight and the concrete is reduced. Same-type overlaps are flagged as possible duplicates. |
+| **Revit IFC base quantities are unreliable**: in the test models GrossVolume was 1,000x too large and NetArea larger than GrossArea. | Base quantities are not used for pricing. Revit's own *Dimensions* volume is used only to **check** our measurement (reconciliation) and as a labelled fallback. |
+| **Exported shapes are not always solids**: Revit wrote some walls and ceilings as open surface models with mixed winding, which gave volumes 3-10x too small. | Vertices merged, each piece measured separately, winding repaired; open surface models use face × material layer thickness. Result on the samples: 98-100% of element volumes within 5% of Revit's own values. |
+| **Measurement rules** (NRM2 masonry: voids up to 0.50 m² not deducted). | Openings of each wall are read from the model; openings up to the threshold (default 0.5 m², editable) are added back to masonry, plaster and paint quantities. |
+| **Missing scope** (RICS: items missing from the model must be measured manually; MEP is about 18-45% of construction cost in Riyadh). | Scope check by NRM1 group; one click adds a suggested allowance (MEP 25%, finishes 12%, external works 5%, foundations 8%), editable. |
+| **Accuracy must be stated** (AACE 18R-97 classes: Class 5 -50%/+100% … Class 2 -15%/+20%). | The tool assigns a class from sample-rate share, missing scope, unpriced elements, unmeasured shapes and reconciliation, shows the low-high range and lists what would narrow it. |
+| **Audit trail** (CostX case studies stress QA audit). | Every mapping, adjustment, setting, rate change and upload is logged with time. Quantity adjustments require a written reason. |
+
 ## Sources
 
 - DDC CWICR repository: https://github.com/datadrivenconstruction/OpenConstructionEstimate-DDC-CWICR
@@ -75,4 +87,12 @@ What exists, what quantity surveyors struggle with, and the design decisions tha
 - POMI usage (ISEC): https://www.isec-society.org/ISEC_PRESS/ASEA_SEC_03/pdf/C-15_v3_130.pdf
 - NRM1 2nd edition (RICS): https://www.rics.org/content/dam/ricsglobal/documents/standards/nrm_1_order_of_cost_estimating_and_cost_planning_2nd_edition_rics.pdf
 - Saudi construction cost index (Arab News): https://www.arabnews.pk/node/2644421
+- Overlap error -23% to +31% (Chula/ISARC 2018): https://www.iaarc.org/publications/fulltext/ISARC2018-Paper171.pdf
+- Compound elements and clash detection (Osaka Univ. dissertation): https://ir.library.osaka-u.ac.jp/repo/ouka/all/77497/31487_Dissertation.pdf
+- RICS BIM for cost managers: https://www.rics.org/content/dam/ricsglobal/documents/standards/bim_for_cost_managers_1st_edition_rics.pdf
+- NRM2 masonry voids 0.50 m² (GCU extract): https://edshare.gcu.ac.uk/3991/2/pdf/NRM164168.pdf
+- AACE classes summary: https://epcland.com/cost-estimate-classification-system-for-process-industries/
+- MEP share of cost, Riyadh (indicative): https://daranan.pages.dev/blog/mep-contracting-costs-riyadh/
+- 2026 tender price inflation forecast (AESG): https://gulfconstructiononline.com/Article/464354/Construction-sector-remains-resilient-despite-rising-costs-AESG-report
+- CostX revision comparison and rate libraries: https://www.rib-software.com/?p=48941
 - Saudi villa cost per m² (Zawya): https://www.zawya.com/en/economy/real-estate/saudi-projects-value-hits-2.07trln-construction-real-estate-takes-major-share-1509870
