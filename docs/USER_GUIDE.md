@@ -27,6 +27,10 @@
    you have a quote for the complete item.
 6. **Download rate pack** to share your prices; others use **Import rate pack**.
 
+Saudi Arabia, UAE, Pakistan, India, UK, Germany and the USA already have **assumed** prices (typical market
+levels, late 2026), so an estimate works straight away. Type over them with current prices; the accuracy
+class moves from Class 4 to Class 3 once at least half the cost uses your own prices.
+
 The "your prices" percentage on each rate, and the accuracy class, show how much of the estimate rests on
 your own prices.
 

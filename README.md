@@ -38,6 +38,12 @@ editable norms, for example 1 m² of 200 mm blockwork = 12.5 blocks + 0.22 bag c
 
 Have quotes for whole items? Type a **fixed rate** and it replaces the build-up.
 
+**Ready to use without typing anything:** Saudi Arabia, UAE, Pakistan, India, UK, Germany and the USA ship
+with **assumed indicative prices** (typical market levels, late 2026; regenerate with
+`python tools/make_assumed_prices.py`). Prices change daily, so the app tags them *assumed*, keeps them
+separate from prices you confirm, and rates the estimate Class 4 (−30% / +50%) until at least half the
+cost rests on your own prices. Type over any assumed price and it becomes yours.
+
 ## What it does
 
 | | |

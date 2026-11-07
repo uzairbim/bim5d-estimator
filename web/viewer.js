@@ -90,6 +90,9 @@ export class Viewer {
       this.group.add(mesh);
       this.meshes.set(guid, mesh);
     }
+    // New model: start from a standard 3/4 view from above.
+    this.camera.position.set(1, 0.8, 1);
+    this.controls.target.set(0, 0, 0);
     this.fit();
   }
 

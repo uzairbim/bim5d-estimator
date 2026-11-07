@@ -288,7 +288,7 @@ function steps() {
   return [
     { n: 1, label: t("Model"), tab: "summary", ok: true, tip: `${fmt(c.elements)} elements measured` },
     { n: 2, label: t("Map"), tab: "mapping", ok: !unpriced, tip: unpriced ? `${unpriced} elements not priced` : "All elements priced" },
-    { n: 3, label: t("Rates"), tab: "rates", ok: sample < 0.01, tip: sample >= 0.01 ? `${Math.round(sample * 100)}% of cost on sample rates` : "Your rates in use" },
+    { n: 3, label: t("Rates"), tab: "rates", ok: (e.accuracy.user_price_share || 0) >= 0.5, tip: `${Math.round((e.accuracy.user_price_share || 0) * 100)}% your prices, ${Math.round((e.accuracy.assumed_price_share || 0) * 100)}% assumed, ${Math.round((e.accuracy.estimated_price_share || 0) * 100)}% estimated` },
     { n: 4, label: t("Scope"), tab: "summary#scope", ok: !gaps, tip: gaps ? `${gaps} missing parts without allowance` : "Scope covered" },
     { n: 5, label: t("Check"), tab: "checks", ok: !issues, tip: issues ? "Review overlaps, duplicates and outliers" : "No issues found" },
     { n: 6, label: t("Report"), tab: "report", ok: false, tip: "Client report and Excel" },
@@ -761,13 +761,15 @@ function drawRd() {
 function drawPrices() {
   const tb = S.rd.prices, q = ($("#rateSearch").value || "").toLowerCase(), cur = tb.currency;
   $("#rdHelp").innerHTML = t("Enter what things cost where you work, in {cur}. Every work-item rate is then built up from these prices (labour hours x wage + materials + plant). Start with the <b>key prices</b>; anything you leave empty is estimated from the region's exchange rate and price factors.", { cur }) +
-    ` <b>${tb.filled} / ${tb.rows.length}</b> ${t("prices entered")}.`;
+    ` <b>${tb.rows.filter((x) => x.kind === "yours").length} / ${tb.rows.length}</b> ${t("prices entered")}.` +
+    (tb.rows.some((x) => x.kind === "assumed") ? ` <span class="tag changed">${t("assumed")}</span> = indicative market level (late 2026), not a quotation. Prices change daily: type over them with today's prices.` : "");
   let group = null, html = `<table><thead><tr><th>${t("Resource")}</th><th>${t("Unit")}</th><th class="n">${t("Estimated")} (${cur})</th><th class="n">${t("Your price")} (${cur})</th><th>${t("Source / supplier")}</th><th>${t("Date")}</th></tr></thead><tbody>`;
   for (const r of tb.rows) {
     if (q && !(r.resource + " " + r.name).toLowerCase().includes(q)) continue;
     const g = r.key ? t("Key prices (enter these first)") : { labour: t("Labour"), material: t("Materials"), plant: t("Plant / equipment") }[r.type];
     if (g !== group) { group = g; html += `<tr><td colspan="6"><b>${esc(g)}</b></td></tr>`; }
-    html += `<tr data-res="${r.resource}" class="${r.price !== null ? "local" : ""}"><td>${esc(r.name)}<br><span class="tag">${r.resource}</span></td><td>${esc(r.unit)}</td>
+    const kindTag = r.kind === "yours" ? `<span class="tag added">${t("your price")}</span>` : r.kind === "assumed" ? `<span class="tag changed">${t("assumed")}</span>` : `<span class="tag">${t("estimated")}</span>`;
+    html += `<tr data-res="${r.resource}" class="${r.kind === "yours" ? "local" : ""}"><td>${esc(r.name)} ${kindTag}<br><span class="tag">${r.resource}</span></td><td>${esc(r.unit)}</td>
       <td class="n muted">${fmt(r.estimated, 2)}</td>
       <td class="n"><input type="number" step="any" min="0" data-f="price" value="${r.price ?? ""}" placeholder="${fmt(r.estimated, 2)}"></td>
       <td><input type="text" data-f="source" value="${esc(r.source)}" placeholder="${t("e.g. supplier quote")}"></td>
@@ -778,9 +780,12 @@ function drawPrices() {
     const r = S.rd.prices.rows.find((x) => x.resource === tr.dataset.res);
     const v = $("input[data-f=price]", tr).value;
     r.price = v === "" ? null : Number(v);
-    r.source = $("input[data-f=source]", tr).value;
+    const srcIn = $("input[data-f=source]", tr);
+    if (/^ASSUMED/i.test(srcIn.value)) { srcIn.value = "user"; $("input[data-f=date]", tr).value = new Date().toISOString().slice(0, 10); }
+    r.source = srcIn.value;
+    r.kind = r.price === null ? "estimated" : /^ASSUMED/i.test(r.source) ? "assumed" : "yours";
     r.date = $("input[data-f=date]", tr).value;
-    tr.classList.toggle("local", r.price !== null);
+    tr.classList.toggle("local", r.kind === "yours");
     S.rd.dirty = true;
   }));
 }
@@ -798,7 +803,7 @@ function drawRates() {
       <td class="n"><span class="tag ${r.local_share > 0.99 ? "added" : r.local_share > 0 ? "changed" : ""}">${Math.round(r.local_share * 100)}%</span></td>
       <td class="n"><input type="number" step="any" min="0" data-f="fixed" value="${fixed}" placeholder="—"></td>
       <td><input type="text" data-f="source" value="${esc(r.local ? r.source : "")}" placeholder="${t("quote / reference")}"></td></tr>
-      <tr class="build" data-for="${r.work_item}" hidden><td colspan="6">${r.build.length ? `<table class="inner"><tr><th>${t("Resource")}</th><th class="n">${t("Qty per")} ${r.unit}</th><th class="n">${t("Price")}</th><th class="n">${t("Cost")}</th></tr>${r.build.map((b) => `<tr><td>${esc(b.name)} ${b.yours ? '<span class="tag added">' + t("your price") + "</span>" : '<span class="tag">' + t("estimated") + "</span>"}</td><td class="n">${fmt(b.qty, 3)} ${esc(b.unit)}</td><td class="n">${fmt(b.price, 2)}</td><td class="n">${fmt(b.cost, 2)}</td></tr>`).join("")}</table>` : `<span class="muted">${t("No build-up; converted base rate.")}</span>`}</td></tr>`;
+      <tr class="build" data-for="${r.work_item}" hidden><td colspan="6">${r.build.length ? `<table class="inner"><tr><th>${t("Resource")}</th><th class="n">${t("Qty per")} ${r.unit}</th><th class="n">${t("Price")}</th><th class="n">${t("Cost")}</th></tr>${r.build.map((b) => `<tr><td>${esc(b.name)} ${b.yours ? '<span class="tag added">' + t("your price") + "</span>" : b.kind === "assumed" ? '<span class="tag changed">' + t("assumed") + "</span>" : '<span class="tag">' + t("estimated") + "</span>"}</td><td class="n">${fmt(b.qty, 3)} ${esc(b.unit)}</td><td class="n">${fmt(b.price, 2)}</td><td class="n">${fmt(b.cost, 2)}</td></tr>`).join("")}</table>` : `<span class="muted">${t("No build-up; converted base rate.")}</span>`}</td></tr>`;
   }
   $("#ratesBody").innerHTML = html + "</tbody></table>";
   $$("#ratesBody tr[data-wi]").forEach((tr) => {

@@ -238,8 +238,23 @@ def test_small_openings_not_deducted(lib):
 
 
 def test_accuracy_class_reflects_sample_rates_and_scope(duplex, lib):
-    a = estimate(duplex, "US", lib)["accuracy"]
-    assert a["class"] == 5 and a["low"] < a["high"]       # all rates are samples
+    a = estimate(duplex, "GLOBAL", lib)["accuracy"]
+    assert a["class"] == 5 and a["low"] < a["high"]       # prices converted from US levels
+    sa = estimate(duplex, "SA", lib)["accuracy"]
+    assert sa["class"] == 4 and sa["assumed_price_share"] > 0.9   # assumed indicative prices
+
+
+def test_assumed_prices_are_not_counted_as_yours(lib):
+    d = lib.rate_detail("SA", "MAS-BLK")
+    assert d["local_share"] == 0 and d["assumed_share"] > 0.99
+    assert all(b["kind"] == "assumed" for b in d["build"])
+    # a price the user confirms counts as theirs
+    lib.prices["SA"] = dict(lib.prices["SA"])
+    lib.prices["SA"]["M-BLK"] = {"price": "3.2", "source": "supplier quote"}
+    lib._cache.clear()
+    d2 = lib.rate_detail("SA", "MAS-BLK")
+    assert d2["local_share"] > 0.5
+    lib.__init__()
 
 
 def test_scope_gap_suggests_mep_allowance(duplex, lib):

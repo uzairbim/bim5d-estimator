@@ -115,11 +115,18 @@ class Library:
                 "material": float(reg.get("material_factor", loc)),
                 "plant": float(reg.get("plant_factor", reg.get("material_factor", loc)))}
 
+    def price_kind(self, region, code):
+        """'yours' (confirmed by the user), 'assumed' (shipped indicative price) or 'estimated'."""
+        p = self.prices.get(region, {}).get(code)
+        if not p:
+            return "estimated"
+        return "assumed" if str(p.get("source", "")).upper().startswith("ASSUMED") else "yours"
+
     def resource_price(self, region, code):
         """(price in local currency, is it the user's own price?)."""
         p = self.prices.get(region, {}).get(code)
         if p:
-            return float(p["price"]), True
+            return float(p["price"]), self.price_kind(region, code) == "yours"
         r = self.resources.get(code)
         if not r:
             return 0.0, False
@@ -140,23 +147,27 @@ class Library:
                  "local_share": 0.0 if str(src).upper().startswith("SAMPLE") else 1.0, "method": "fixed"}
         elif self.norms.get(work_item):
             parts = {"material": 0.0, "labour": 0.0, "equipment": 0.0}
-            build, own = [], 0.0
+            build, own, assumed = [], 0.0, 0.0
             for n in self.norms[work_item]:
                 res = self.resources.get(n["resource"], {})
                 price, mine = self.resource_price(region, n["resource"])
+                pk = self.price_kind(region, n["resource"])
                 cost = float(n["qty"]) * price
                 kind = {"labour": "labour", "plant": "equipment"}.get(res.get("type"), "material")
                 parts[kind] += cost
-                own += cost if mine else 0.0
+                own += cost if pk == "yours" else 0.0
+                assumed += cost if pk == "assumed" else 0.0
                 build.append({"resource": n["resource"], "name": res.get("name", n["resource"]),
                               "unit": res.get("unit", ""), "qty": float(n["qty"]), "price": round(price, 4),
-                              "cost": round(cost, 4), "yours": mine})
+                              "cost": round(cost, 4), "yours": pk == "yours", "kind": pk})
             total = sum(parts.values()) or 1.0
-            share = own / total
+            share, a_share = own / total, assumed / total
             src = ("built up from your prices" if share > 0.999 else
-                   f"built up: {share:.0%} your prices, rest estimated" if share > 0 else
+                   f"built up: {share:.0%} your prices, {a_share:.0%} assumed" if share > 0 else
+                   f"built up from assumed {a_share:.0%} / estimated prices" if a_share > 0 else
                    "SAMPLE prices (built up)")
-            d = {**parts, "source": src, "build": build, "local_share": share, "method": "built-up"}
+            d = {**parts, "source": src, "build": build, "local_share": share,
+                 "assumed_share": a_share, "method": "built-up"}
         else:
             base = self.base_rates.get(work_item)
             f = self.factors(region)
@@ -475,6 +486,7 @@ def estimate(elements, region, lib=None, settings=None):
                 "labour": round(qty_w * lab, 2), "equipment": round(qty_w * eqp, 2),
                 "rate": round(unit_rate, 2), "amount": round(qty_w * unit_rate, 2),
                 "rate_source": src, "local_share": round(rd["local_share"], 3),
+                "assumed_share": round(rd.get("assumed_share", 0.0), 3),
                 "nrm1": grp.get("nrm1", "Other"), "uniformat": grp.get("uniformat", "Other"),
                 "stage": grp.get("stage", "9 Other"),
             }
@@ -590,8 +602,12 @@ def estimate(elements, region, lib=None, settings=None):
                       "outliers": outliers[:50]}
 
     # ---- accuracy class ---------------------------------------------------------
-    sample_cost = sum(l["amount"] * (1 - l.get("local_share", 0.0)) for l in lines)
-    sample_share = sample_cost / direct if direct else 1.0
+    user_cost = sum(l["amount"] * l.get("local_share", 0.0) for l in lines)
+    assumed_cost = sum(l["amount"] * l.get("assumed_share", 0.0) for l in lines)
+    user_share = user_cost / direct if direct else 0.0
+    assumed_share = assumed_cost / direct if direct else 0.0
+    estimated_share = max(0.0, 1.0 - user_share - assumed_share)
+    sample_share = 1.0 - user_share            # not confirmed by the user
     unpriced_share = len(unclassified) / max(len(elements), 1)
     flagged_cost = sum(per_element[g_]["total"] for g_ in flagged if g_ in per_element)
     missing = [s_["name"] for s_ in scope if not s_["present"] and s_["name"] in
@@ -600,11 +616,14 @@ def estimate(elements, region, lib=None, settings=None):
     missing_uncovered = [m for m in missing if m.split(" ")[0] not in covered and
                          not any(m.split(" ")[0].lower() in a.get("name", "").lower() for a in allowances)]
     reasons = []
-    if sample_share > 0.5:
+    if estimated_share > 0.5:
         cls_ = 5
-        reasons.append(f"{sample_share:.0%} of the cost uses estimated prices, not yours. Open Prices & rates and enter local prices (start with the key ones).")
-    elif missing_uncovered or unpriced_share > 0.1:
+        reasons.append(f"{estimated_share:.0%} of the cost uses prices converted from US levels. Open Prices & rates and enter local prices (start with the key ones).")
+    elif user_share < 0.5 or missing_uncovered or unpriced_share > 0.1:
         cls_ = 4
+        if user_share < 0.5:
+            reasons.append(f"{assumed_share:.0%} of the cost uses assumed indicative prices (prices change daily). "
+                           "Confirm the key prices in Prices & rates to reach Class 3.")
         if missing_uncovered:
             reasons.append("Not in the model and no allowance yet: " + ", ".join(missing_uncovered) + ".")
         if unpriced_share > 0.1:
@@ -624,7 +643,9 @@ def estimate(elements, region, lib=None, settings=None):
     label, lo_pct, hi_pct = ACCURACY[cls_]
     accuracy = {"class": cls_, "label": label, "low_pct": lo_pct, "high_pct": hi_pct,
                 "low": round(total * (1 + lo_pct), -2), "high": round(total * (1 + hi_pct), -2),
-                "reasons": reasons, "sample_rate_share": round(sample_share, 3)}
+                "reasons": reasons, "sample_rate_share": round(sample_share, 3),
+                "user_price_share": round(user_share, 3), "assumed_price_share": round(assumed_share, 3),
+                "estimated_price_share": round(estimated_share, 3)}
 
     # ---- assumptions & exclusions -------------------------------------------------
     ov_total = sum(r["volume"] for r in overlap_records)
@@ -645,7 +666,9 @@ def estimate(elements, region, lib=None, settings=None):
         f"Prices in {reg['currency']} at the date of the rates used.",
     ]
     if sample_share > 0:
-        assumptions.append(f"{sample_share:.0%} of the measured cost uses estimated (not local) prices.")
+        assumptions.append(
+            f"Prices: {user_share:.0%} confirmed by you, {assumed_share:.0%} assumed indicative market prices "
+            f"(late 2026, not quotations), {estimated_share:.0%} estimated from US price levels.")
     assumptions += [a for a in settings.get("assumptions") or [] if a]
     exclusions = settings.get("exclusions")
     if exclusions is None:

@@ -88,7 +88,7 @@ def price_table(region, lib=None):
         p = mine.get(code)
         rows.append({"resource": code, "name": r["name"], "unit": r["unit"], "type": r["type"],
                      "key": r.get("key") == "1", "estimated": round(est, 4),
-                     "price": float(p["price"]) if p else None,
+                     "price": float(p["price"]) if p else None, "kind": lib.price_kind(region, code),
                      "source": (p or {}).get("source", ""), "date": (p or {}).get("date", "")})
     used = {n["resource"] for ns in lib.norms.values() for n in ns}
     rows.sort(key=lambda x: (not x["key"], x["type"], x["resource"] not in used, x["name"]))

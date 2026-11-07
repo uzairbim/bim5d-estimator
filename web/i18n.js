@@ -99,6 +99,7 @@ const D = {
   "Qty per": { ar: "الكمية لكل", ur: "مقدار فی", es: "Cant. por", fr: "Qté par" },
   "Price": { ar: "السعر", ur: "قیمت", es: "Precio", fr: "Prix" },
   "your price": { ar: "سعرك", ur: "آپ کی قیمت", es: "su precio", fr: "votre prix" },
+  "assumed": { ar: "مفترض", ur: "فرض شدہ", es: "supuesto", fr: "supposé" },
   "estimated": { ar: "تقديري", ur: "اندازاً", es: "estimado", fr: "estimé" },
   "No build-up; converted base rate.": { ar: "لا يوجد تحليل؛ سعر أساسي محوّل.", ur: "کوئی تجزیہ نہیں؛ تبدیل شدہ بنیادی ریٹ۔", es: "Sin descomposición; precio base convertido.", fr: "Pas de décomposition ; prix de base converti." },
   "Set up any country. The tool is free: share your prices with colleagues as a rate pack file.": {
