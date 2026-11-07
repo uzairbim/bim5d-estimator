@@ -1,4 +1,5 @@
-uploads/
+projects/
 __pycache__/
 web/node_modules/
 *.pyc
+.pytest_cache/

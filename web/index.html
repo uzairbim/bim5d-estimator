@@ -14,46 +14,99 @@
 </head>
 <body>
 <header>
-  <div class="brand"><span class="logo">5D</span> BIM Estimator</div>
-  <div class="controls">
-    <label class="btn primary">Upload IFC<input id="file" type="file" accept=".ifc" hidden></label>
-    <select id="sample"><option value="">Or open a sample…</option></select>
+  <button class="brand" id="home" title="All projects"><span class="logo">5D</span><span class="brand-name">BIM Estimator</span></button>
+  <div class="controls" id="projectControls" hidden>
+    <select id="projectSel" title="Project"></select>
+    <select id="versionSel" title="Model revision"></select>
     <select id="region" title="Region and currency"></select>
-    <button id="export" class="btn" disabled>Export Excel</button>
+    <button id="ratesBtn" class="btn">Rates</button>
+    <button id="export" class="btn primary">Export Excel</button>
   </div>
 </header>
 
-<main>
+<!-- Start page -->
+<section id="start" class="start">
+  <div class="start-inner">
+    <h1>Estimate cost straight from your BIM model</h1>
+    <p class="lead">Upload an IFC file from Revit. Every element is measured from its 3D shape, broken into work items, priced with your rates, and shown on the model.</p>
+    <label id="drop" class="drop">
+      <input id="file" type="file" accept=".ifc" hidden>
+      <b>Drop an .ifc file here</b><span>or click to choose a file</span>
+    </label>
+    <div class="row gap">
+      <label class="field">Region <select id="startRegion"></select></label>
+      <label class="field">Or try a sample <select id="sample"><option value="">Choose…</option></select></label>
+    </div>
+    <details class="howto">
+      <summary>How to export IFC from Revit</summary>
+      <ol>
+        <li>In Revit: <b>File → Export → IFC</b>.</li>
+        <li>IFC version: <b>IFC 2x3 Coordination View 2.0</b> or <b>IFC4 Reference View</b>.</li>
+        <li>On the <b>Property Sets</b> tab, tick <b>Export Revit property sets</b> and <b>Export base quantities</b>.</li>
+        <li>Optional: set an <b>Assembly Code</b> (Uniformat) on your types, which helps automatic classification.</li>
+        <li>Upload the .ifc file here. Large models take a minute the first time; after that they open instantly.</li>
+      </ol>
+    </details>
+    <h2 id="projectsTitle" hidden>Your projects</h2>
+    <div id="projectList" class="cards"></div>
+  </div>
+</section>
+
+<!-- Workspace -->
+<main id="work" hidden>
   <section class="viewer">
     <div id="canvas"></div>
-    <div class="legend">
+    <div class="vbar">
       <div class="seg" id="colorMode">
-        <button data-mode="cost" class="on">Cost</button>
-        <button data-mode="trade">Trade</button>
-        <button data-mode="check">Checks</button>
+        <button data-mode="cost" class="on" title="Colour by cost">Cost</button>
+        <button data-mode="trade" title="Colour by trade">Trade</button>
+        <button data-mode="check" title="Show problems">Checks</button>
+        <button data-mode="changes" title="Show changes between revisions" hidden>Changes</button>
       </div>
-      <div id="legendBody"></div>
+      <select id="levelSel" title="Show one level"><option value="">All levels</option></select>
+      <button id="fitBtn" class="btn sm" title="Zoom to fit">Fit</button>
     </div>
-    <div id="empty" class="empty">
-      <h2>Upload a Revit model to start</h2>
-      <p>In Revit: <b>File → Export → IFC</b>. Then upload the .ifc file here, or open a sample.</p>
-    </div>
-    <div id="busy" class="busy" hidden><div class="spin"></div><span>Reading model…</span></div>
+    <div class="legend" id="legend"></div>
+    <div id="busy" class="busy" hidden><div class="spin"></div><span id="busyText">Reading model…</span><div class="bar-outer"><div id="busyBar" class="bar-inner"></div></div></div>
   </section>
 
   <aside class="panel">
     <nav class="tabs">
       <button data-tab="summary" class="on">Summary</button>
       <button data-tab="boq">BOQ</button>
+      <button data-tab="mapping">Mapping <span id="mapBadge" class="badge" hidden></span></button>
       <button data-tab="element">Element</button>
-      <button data-tab="checks">Checks</button>
+      <button data-tab="time">4D</button>
+      <button data-tab="compare">Compare</button>
     </nav>
-    <div id="tab-summary" class="tab on"><p class="muted">No model loaded.</p></div>
+    <div id="tab-summary" class="tab on"></div>
     <div id="tab-boq" class="tab"></div>
+    <div id="tab-mapping" class="tab"></div>
     <div id="tab-element" class="tab"><p class="muted">Click an element in the 3D view.</p></div>
-    <div id="tab-checks" class="tab"></div>
+    <div id="tab-time" class="tab"></div>
+    <div id="tab-compare" class="tab"></div>
   </aside>
 </main>
+
+<!-- Rates editor -->
+<div id="ratesDlg" class="overlay" hidden>
+  <div class="dialog">
+    <div class="dlg-head">
+      <h2>Rates <span id="ratesRegion" class="muted"></span></h2>
+      <div class="row gap wrap">
+        <input id="rateSearch" type="search" placeholder="Search work items">
+        <a id="rateTemplate" class="btn" href="#">Download Excel</a>
+        <label class="btn">Import Excel / CSV<input id="rateImport" type="file" accept=".xlsx,.csv" hidden></label>
+        <button id="rateSave" class="btn primary">Save</button>
+        <button id="rateClose" class="btn">Close</button>
+      </div>
+    </div>
+    <p class="muted small">Your rates (local currency) replace the converted base rates. Leave a row empty to use the base rate. Rates marked SAMPLE are placeholders.</p>
+    <div class="dlg-body" id="ratesBody"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
 <script type="module" src="app.js"></script>
 </body>
 </html>

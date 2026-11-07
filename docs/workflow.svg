@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 170" font-family="system-ui, -apple-system, Segoe UI, sans-serif">
+  <rect width="900" height="170" rx="12" fill="#f5f6f8"/>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#6b7385"/></marker></defs>
+  <g font-size="13" text-anchor="middle">
+    <g transform="translate(20,40)"><rect width="140" height="90" rx="10" fill="#fff" stroke="#c9ced8"/><text x="70" y="32" font-weight="700" fill="#1d2433">1 · Revit → IFC</text><text x="70" y="54" fill="#6b7385">File › Export › IFC</text><text x="70" y="72" fill="#6b7385">any BIM tool</text></g>
+    <g transform="translate(195,40)"><rect width="140" height="90" rx="10" fill="#fff" stroke="#c9ced8"/><text x="70" y="32" font-weight="700" fill="#1d2433">2 · Measure</text><text x="70" y="54" fill="#6b7385">volume, faces, length</text><text x="70" y="72" fill="#6b7385">from 3D shape</text></g>
+    <g transform="translate(370,40)"><rect width="140" height="90" rx="10" fill="#fff" stroke="#c9ced8"/><text x="70" y="32" font-weight="700" fill="#1d2433">3 · Classify</text><text x="70" y="54" fill="#6b7385">rules · your mapping</text><text x="70" y="72" fill="#6b7385">optional AI</text></g>
+    <g transform="translate(545,40)"><rect width="140" height="90" rx="10" fill="#fff" stroke="#c9ced8"/><text x="70" y="32" font-weight="700" fill="#1d2433">4 · Price</text><text x="70" y="54" fill="#6b7385">work items × rates</text><text x="70" y="72" fill="#6b7385">VAT, O&amp;P, contingency</text></g>
+    <g transform="translate(720,40)"><rect width="160" height="90" rx="10" fill="#1f6feb"/><text x="80" y="32" font-weight="700" fill="#fff">5 · Use it</text><text x="80" y="54" fill="#dbe7ff">3D cost · BOQ · NRM1</text><text x="80" y="72" fill="#dbe7ff">4D · compare · Excel</text></g>
+  </g>
+  <g stroke="#6b7385" stroke-width="2" marker-end="url(#a)"><path d="M162 85H192"/><path d="M337 85H367"/><path d="M512 85H542"/><path d="M687 85H717"/></g>
+</svg>

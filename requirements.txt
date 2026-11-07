@@ -4,3 +4,8 @@ openpyxl
 fastapi
 uvicorn
 python-multipart
+pydantic
+# Optional, for AI suggestions:
+anthropic>=2.6
+# For tests:
+pytest

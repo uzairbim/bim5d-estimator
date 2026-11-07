@@ -1,0 +1,12 @@
+services:
+  bim5d:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./projects:/app/projects
+      - ./data:/app/data
+    environment:
+      # Optional: turns on AI suggestions for element types the rules don't know.
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    restart: unless-stopped

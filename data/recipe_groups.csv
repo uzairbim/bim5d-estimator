@@ -1,0 +1,50 @@
+recipe,label,nrm1,uniformat,stage
+RC_PILE,Concrete pile,1 Substructure,A10 Foundations,1 Substructure
+RC_FOOTING,Concrete footing,1 Substructure,A10 Foundations,1 Substructure
+SLAB_ON_GRADE,Ground slab,1 Substructure,A10 Foundations,1 Substructure
+RC_SLAB,Concrete floor slab,2.2 Upper floors,B10 Superstructure,2 Frame & floors
+TIMBER_FLOOR,Timber floor,2.2 Upper floors,B10 Superstructure,2 Frame & floors
+RC_COLUMN,Concrete column,2.1 Frame,B10 Superstructure,2 Frame & floors
+RC_BEAM,Concrete beam,2.1 Frame,B10 Superstructure,2 Frame & floors
+STEEL_MEMBER,Steel beam / column,2.1 Frame,B10 Superstructure,2 Frame & floors
+STEEL_PLATE,Steel plate,2.1 Frame,B10 Superstructure,2 Frame & floors
+REBAR_MODELED,Modelled rebar,2.1 Frame,B10 Superstructure,2 Frame & floors
+RC_WALL,Concrete wall,2.1 Frame,B10 Superstructure,2 Frame & floors
+ROOF_RC,Concrete roof,2.3 Roof,B30 Roofing,3 Roof
+ROOF_LIGHT,Light roof (timber / metal),2.3 Roof,B30 Roofing,3 Roof
+STAIR_RC,Concrete stair,2.4 Stairs and ramps,C20 Stairs,2 Frame & floors
+STAIR,Stair (steel / timber),2.4 Stairs and ramps,C20 Stairs,4 Envelope & walls
+RAILING,Railing / balustrade,2.4 Stairs and ramps,C20 Stairs,6 Finishes
+CAVITY_WALL,Cavity wall (brick + block),2.5 External walls,B20 Exterior enclosure,4 Envelope & walls
+BRICK_WALL,Brick wall,2.5 External walls,B20 Exterior enclosure,4 Envelope & walls
+CW_PANEL,Glazing / curtain wall panel,2.5 External walls,B20 Exterior enclosure,4 Envelope & walls
+CW_MULLION,Curtain wall mullion,2.5 External walls,B20 Exterior enclosure,4 Envelope & walls
+CLADDING,Cladding panel,2.5 External walls,B20 Exterior enclosure,4 Envelope & walls
+WINDOW,Window,2.6 Windows and external doors,B20 Exterior enclosure,4 Envelope & walls
+BLOCK_WALL,Block wall (plastered),2.7 Internal walls and partitions,C10 Interior construction,4 Envelope & walls
+DRYWALL,Drywall partition,2.7 Internal walls and partitions,C10 Interior construction,6 Finishes
+DOOR,Door,2.8 Internal doors,C10 Interior construction,6 Finishes
+MISC_METAL,Metal member,2.1 Frame,B10 Superstructure,4 Envelope & walls
+FLOOR_FINISH,Floor finish,3.2 Floor finishes,C30 Interior finishes,6 Finishes
+CEILING,Ceiling,3.3 Ceiling finishes,C30 Interior finishes,6 Finishes
+FINISH_GENERIC,Finish (other),3.1 Wall finishes,C30 Interior finishes,6 Finishes
+FFE,Furniture / fittings,4 Fittings furnishings and equipment,E20 Furnishings,7 Fit-out
+APPLIANCE,Appliance,4 Fittings furnishings and equipment,E10 Equipment,7 Fit-out
+LIFT,Lift,5.10 Lift and conveyor installations,D10 Conveying,5 Services
+PIPE,Pipe,5.4 Water installations,D20 Plumbing,5 Services
+PIPE_FITTING,Pipe fitting,5.4 Water installations,D20 Plumbing,5 Services
+VALVE,Valve,5.4 Water installations,D20 Plumbing,5 Services
+SANITARY,Sanitary fixture,5.1 Sanitary installations,D20 Plumbing,7 Fit-out
+SPRINKLER,Sprinkler head,5.11 Fire and lightning protection,D40 Fire protection,5 Services
+DUCT,Duct,5.7 Ventilation,D30 HVAC,5 Services
+DUCT_FITTING,Duct fitting,5.7 Ventilation,D30 HVAC,5 Services
+AIR_TERMINAL,Diffuser / grille,5.7 Ventilation,D30 HVAC,7 Fit-out
+MECH_EQUIP,Mechanical equipment,5.6 Space heating and air conditioning,D30 HVAC,5 Services
+CONTROLS,Controls / sensor,5.12 Communication and control,D30 HVAC,7 Fit-out
+CABLE_TRAY,Cable tray / conduit,5.8 Electrical installations,D50 Electrical,5 Services
+CABLE_FITTING,Cable tray fitting,5.8 Electrical installations,D50 Electrical,5 Services
+CABLE,Cable,5.8 Electrical installations,D50 Electrical,5 Services
+LIGHT,Light fitting,5.8 Electrical installations,D50 Electrical,7 Fit-out
+OUTLET,Socket / switch,5.8 Electrical installations,D50 Electrical,7 Fit-out
+ELEC_DEVICE,Electrical panel / device,5.8 Electrical installations,D50 Electrical,5 Services
+GENERIC_ITEM,Other item (allowance),4 Fittings furnishings and equipment,E10 Equipment,7 Fit-out

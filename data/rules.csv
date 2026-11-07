@@ -1,31 +1,63 @@
 priority,ifc_class,keywords,recipe
 10,IfcFooting,,RC_FOOTING
+10,IfcPile,,RC_PILE
 5,IfcSlab,\broof\b.*(wood|joist|timber)|(wood|joist|timber).*\broof\b,ROOF_LIGHT
-6,IfcSlab,\broof\b,ROOF_RC
-7,IfcSlab,finish floor|ceramic|tile|wood - flooring|carpet|vinyl,FLOOR_FINISH
-8,IfcSlab,wood joist|timber|lumber|joist,TIMBER_FLOOR
-10,IfcSlab,on grade|grnd|ground|sog,SLAB_ON_GRADE
+6,IfcSlab,\broof\b|\bROOF\b,ROOF_RC
+7,IfcSlab,finish floor|ceramic|tile|wood - flooring|carpet|vinyl|fliese|parkett|teppich|dielen|\bfb [0-9],FLOOR_FINISH
+8,IfcSlab,wood joist|timber|lumber|joist|holz,TIMBER_FLOOR
+10,IfcSlab,on grade|grnd|ground|sog|BASESLAB|bodenplatte,SLAB_ON_GRADE
 20,IfcSlab,,RC_SLAB
-10,IfcRoof,concrete|\bconc|\brc\b,ROOF_RC
+10,IfcRoof,concrete|\bconc|\brc\b|\bstb\b|beton|خرسان,ROOF_RC
 20,IfcRoof,,ROOF_LIGHT
 10,IfcWall|IfcWallStandardCase,brick.*block|bwk.*blk|brick.*cmu,CAVITY_WALL
-20,IfcWall|IfcWallStandardCase,cmu|block|blk|masonry - concrete,BLOCK_WALL
-30,IfcWall|IfcWallStandardCase,brick|bwk,BRICK_WALL
-40,IfcWall|IfcWallStandardCase,stud|gypsum|plasterboard|partn|drywall,DRYWALL
-50,IfcWall|IfcWallStandardCase,concrete|\brc\b|shear|retaining,RC_WALL
+20,IfcWall|IfcWallStandardCase,cmu|block|blk|masonry - concrete|bloque|بلوك|طوب,BLOCK_WALL
+30,IfcWall|IfcWallStandardCase,brick|bwk|ziegel|mauerwerk,BRICK_WALL
+40,IfcWall|IfcWallStandardCase,stud|gypsum|plasterboard|partn|drywall|gips|trockenbau,DRYWALL
+50,IfcWall|IfcWallStandardCase,concrete|\brc\b|shear|retaining|\bstb\b|beton|cl_w|خرسان,RC_WALL
 90,IfcWall|IfcWallStandardCase,,BLOCK_WALL
-10,IfcColumn,steel|metal|\b(ipe|hea|heb|uc|w[0-9]),STEEL_MEMBER
+10,IfcColumn,steel|metal|\b(ipe|hea|heb|uc|ub|shs|rhs|chs|w[0-9])|stahl(?!beton),STEEL_MEMBER
 20,IfcColumn,,RC_COLUMN
-10,IfcBeam,steel|metal|\b(ipe|hea|heb|ub|w[0-9]),STEEL_MEMBER
+10,IfcBeam,steel|metal|\b(ipe|hea|heb|ub|uc|pfc|w[0-9])|stahl(?!beton)|universal beam,STEEL_MEMBER
 20,IfcBeam,,RC_BEAM
-10,IfcCovering,ceiling|clg,CEILING
-20,IfcCovering,floor|tile|flr,FLOOR_FINISH
+10,IfcCovering,ceiling|clg|decke|CEILING,CEILING
+20,IfcCovering,floor|tile|flr|FLOORING,FLOOR_FINISH
 90,IfcCovering,,FINISH_GENERIC
 10,IfcDoor,,DOOR
 10,IfcWindow,,WINDOW
-10,IfcPlate,glaz|glass|panel,CW_PANEL
-10,IfcMember,curtain|mullion|transom,CW_MULLION
+5,IfcPlate,glaz|glass|glas\b|verglas,CW_PANEL
+10,IfcPlate,metal|panel|CURTAIN_PANEL,CLADDING
+90,IfcPlate,,STEEL_PLATE
+10,IfcCurtainWall,,CW_PANEL
+10,IfcMember,curtain|mullion|transom|pfosten|riegel|MULLION|PLATE,CW_MULLION
 90,IfcMember,,MISC_METAL
+5,IfcStair|IfcStairFlight,concrete|\bstb\b|beton|massiv|cast|in.?situ|precast,STAIR_RC
 10,IfcStair|IfcStairFlight,,STAIR
 10,IfcRailing,,RAILING
-10,IfcFurnishingElement|IfcFurniture,,FFE
+10,IfcFurnishingElement|IfcFurniture|IfcSystemFurnitureElement,,FFE
+10,IfcTransportElement,,LIFT
+10,IfcReinforcingBar|IfcReinforcingMesh,,REBAR_MODELED
+10,IfcPipeSegment,,PIPE
+10,IfcPipeFitting,,PIPE_FITTING
+10,IfcValve,,VALVE
+10,IfcDuctSegment,,DUCT
+10,IfcDuctFitting,,DUCT_FITTING
+10,IfcAirTerminal|IfcAirTerminalBox|IfcDamper,,AIR_TERMINAL
+10,IfcCableCarrierSegment,,CABLE_TRAY
+10,IfcCableCarrierFitting,,CABLE_FITTING
+10,IfcCableSegment,,CABLE
+10,IfcLightFixture|IfcLamp,,LIGHT
+10,IfcOutlet|IfcSwitchingDevice|IfcJunctionBox,,OUTLET
+10,IfcProtectiveDevice|IfcElectricDistributionBoard|IfcDistributionBoard|IfcTransformer|IfcElectricGenerator|IfcElectricMotor,,ELEC_DEVICE
+10,IfcSanitaryTerminal|IfcWasteTerminal,,SANITARY
+10,IfcFireSuppressionTerminal,,SPRINKLER
+10,IfcElectricAppliance,,APPLIANCE
+10,IfcPump|IfcFan|IfcBoiler|IfcChiller|IfcHeatExchanger|IfcUnitaryEquipment|IfcAirToAirHeatRecovery|IfcCoolingTower|IfcCoil|IfcTank|IfcCompressor|IfcHumidifier|IfcEvaporativeCooler|IfcCondenser|IfcSpaceHeater,,MECH_EQUIP
+10,IfcController|IfcSensor|IfcActuator|IfcAlarm|IfcFlowInstrument|IfcUnitaryControlElement,,CONTROLS
+10,IfcFlowTerminal,closet|\bwc\b|toilet|lavatory|sink|basin|urinal|shower|bath|faucet|tap\b,SANITARY
+10,IfcBuildingElementProxy,wshp|heat pump|\bahu\b|\bfcu\b|fan coil|chiller|pump|boiler|split unit|condens,MECH_EQUIP
+20,IfcBuildingElementProxy,cabinet|casework|counter|wardrobe|shelf|vanity,FFE
+30,IfcBuildingElementProxy,sink|basin|\bwc\b|toilet|shower|bowl|urinal|bidet,SANITARY
+35,IfcBuildingElementProxy,tank|photovoltaic|solar|generator|inverter,MECH_EQUIP
+5,IfcBuildingElementProxy|IfcFurnishingElement|IfcFurniture|IfcSite|IfcGeographicElement,\btree\b|\bplant|shrub|entourage|\bpeople\b|person|rpc|\bcar\b|vehicle|\bbaum\b|\bwater\b|vase|flower|porcelain plate|decor|accessor,EXCLUDE
+10,IfcGeographicElement,,EXCLUDE
+15,IfcBuildingElementProxy,oven|fridge|refrigerator|freezer|washing machine|washer|dryer|dishwasher|cooktop|hob\b|range ?hood|microwave|kühlschrank|appliance,APPLIANCE
