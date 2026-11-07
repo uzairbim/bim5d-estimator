@@ -61,4 +61,10 @@ priority,ifc_class,keywords,recipe
 35,IfcBuildingElementProxy,tank|photovoltaic|solar|generator|inverter,MECH_EQUIP
 5,IfcBuildingElementProxy|IfcFurnishingElement|IfcFurniture|IfcSite|IfcGeographicElement,\btree\b|\bplant|shrub|entourage|\bpeople\b|person|rpc|\bcar\b|vehicle|\bbaum\b|\bwater\b|vase|flower|porcelain plate|decor|accessor,EXCLUDE
 10,IfcGeographicElement,,EXCLUDE
+10,IfcSpace,bath|toilet|\bwc\b|shower|washroom|lavator|ablution|laundry|washing|wash room|restroom|powder|\bbad\b|dusche|حمام|دورة مياه|وضوء,ROOM_WET
+20,IfcSpace,kitchen|pantry|kitchenette|küche|مطبخ,ROOM_KITCHEN
+30,IfcSpace,plant|mechanical|electrical|technology|technik|server|\bstore|storage|garage|parking|janitor|cleaning|\bmep\b|pump|generator|lager|مخزن|موقف,ROOM_TECH
+40,IfcSpace,balcony|terrace|veranda|loggia|patio|balkon|terrasse|شرفة|تراس,ROOM_EXTERNAL
+50,IfcSpace,stair|treppe|درج,ROOM_STAIR
+90,IfcSpace,,ROOM_DRY
 15,IfcBuildingElementProxy,oven|fridge|refrigerator|freezer|washing machine|washer|dryer|dishwasher|cooktop|hob\b|range ?hood|microwave|kühlschrank|appliance,APPLIANCE

@@ -11,6 +11,24 @@
      only the concrete layer of a floor build-up.
    - Fill **Assembly Code** (Uniformat) on types. It is exported as a classification and used by the rules.
    - Model per floor (walls and columns floor to floor), so the 4D sequence and cost by level are correct.
+   - **Place rooms** with clear names (Bathroom, Kitchen, Bedroom, Store, Balcony…). Rooms are exported as
+     IfcSpace and drive the finishes: floor, skirting, wall paint or tiles, ceiling paint, waterproofing.
+   - Set walls as **External** in their type (IsExternal) so external render and paint go on the right face.
+
+## Set up your country (once)
+
+1. Start page → **Add my country / prices** (or **Rates → Region & sharing** inside a project).
+2. Choose the country and click **Create region**. Currency and VAT are filled in.
+3. Click **Update from World Bank** (needs internet) or type the exchange rate.
+4. Tab **Local prices**: enter the **key prices** first (skilled and unskilled labour per hour, ready-mix,
+   cement, sand, aggregate, rebar, blocks, bricks, plywood, timber, paint, tiles, gypsum board, structural
+   steel, doors, windows, waterproofing, excavator hire). Add the supplier and date in the source column.
+5. Tab **Work item rates**: click any item to see how its rate is built. Type a **fixed rate** only when
+   you have a quote for the complete item.
+6. **Download rate pack** to share your prices; others use **Import rate pack**.
+
+The "your prices" percentage on each rate, and the accuracy class, show how much of the estimate rests on
+your own prices.
 
 ## 2. Create a project
 
@@ -80,12 +98,45 @@ Click any element in 3D. You see:
 
 You can change how its type is priced right there.
 
-## 6. Rates
+## 6. Prices & rates
 
-Click **Rates**. Each work item shows the base rate converted to your currency. Type your own
-material, labour and equipment rates to override it. **Download Excel** gives the full table; fill it
-in and **Import** it back. Accepted columns: `work_item` (or `code`), `material`, `labour`,
-`equipment`, or a single `rate`.
+See *Set up your country* above. Excel is supported too: **Rates to Excel** downloads every item; fill
+it in and **Rates from Excel / CSV** imports it (columns `work_item` or `code`, then `material`,
+`labour`, `equipment`, or a single `rate`).
+
+## Quantities that are not modelled as objects
+
+The tool adds the quantities an estimator derives from the model:
+
+| From | Derived items |
+|---|---|
+| Rooms | floor finish (if no floor finish is modelled), skirting = perimeter − door widths, wall paint = perimeter × height − doors and windows, ceiling paint; bathrooms: wall tiles full height + waterproofing with 300 mm upturn; kitchens: splashback tiles; plant rooms: floor hardener; balconies: waterproofing |
+| Walls | masonry, plaster and paint per face with the opening rule of your standard; external walls: render + external paint outside, plaster inside |
+| Doors / windows | lintels (width + 300 mm bearing) in masonry walls, window sills, sealant both sides, plaster to reveals |
+| Foundations / ground slab | excavation with working space, blinding, backfill, hardcore, DPM, anti-termite treatment |
+| Slabs / roofs | edge formwork, roof waterproofing with upstands, screed |
+| Steel, MEP | protective paint to steel; insulation for chilled / heating pipes and supply / return ducts |
+
+**Wall and ceiling finishes from** (project settings): *Automatic* uses rooms when the model has them,
+otherwise both faces of walls. Choose *Walls* if your rooms are incomplete.
+
+**Commonly forgotten items** (summary) lists 23 items with their status: priced, allowance, missing or
+"normally in preliminaries". Click **Add x%** to cover a missing one with an allowance.
+
+**Items measured by hand**: add anything not in the model (boundary wall, external works, temporary
+items). Pick a work item to use its rate, or type your own rate.
+
+## Measurement standard
+
+Project settings → **Measurement standard**: NRM2 / POMI (openings up to 0.5 m² not deducted from
+masonry and finishes), IS 1200 (masonry 0.1 m²; finishes: up to 0.5 m² not deducted, 0.5–3 m²
+deducted from one face, larger from both), or Exact (every opening deducted). Check the measurement
+clause of your contract.
+
+## Language and units
+
+Top right: interface language (English, Arabic, Urdu, Spanish, French) and display units
+(metric, or ft / ft² / yd³ / lb). Exports stay metric.
 
 ## 7. 4D and cash flow
 

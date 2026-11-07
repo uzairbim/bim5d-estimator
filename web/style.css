@@ -181,3 +181,16 @@ table.allow input, table.allow select { width: 100%; max-width: none; padding: 3
 .settings label.check { flex-direction: row; align-items: center; gap: 6px; grid-column: span 2; color: var(--ink); }
 .settings label.check input { width: auto; }
 textarea.full { width: 100%; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); font: inherit; font-size: 12px; padding: 6px; }
+
+.two-col { display: grid; grid-template-columns: 1.3fr 1fr; gap: 24px; }
+@media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+table.inner { margin: 4px 0 8px; background: var(--soft); }
+table.inner td, table.inner th { padding: 3px 6px; font-size: 12px; }
+tr.build > td { background: var(--soft); }
+table.check td { padding: 4px 6px; }
+[dir=rtl] .bars .v, [dir=rtl] td.n, [dir=rtl] th.n { text-align: left; }
+[dir=rtl] .legend, [dir=rtl] .vbar { left: auto; right: 12px; }
+[dir=rtl] .panel { border-left: 0; border-right: 1px solid var(--line); }
+#langSel, #unitSel { padding: 5px 8px; font-size: 12px; }
+.dlg-body th { top: 0; }
+.dlg-body { position: relative; }

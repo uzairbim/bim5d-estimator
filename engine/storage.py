@@ -31,7 +31,7 @@ DEFAULT_SETTINGS = {"region": "SA", "rebar_mode": "ratio", "mappings": {},
                     "duration_months": 12, "start": None,
                     "deduct_overlaps": True, "min_deduct_m2": 0.5, "rates_verified": False,
                     "allowances": [], "adjustments": {}, "assumptions": [], "exclusions": None,
-                    "gfa_m2": None}
+                    "gfa_m2": None, "standard": None, "finishes_from": "auto", "manual_items": []}
 
 
 def log(project_id, what, detail=""):

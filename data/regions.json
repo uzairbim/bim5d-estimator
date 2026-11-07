@@ -1,5 +1,22 @@
 {
-  "_note": "SAMPLE settings. Exchange rates, location factors and benchmarks are rough placeholders - set your own. Base rates are in USD; a region file in rates/ (local currency) overrides them item by item. prelims_pct is a typical placeholder (8-15% is common); set yours.",
+  "_note": "Starting factors are rough placeholders. Use 'Update from World Bank' and enter local prices. Labour/material/plant factors convert the USD base prices in resources.csv.",
+  "GLOBAL": {
+    "name": "Global (USD, no country)",
+    "currency": "USD",
+    "fx_per_usd": 1,
+    "location_factor": 1.0,
+    "labour_factor": 1.0,
+    "material_factor": 1.0,
+    "plant_factor": 1.0,
+    "tax_name": "Tax",
+    "tax_pct": 0,
+    "overhead_pct": 10,
+    "profit_pct": 10,
+    "contingency_pct": 5,
+    "prelims_pct": 10,
+    "escalation_pct": 0,
+    "standard": "NRM2"
+  },
   "SA": {
     "name": "Saudi Arabia",
     "currency": "SAR",
@@ -9,7 +26,6 @@
     "tax_pct": 15,
     "overhead_pct": 10,
     "profit_pct": 10,
-    "rates_file": "SA.csv",
     "contingency_pct": 5,
     "benchmark": {
       "label": "Standard villa, whole building (2026 press reports)",
@@ -19,7 +35,11 @@
     },
     "prelims_pct": 10,
     "escalation_pct": 0,
-    "escalation_note": "Tender price inflation forecast for Saudi Arabia in 2026: 4-7% (AESG). Set escalation to the midpoint of the construction period."
+    "escalation_note": "Tender price inflation forecast for Saudi Arabia in 2026: 4-7% (AESG). Set escalation to the midpoint of the construction period.",
+    "labour_factor": 0.25,
+    "material_factor": 0.8,
+    "plant_factor": 0.8,
+    "standard": "NRM2"
   },
   "AE": {
     "name": "United Arab Emirates",
@@ -32,7 +52,11 @@
     "profit_pct": 10,
     "contingency_pct": 5,
     "prelims_pct": 10,
-    "escalation_pct": 0
+    "escalation_pct": 0,
+    "labour_factor": 0.28,
+    "material_factor": 0.85,
+    "plant_factor": 0.85,
+    "standard": "NRM2"
   },
   "PK": {
     "name": "Pakistan",
@@ -45,7 +69,11 @@
     "profit_pct": 10,
     "contingency_pct": 5,
     "prelims_pct": 10,
-    "escalation_pct": 0
+    "escalation_pct": 0,
+    "labour_factor": 0.06,
+    "material_factor": 0.45,
+    "plant_factor": 0.45,
+    "standard": "NRM2"
   },
   "IN": {
     "name": "India",
@@ -58,7 +86,11 @@
     "profit_pct": 10,
     "contingency_pct": 5,
     "prelims_pct": 10,
-    "escalation_pct": 0
+    "escalation_pct": 0,
+    "labour_factor": 0.06,
+    "material_factor": 0.45,
+    "plant_factor": 0.45,
+    "standard": "IS1200"
   },
   "GB": {
     "name": "United Kingdom",
@@ -71,7 +103,11 @@
     "profit_pct": 8,
     "contingency_pct": 5,
     "prelims_pct": 10,
-    "escalation_pct": 0
+    "escalation_pct": 0,
+    "labour_factor": 1.1,
+    "material_factor": 1.1,
+    "plant_factor": 1.1,
+    "standard": "NRM2"
   },
   "DE": {
     "name": "Germany",
@@ -84,7 +120,11 @@
     "profit_pct": 8,
     "contingency_pct": 5,
     "prelims_pct": 10,
-    "escalation_pct": 0
+    "escalation_pct": 0,
+    "labour_factor": 1.2,
+    "material_factor": 1.05,
+    "plant_factor": 1.05,
+    "standard": "NRM2"
   },
   "US": {
     "name": "United States",
@@ -97,6 +137,10 @@
     "profit_pct": 10,
     "contingency_pct": 5,
     "prelims_pct": 10,
-    "escalation_pct": 0
+    "escalation_pct": 0,
+    "labour_factor": 1.0,
+    "material_factor": 1.0,
+    "plant_factor": 1.0,
+    "standard": "NRM2"
   }
 }

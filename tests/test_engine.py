@@ -52,6 +52,8 @@ def test_quantities_agree_with_revit(duplex, lib):
 def test_no_volume_bigger_than_bounding_box(duplex):
     for e in duplex:
         q = e["qty"]
+        if e["ifc_class"] == "IfcSpace":
+            continue
         if not q["check"]:
             assert q["volume"] <= q["length"] * q["width"] * q["height"] * 1.05 + 1e-6 or e["ifc_class"] in (
                 "IfcColumn", "IfcMember")
@@ -246,6 +248,80 @@ def test_scope_gap_suggests_mep_allowance(duplex, lib):
     assert not mep["present"] and mep["suggest"]["value"] == 25
     with_allow = estimate(duplex, "SA", lib, {"allowances": [{"name": "MEP services allowance", "kind": "pct", "value": 25}]})
     assert with_allow["summary"]["allowances"] == pytest.approx(with_allow["summary"]["direct"] * 0.25, rel=1e-6)
+
+
+def test_rooms_give_finishes_without_double_counting(duplex, lib):
+    est = estimate(duplex, "SA", lib)
+    assert est["rooms_on"] and est["rooms"] >= 10
+    codes = {b["work_item"] for b in est["boq"]}
+    assert {"FLR-SKRT", "CLG-PNT", "WAL-TILE", "WPF-WET", "LINTEL", "SILL", "SEALANT"} <= codes
+    # with rooms on, walls do not carry paint; with walls only, rooms are not priced
+    walls = estimate(duplex, "SA", lib, {"finishes_from": "walls"})
+    assert not walls["rooms_on"]
+    assert not any(l["recipe"].startswith("ROOM_") for l in walls["lines"])
+    room_paint = sum(l["net_qty"] for l in est["lines"] if l["work_item"] == "PNT" and l["recipe"].startswith("ROOM_"))
+    wall_paint = sum(l["net_qty"] for l in est["lines"] if l["work_item"] == "PNT" and not l["recipe"].startswith("ROOM_"))
+    assert room_paint > 0 and wall_paint == 0
+
+
+def test_bathroom_gets_tiles_and_waterproofing(duplex, lib):
+    est = estimate(duplex, "SA", lib)
+    bath = next(e for e in duplex if e["ifc_class"] == "IfcSpace" and "Bathroom" in e["name"])
+    items = {l["work_item"] for l in est["lines"] if l["guid"] == bath["guid"]}
+    assert {"WAL-TILE", "WPF-WET"} <= items and "PNT" not in items
+
+
+def test_room_perimeter_is_plausible(duplex):
+    import math
+    for r in (e for e in duplex if e["ifc_class"] == "IfcSpace"):
+        q = r["qty"]
+        if q["floor_area"] > 1:
+            assert q["perimeter"] >= 2 * math.sqrt(math.pi * q["floor_area"]) * 0.97
+
+
+def test_is1200_one_face_rule(lib):
+    wall = _el("w", "IfcWall", "Block wall 200", {"volume": 2.0, "side": 10.0}, openings=([2.0, 1.0, 2.0, "window"],))
+    nrm = estimate([wall], "US", lib, {"standard": "NRM2", "finishes_from": "walls"})
+    ind = estimate([wall], "US", lib, {"standard": "IS1200", "finishes_from": "walls"})
+    pls = lambda e: next(l["net_qty"] for l in e["lines"] if l["work_item"] == "PLS")
+    assert pls(nrm) == pytest.approx(20.0)        # both faces, opening deducted twice
+    assert pls(ind) == pytest.approx(22.0)        # 0.5-3 m2 opening deducted from one face only
+
+
+def test_rate_built_up_from_local_prices(lib):
+    d = lib.rate_detail("GLOBAL", "CON-SLB")
+    assert d["method"] == "built-up" and d["local_share"] == 0
+    total = d["material"] + d["labour"] + d["equipment"]
+    expect = sum(float(n["qty"]) * float(lib.resources[n["resource"]]["price_usd"]) for n in lib.norms["CON-SLB"])
+    assert total == pytest.approx(expect)
+    lib.prices["GLOBAL"] = {"M-RMC": {"price": "200"}}
+    lib._cache.clear()
+    d2 = lib.rate_detail("GLOBAL", "CON-SLB")
+    assert d2["material"] == pytest.approx(200) and 0 < d2["local_share"] < 1
+    lib.prices["GLOBAL"] = {}
+    lib._cache.clear()
+
+
+def test_every_work_item_has_norms(lib):
+    for code in lib.work_items:
+        assert lib.norms.get(code), code
+        for n in lib.norms[code]:
+            assert n["resource"] in lib.resources, n["resource"]
+
+
+def test_manual_item_and_checklist(duplex, lib):
+    est = estimate(duplex, "SA", lib, {"manual_items": [{"description": "Boundary wall", "qty": 10, "rate": 100}]})
+    man = [l for l in est["lines"] if l["recipe"] == "MANUAL"]
+    assert man and man[0]["amount"] == pytest.approx(1000)
+    names = {c["name"]: c["status"] for c in est["checklist"]}
+    assert names["Skirting"] == "priced" and names["Testing and commissioning of services"] == "missing"
+
+
+def test_countries_list():
+    import json
+    from engine.estimate import DATA
+    c = json.loads((DATA / "countries.json").read_text(encoding="utf-8"))
+    assert len(c) > 200 and next(x for x in c if x["code"] == "SA")["currency"] == "SAR"
 
 
 def test_adjustment_factor(duplex, lib):

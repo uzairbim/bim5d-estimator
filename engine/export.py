@@ -166,6 +166,11 @@ def to_xlsx(title, est, sched=None):
            [[x["name"], "yes" if x["present"] else "NO", x["cost"],
              (f"{x['suggest']['name']} {x['suggest']['value']}%" if x.get("suggest") else "")]
             for x in est.get("scope", [])], money_cols=(f"Cost ({cur})",), widths=[30, 12, 16, 46])
+    if est.get("checklist"):
+        _sheet(wb, "Checklist", ["Item", "Status", f"Cost ({cur})", "Work items", "Note"],
+               [[x["name"], x["status"], x["cost"], ", ".join(x["codes"]), x.get("note") or
+                 (f"suggest allowance {x['suggest']['value']}%" if x.get("suggest") else "")]
+                for x in est["checklist"]], money_cols=(f"Cost ({cur})",), widths=[42, 12, 16, 30, 34])
     rec = c.get("reconciliation") or {}
     if rec.get("compared"):
         _sheet(wb, "Reconciliation", ["GlobalId", "Measured m³", "Model's own m³", "Difference %"],

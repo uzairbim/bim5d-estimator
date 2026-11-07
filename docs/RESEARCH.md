@@ -65,6 +65,25 @@ What exists, what quantity surveyors struggle with, and the design decisions tha
 | **Accuracy must be stated** (AACE 18R-97 classes: Class 5 -50%/+100% … Class 2 -15%/+20%). | The tool assigns a class from sample-rate share, missing scope, unpriced elements, unmeasured shapes and reconciliation, shows the low-high range and lists what would narrow it. |
 | **Audit trail** (CostX case studies stress QA audit). | Every mapping, adjustment, setting, rate change and upload is logged with time. Quantity adjustments require a written reason. |
 
+## 7. What the main estimating tools do, and what this tool takes from them
+
+| Tool | Idea | Here |
+|---|---|---|
+| RIB CostX | BIM import creates *dimension groups* by Revit category + family + type; formulas derive extra quantities; composite rate build-ups; BOQ by coding; revision comparison by object ID | Groups by type (Mapping), recipe formulas, rate builder (norms × resources), BOQ by trade / NRM1 / Uniformat, revision compare |
+| Autodesk Navisworks Quantification | Items = assemblies of resources; formulas on model variables (ModelArea, ModelVolume); *virtual takeoff* for items not in the model | Recipes and norms; formula variables; **manual items** |
+| Revit schedules / room finish tools | Material takeoff by layer; room finish areas (gross / net), perimeter, finish parameters | Layer-aware quantities, rooms → finishes with door/window deductions, Revit room finish parameters read when exported |
+| Rate analysis practice (IS 7272, HK labour constants, FAO building guides, Nigerian work studies) | Rate = labour constants × wages + material consumption × prices + plant | `norms.csv` with typical constants and notes; local prices per region |
+
+## 8. Free data for a tool anyone can use
+
+- No free, current, worldwide schedule of rates exists. Government schedules (e.g. India CPWD DSR) are
+  public but country-specific; commercial books (RSMeans, BCIS, Spon's) are paid; the open DDC CWICR
+  data is non-commercial (CC BY-NC).
+- Free, open and global: World Bank exchange rates (`PA.NUS.FCRF`) and price level ratio
+  (`PA.NUS.PPPC.RF`), CC BY 4.0; ICP 2021 construction price level indices (DataBank). Used as
+  starting factors only; the user's own prices always win.
+- Countries and currencies from Unicode CLDR (via Babel).
+
 ## Sources
 
 - DDC CWICR repository: https://github.com/datadrivenconstruction/OpenConstructionEstimate-DDC-CWICR
@@ -95,4 +114,21 @@ What exists, what quantity surveyors struggle with, and the design decisions tha
 - MEP share of cost, Riyadh (indicative): https://daranan.pages.dev/blog/mep-contracting-costs-riyadh/
 - 2026 tender price inflation forecast (AESG): https://gulfconstructiononline.com/Article/464354/Construction-sector-remains-resilient-despite-rising-costs-AESG-report
 - CostX revision comparison and rate libraries: https://www.rib-software.com/?p=48941
+- CostX dimension groups and BOQ coding: https://www.rib-software.com/en/blogs/rib-costx-boq-generation
+- CostX dimension expressions: https://www.rib-software.com/en/blogs/rib-costx-dimension-expressions
+- BIM cost estimating in UK QS practice (ITcon 2014): https://www.itcon.org/papers/2014_31.content.00246.pdf
+- Navisworks Quantification item catalog: https://help.autodesk.com/cloudhelp/2015/ENU/Navisworks/files/GUID-07AC2C02-8C52-4B6D-B2A9-3E13624BCB21.htm
+- Navisworks virtual takeoff (AUGI): https://augi.com/articles/detail/navisworks-takes-off
+- Revit room finish schedules (Autodesk forum): https://forums.autodesk.com/t5/revit-ideas/real-fnish-materials-on-rooms-schedules/idi-p/6725433
+- Room finish area add-in (Autodesk): https://help.autodesk.com/cloudhelp/2020/ENU/Revit-AddIns/files/GUID-BD6706B4-12C9-4D6C-A497-28C2ED0886A3.htm
+- HK labour constants: https://kctang.com.hk/web/node/94
+- IS 7272 labour output constants: https://infralens.in/code/IS-7272-Part-1-2000
+- FAO concrete block quantities: https://www.fao.org/3/S1250E/S1250E09.htm
+- Labour constants from work study, Nigeria: https://www.i-scholar.in/index.php/IJIRD/article/view/143759
+- IS 1200 plaster deductions: https://theconstructor.org/practical-guide/deduction-plastering-painting-measurement-is-code/404476/
+- ICP 2021 construction price level (World Bank DataBank): https://databank.worldbank.org/id/42145050?Report_Name=Construction-Price-Level-Index-
+- World Bank price level ratio PA.NUS.PPPC.RF: https://databank.worldbank.org/metadataglossary/world-development-indicators/series/PA.NUS.PPPC.RF
+- CPWD DSR (public schedule of rates, India): https://infralens.in/sor/cpwd
+- IfcOpenShell WASM preview: https://www.github.com/IfcOpenShell/wasm-preview
+- Hugging Face Spaces free tier: https://www.eesel.ai/en/blog/hugging-face-pricing
 - Saudi villa cost per m² (Zawya): https://www.zawya.com/en/economy/real-estate/saudi-projects-value-hits-2.07trln-construction-real-estate-takes-major-share-1509870

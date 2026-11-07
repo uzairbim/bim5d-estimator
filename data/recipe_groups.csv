@@ -49,3 +49,9 @@ OUTLET,Socket / switch,5.8 Electrical installations,D50 Electrical,7 Fit-out
 ELEC_DEVICE,Electrical panel / device,5.8 Electrical installations,D50 Electrical,5 Services
 GENERIC_ITEM,Other item (allowance),4 Fittings furnishings and equipment,E10 Equipment,7 Fit-out
 INSULATION_LAYER,Insulation layer (modelled as floor),2.2 Upper floors,B10 Superstructure,2 Frame & floors
+ROOM_DRY,Room finishes (dry room),3.1 Wall finishes,C30 Interior finishes,6 Finishes
+ROOM_WET,Room finishes (wet room / bathroom),3.1 Wall finishes,C30 Interior finishes,6 Finishes
+ROOM_KITCHEN,Room finishes (kitchen),3.1 Wall finishes,C30 Interior finishes,6 Finishes
+ROOM_TECH,Room finishes (technical / store / garage),3.1 Wall finishes,C30 Interior finishes,6 Finishes
+ROOM_EXTERNAL,Room finishes (balcony / terrace),3.2 Floor finishes,C30 Interior finishes,6 Finishes
+ROOM_STAIR,Room finishes (stair hall),3.1 Wall finishes,C30 Interior finishes,6 Finishes

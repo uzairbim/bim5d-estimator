@@ -120,6 +120,9 @@ const pid = h.get("p"), vid = h.get("v");
     </tbody></table>
     ${e.allowances.length ? `<p><b>Allowances included</b></p><table><tbody>${e.allowances.map((x) => `<tr><td>${esc(x.name)}</td><td>${x.kind === "pct" ? x.value + "% of measured work" : x.kind === "per_m2" ? fmt(x.value) + " " + cur + "/m²" : "lump sum"}</td><td class="n">${fmt(x.amount)}</td></tr>`).join("")}</tbody></table>` : ""}
 
+    <p><b>Commonly forgotten items</b></p>
+    <table><tbody>${(e.checklist || []).map((x) => `<tr><td>${esc(x.name)}</td><td>${x.status === "priced" ? "Priced" : x.status === "allowance" ? "Allowance" : x.status === "note" ? esc(x.note) : '<span class="warn">Not included</span>'}</td><td class="n">${x.cost ? fmt(x.cost) : ""}</td></tr>`).join("")}</tbody></table>
+
     <h2>7. Basis of estimate and assumptions</h2>
     <ul>${e.assumptions.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
 

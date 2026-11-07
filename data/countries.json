@@ -1,0 +1,2198 @@
+[
+{
+"code": "AF",
+"name": "Afghanistan",
+"name_ar": "أفغانستان",
+"currency": "AFN",
+"currency_name": "Afghan Afghani",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "AL",
+"name": "Albania",
+"name_ar": "ألبانيا",
+"currency": "ALL",
+"currency_name": "Albanian Lek",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "DZ",
+"name": "Algeria",
+"name_ar": "الجزائر",
+"currency": "DZD",
+"currency_name": "Algerian Dinar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "AS",
+"name": "American Samoa",
+"name_ar": "ساموا الأمريكية",
+"currency": "USD",
+"currency_name": "US Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "AD",
+"name": "Andorra",
+"name_ar": "أندورا",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "AO",
+"name": "Angola",
+"name_ar": "أنغولا",
+"currency": "AOA",
+"currency_name": "Angolan Kwanza",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "AI",
+"name": "Anguilla",
+"name_ar": "أنغويلا",
+"currency": "XCD",
+"currency_name": "East Caribbean Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "AG",
+"name": "Antigua & Barbuda",
+"name_ar": "أنتيغوا وبربودا",
+"currency": "XCD",
+"currency_name": "East Caribbean Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "AR",
+"name": "Argentina",
+"name_ar": "الأرجنتين",
+"currency": "ARS",
+"currency_name": "Argentine Peso",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "AM",
+"name": "Armenia",
+"name_ar": "أرمينيا",
+"currency": "AMD",
+"currency_name": "Armenian Dram",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "AW",
+"name": "Aruba",
+"name_ar": "أروبا",
+"currency": "AWG",
+"currency_name": "Aruban Florin",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "AU",
+"name": "Australia",
+"name_ar": "أستراليا",
+"currency": "AUD",
+"currency_name": "Australian Dollar",
+"tax_name": "GST",
+"tax_pct": 10
+},
+{
+"code": "AT",
+"name": "Austria",
+"name_ar": "النمسا",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "AZ",
+"name": "Azerbaijan",
+"name_ar": "أذربيجان",
+"currency": "AZN",
+"currency_name": "Azerbaijani Manat",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "BS",
+"name": "Bahamas",
+"name_ar": "جزر البهاما",
+"currency": "BSD",
+"currency_name": "Bahamian Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "BH",
+"name": "Bahrain",
+"name_ar": "البحرين",
+"currency": "BHD",
+"currency_name": "Bahraini Dinar",
+"tax_name": "VAT",
+"tax_pct": 10
+},
+{
+"code": "BD",
+"name": "Bangladesh",
+"name_ar": "بنغلاديش",
+"currency": "BDT",
+"currency_name": "Bangladeshi Taka",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "BB",
+"name": "Barbados",
+"name_ar": "بربادوس",
+"currency": "BBD",
+"currency_name": "Barbadian Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "BY",
+"name": "Belarus",
+"name_ar": "بيلاروس",
+"currency": "BYN",
+"currency_name": "Belarusian Ruble",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "BE",
+"name": "Belgium",
+"name_ar": "بلجيكا",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT",
+"tax_pct": 21
+},
+{
+"code": "BZ",
+"name": "Belize",
+"name_ar": "بليز",
+"currency": "BZD",
+"currency_name": "Belize Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "BJ",
+"name": "Benin",
+"name_ar": "بنين",
+"currency": "XOF",
+"currency_name": "West African CFA Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "BM",
+"name": "Bermuda",
+"name_ar": "برمودا",
+"currency": "BMD",
+"currency_name": "Bermudan Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "BT",
+"name": "Bhutan",
+"name_ar": "بوتان",
+"currency": "INR",
+"currency_name": "Indian Rupee",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "BO",
+"name": "Bolivia",
+"name_ar": "بوليفيا",
+"currency": "BOB",
+"currency_name": "Bolivian Boliviano",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "BA",
+"name": "Bosnia & Herzegovina",
+"name_ar": "البوسنة والهرسك",
+"currency": "BAM",
+"currency_name": "Bosnia-Herzegovina Convertible Mark",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "BW",
+"name": "Botswana",
+"name_ar": "بوتسوانا",
+"currency": "BWP",
+"currency_name": "Botswanan Pula",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "BR",
+"name": "Brazil",
+"name_ar": "البرازيل",
+"currency": "BRL",
+"currency_name": "Brazilian Real",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "IO",
+"name": "British Indian Ocean Territory",
+"name_ar": "الإقليم البريطاني في المحيط الهندي",
+"currency": "USD",
+"currency_name": "US Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "VG",
+"name": "British Virgin Islands",
+"name_ar": "جزر فيرجن البريطانية",
+"currency": "USD",
+"currency_name": "US Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "BN",
+"name": "Brunei",
+"name_ar": "بروناي",
+"currency": "BND",
+"currency_name": "Brunei Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "BG",
+"name": "Bulgaria",
+"name_ar": "بلغاريا",
+"currency": "BGN",
+"currency_name": "Bulgarian Lev",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "BF",
+"name": "Burkina Faso",
+"name_ar": "بوركينا فاسو",
+"currency": "XOF",
+"currency_name": "West African CFA Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "BI",
+"name": "Burundi",
+"name_ar": "بوروندي",
+"currency": "BIF",
+"currency_name": "Burundian Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "KH",
+"name": "Cambodia",
+"name_ar": "كمبوديا",
+"currency": "KHR",
+"currency_name": "Cambodian Riel",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "CM",
+"name": "Cameroon",
+"name_ar": "الكاميرون",
+"currency": "XAF",
+"currency_name": "Central African CFA Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "CA",
+"name": "Canada",
+"name_ar": "كندا",
+"currency": "CAD",
+"currency_name": "Canadian Dollar",
+"tax_name": "GST",
+"tax_pct": 5
+},
+{
+"code": "CV",
+"name": "Cape Verde",
+"name_ar": "الرأس الأخضر",
+"currency": "CVE",
+"currency_name": "Cape Verdean Escudo",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "BQ",
+"name": "Caribbean Netherlands",
+"name_ar": "هولندا الكاريبية",
+"currency": "USD",
+"currency_name": "US Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "KY",
+"name": "Cayman Islands",
+"name_ar": "جزر كايمان",
+"currency": "KYD",
+"currency_name": "Cayman Islands Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "CF",
+"name": "Central African Republic",
+"name_ar": "جمهورية أفريقيا الوسطى",
+"currency": "XAF",
+"currency_name": "Central African CFA Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "TD",
+"name": "Chad",
+"name_ar": "تشاد",
+"currency": "XAF",
+"currency_name": "Central African CFA Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "CL",
+"name": "Chile",
+"name_ar": "تشيلي",
+"currency": "CLP",
+"currency_name": "Chilean Peso",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "CN",
+"name": "China",
+"name_ar": "الصين",
+"currency": "CNY",
+"currency_name": "Chinese Yuan",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "CX",
+"name": "Christmas Island",
+"name_ar": "جزيرة كريسماس",
+"currency": "AUD",
+"currency_name": "Australian Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "CC",
+"name": "Cocos (Keeling) Islands",
+"name_ar": "جزر كوكوس (كيلينغ)",
+"currency": "AUD",
+"currency_name": "Australian Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "CO",
+"name": "Colombia",
+"name_ar": "كولومبيا",
+"currency": "COP",
+"currency_name": "Colombian Peso",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "KM",
+"name": "Comoros",
+"name_ar": "جزر القمر",
+"currency": "KMF",
+"currency_name": "Comorian Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "CG",
+"name": "Congo - Brazzaville",
+"name_ar": "الكونغو - برازافيل",
+"currency": "XAF",
+"currency_name": "Central African CFA Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "CD",
+"name": "Congo - Kinshasa",
+"name_ar": "الكونغو - كينشاسا",
+"currency": "CDF",
+"currency_name": "Congolese Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "CK",
+"name": "Cook Islands",
+"name_ar": "جزر كوك",
+"currency": "NZD",
+"currency_name": "New Zealand Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "CR",
+"name": "Costa Rica",
+"name_ar": "كوستاريكا",
+"currency": "CRC",
+"currency_name": "Costa Rican Colón",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "HR",
+"name": "Croatia",
+"name_ar": "كرواتيا",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "CU",
+"name": "Cuba",
+"name_ar": "كوبا",
+"currency": "CUP",
+"currency_name": "Cuban Peso",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "CW",
+"name": "Curaçao",
+"name_ar": "كوراساو",
+"currency": "XCG",
+"currency_name": "Caribbean guilder",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "CY",
+"name": "Cyprus",
+"name_ar": "قبرص",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "CZ",
+"name": "Czechia",
+"name_ar": "التشيك",
+"currency": "CZK",
+"currency_name": "Czech Koruna",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "CI",
+"name": "Côte d’Ivoire",
+"name_ar": "ساحل العاج",
+"currency": "XOF",
+"currency_name": "West African CFA Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "DK",
+"name": "Denmark",
+"name_ar": "الدانمرك",
+"currency": "DKK",
+"currency_name": "Danish Krone",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "DJ",
+"name": "Djibouti",
+"name_ar": "جيبوتي",
+"currency": "DJF",
+"currency_name": "Djiboutian Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "DM",
+"name": "Dominica",
+"name_ar": "دومينيكا",
+"currency": "XCD",
+"currency_name": "East Caribbean Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "DO",
+"name": "Dominican Republic",
+"name_ar": "جمهورية الدومينيكان",
+"currency": "DOP",
+"currency_name": "Dominican Peso",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "EC",
+"name": "Ecuador",
+"name_ar": "الإكوادور",
+"currency": "USD",
+"currency_name": "US Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "EG",
+"name": "Egypt",
+"name_ar": "مصر",
+"currency": "EGP",
+"currency_name": "Egyptian Pound",
+"tax_name": "VAT",
+"tax_pct": 14
+},
+{
+"code": "SV",
+"name": "El Salvador",
+"name_ar": "السلفادور",
+"currency": "USD",
+"currency_name": "US Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "GQ",
+"name": "Equatorial Guinea",
+"name_ar": "غينيا الاستوائية",
+"currency": "XAF",
+"currency_name": "Central African CFA Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "ER",
+"name": "Eritrea",
+"name_ar": "إريتريا",
+"currency": "ERN",
+"currency_name": "Eritrean Nakfa",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "EE",
+"name": "Estonia",
+"name_ar": "إستونيا",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "SZ",
+"name": "Eswatini",
+"name_ar": "إسواتيني",
+"currency": "SZL",
+"currency_name": "Swazi Lilangeni",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "ET",
+"name": "Ethiopia",
+"name_ar": "إثيوبيا",
+"currency": "ETB",
+"currency_name": "Ethiopian Birr",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "FK",
+"name": "Falkland Islands",
+"name_ar": "جزر فوكلاند",
+"currency": "FKP",
+"currency_name": "Falkland Islands Pound",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "FO",
+"name": "Faroe Islands",
+"name_ar": "جزر فارو",
+"currency": "DKK",
+"currency_name": "Danish Krone",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "FJ",
+"name": "Fiji",
+"name_ar": "فيجي",
+"currency": "FJD",
+"currency_name": "Fijian Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "FI",
+"name": "Finland",
+"name_ar": "فنلندا",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "FR",
+"name": "France",
+"name_ar": "فرنسا",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT",
+"tax_pct": 20
+},
+{
+"code": "GF",
+"name": "French Guiana",
+"name_ar": "غويانا الفرنسية",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "PF",
+"name": "French Polynesia",
+"name_ar": "بولينيزيا الفرنسية",
+"currency": "XPF",
+"currency_name": "CFP Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "GA",
+"name": "Gabon",
+"name_ar": "الغابون",
+"currency": "XAF",
+"currency_name": "Central African CFA Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "GM",
+"name": "Gambia",
+"name_ar": "غامبيا",
+"currency": "GMD",
+"currency_name": "Gambian Dalasi",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "GE",
+"name": "Georgia",
+"name_ar": "جورجيا",
+"currency": "GEL",
+"currency_name": "Georgian Lari",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "DE",
+"name": "Germany",
+"name_ar": "ألمانيا",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT",
+"tax_pct": 19
+},
+{
+"code": "GH",
+"name": "Ghana",
+"name_ar": "غانا",
+"currency": "GHS",
+"currency_name": "Ghanaian Cedi",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "GI",
+"name": "Gibraltar",
+"name_ar": "جبل طارق",
+"currency": "GIP",
+"currency_name": "Gibraltar Pound",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "GR",
+"name": "Greece",
+"name_ar": "اليونان",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "GL",
+"name": "Greenland",
+"name_ar": "غرينلاند",
+"currency": "DKK",
+"currency_name": "Danish Krone",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "GD",
+"name": "Grenada",
+"name_ar": "غرينادا",
+"currency": "XCD",
+"currency_name": "East Caribbean Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "GP",
+"name": "Guadeloupe",
+"name_ar": "غوادلوب",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "GU",
+"name": "Guam",
+"name_ar": "غوام",
+"currency": "USD",
+"currency_name": "US Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "GT",
+"name": "Guatemala",
+"name_ar": "غواتيمالا",
+"currency": "GTQ",
+"currency_name": "Guatemalan Quetzal",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "GG",
+"name": "Guernsey",
+"name_ar": "غيرنزي",
+"currency": "GBP",
+"currency_name": "British Pound",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "GN",
+"name": "Guinea",
+"name_ar": "غينيا",
+"currency": "GNF",
+"currency_name": "Guinean Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "GW",
+"name": "Guinea-Bissau",
+"name_ar": "غينيا بيساو",
+"currency": "XOF",
+"currency_name": "West African CFA Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "GY",
+"name": "Guyana",
+"name_ar": "غيانا",
+"currency": "GYD",
+"currency_name": "Guyanaese Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "HT",
+"name": "Haiti",
+"name_ar": "هايتي",
+"currency": "HTG",
+"currency_name": "Haitian Gourde",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "HN",
+"name": "Honduras",
+"name_ar": "هندوراس",
+"currency": "HNL",
+"currency_name": "Honduran Lempira",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "HK",
+"name": "Hong Kong SAR China",
+"name_ar": "هونغ كونغ الصينية (منطقة إدارية خاصة)",
+"currency": "HKD",
+"currency_name": "Hong Kong Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "HU",
+"name": "Hungary",
+"name_ar": "هنغاريا",
+"currency": "HUF",
+"currency_name": "Hungarian Forint",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "IS",
+"name": "Iceland",
+"name_ar": "آيسلندا",
+"currency": "ISK",
+"currency_name": "Icelandic Króna",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "IN",
+"name": "India",
+"name_ar": "الهند",
+"currency": "INR",
+"currency_name": "Indian Rupee",
+"tax_name": "GST",
+"tax_pct": 18
+},
+{
+"code": "ID",
+"name": "Indonesia",
+"name_ar": "إندونيسيا",
+"currency": "IDR",
+"currency_name": "Indonesian Rupiah",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "IR",
+"name": "Iran",
+"name_ar": "إيران",
+"currency": "IRR",
+"currency_name": "Iranian Rial",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "IQ",
+"name": "Iraq",
+"name_ar": "العراق",
+"currency": "IQD",
+"currency_name": "Iraqi Dinar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "IE",
+"name": "Ireland",
+"name_ar": "أيرلندا",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT",
+"tax_pct": 23
+},
+{
+"code": "IM",
+"name": "Isle of Man",
+"name_ar": "جزيرة مان",
+"currency": "GBP",
+"currency_name": "British Pound",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "IL",
+"name": "Israel",
+"name_ar": "إسرائيل",
+"currency": "ILS",
+"currency_name": "Israeli New Shekel",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "IT",
+"name": "Italy",
+"name_ar": "إيطاليا",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT",
+"tax_pct": 22
+},
+{
+"code": "JM",
+"name": "Jamaica",
+"name_ar": "جامايكا",
+"currency": "JMD",
+"currency_name": "Jamaican Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "JP",
+"name": "Japan",
+"name_ar": "اليابان",
+"currency": "JPY",
+"currency_name": "Japanese Yen",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "JE",
+"name": "Jersey",
+"name_ar": "جيرسي",
+"currency": "GBP",
+"currency_name": "British Pound",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "JO",
+"name": "Jordan",
+"name_ar": "الأردن",
+"currency": "JOD",
+"currency_name": "Jordanian Dinar",
+"tax_name": "Sales tax",
+"tax_pct": 16
+},
+{
+"code": "KZ",
+"name": "Kazakhstan",
+"name_ar": "كازاخستان",
+"currency": "KZT",
+"currency_name": "Kazakhstani Tenge",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "KE",
+"name": "Kenya",
+"name_ar": "كينيا",
+"currency": "KES",
+"currency_name": "Kenyan Shilling",
+"tax_name": "VAT",
+"tax_pct": 16
+},
+{
+"code": "KI",
+"name": "Kiribati",
+"name_ar": "كيريباتي",
+"currency": "AUD",
+"currency_name": "Australian Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "KW",
+"name": "Kuwait",
+"name_ar": "الكويت",
+"currency": "KWD",
+"currency_name": "Kuwaiti Dinar",
+"tax_name": "VAT",
+"tax_pct": 0
+},
+{
+"code": "KG",
+"name": "Kyrgyzstan",
+"name_ar": "قيرغيزستان",
+"currency": "KGS",
+"currency_name": "Kyrgystani Som",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "LA",
+"name": "Laos",
+"name_ar": "لاوس",
+"currency": "LAK",
+"currency_name": "Laotian Kip",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "LV",
+"name": "Latvia",
+"name_ar": "لاتفيا",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "LB",
+"name": "Lebanon",
+"name_ar": "لبنان",
+"currency": "LBP",
+"currency_name": "Lebanese Pound",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "LS",
+"name": "Lesotho",
+"name_ar": "ليسوتو",
+"currency": "ZAR",
+"currency_name": "South African Rand",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "LR",
+"name": "Liberia",
+"name_ar": "ليبيريا",
+"currency": "LRD",
+"currency_name": "Liberian Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "LY",
+"name": "Libya",
+"name_ar": "ليبيا",
+"currency": "LYD",
+"currency_name": "Libyan Dinar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "LI",
+"name": "Liechtenstein",
+"name_ar": "ليختنشتاين",
+"currency": "CHF",
+"currency_name": "Swiss Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "LT",
+"name": "Lithuania",
+"name_ar": "ليتوانيا",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "LU",
+"name": "Luxembourg",
+"name_ar": "لوكسمبورغ",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MO",
+"name": "Macao SAR China",
+"name_ar": "منطقة ماكاو الإدارية الخاصة",
+"currency": "MOP",
+"currency_name": "Macanese Pataca",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MG",
+"name": "Madagascar",
+"name_ar": "مدغشقر",
+"currency": "MGA",
+"currency_name": "Malagasy Ariary",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MW",
+"name": "Malawi",
+"name_ar": "ملاوي",
+"currency": "MWK",
+"currency_name": "Malawian Kwacha",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MY",
+"name": "Malaysia",
+"name_ar": "ماليزيا",
+"currency": "MYR",
+"currency_name": "Malaysian Ringgit",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MV",
+"name": "Maldives",
+"name_ar": "جزر المالديف",
+"currency": "MVR",
+"currency_name": "Maldivian Rufiyaa",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "ML",
+"name": "Mali",
+"name_ar": "مالي",
+"currency": "XOF",
+"currency_name": "West African CFA Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MT",
+"name": "Malta",
+"name_ar": "مالطا",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MH",
+"name": "Marshall Islands",
+"name_ar": "جزر مارشال",
+"currency": "USD",
+"currency_name": "US Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MQ",
+"name": "Martinique",
+"name_ar": "جزر المارتينيك",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MR",
+"name": "Mauritania",
+"name_ar": "موريتانيا",
+"currency": "MRU",
+"currency_name": "Mauritanian Ouguiya",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MU",
+"name": "Mauritius",
+"name_ar": "موريشيوس",
+"currency": "MUR",
+"currency_name": "Mauritian Rupee",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "YT",
+"name": "Mayotte",
+"name_ar": "مايوت",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MX",
+"name": "Mexico",
+"name_ar": "المكسيك",
+"currency": "MXN",
+"currency_name": "Mexican Peso",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "FM",
+"name": "Micronesia",
+"name_ar": "ميكرونيزيا",
+"currency": "USD",
+"currency_name": "US Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MD",
+"name": "Moldova",
+"name_ar": "مولدوفا",
+"currency": "MDL",
+"currency_name": "Moldovan Leu",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MC",
+"name": "Monaco",
+"name_ar": "موناكو",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MN",
+"name": "Mongolia",
+"name_ar": "منغوليا",
+"currency": "MNT",
+"currency_name": "Mongolian Tugrik",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "ME",
+"name": "Montenegro",
+"name_ar": "الجبل الأسود",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MS",
+"name": "Montserrat",
+"name_ar": "مونتسرات",
+"currency": "XCD",
+"currency_name": "East Caribbean Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MA",
+"name": "Morocco",
+"name_ar": "المغرب",
+"currency": "MAD",
+"currency_name": "Moroccan Dirham",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MZ",
+"name": "Mozambique",
+"name_ar": "موزمبيق",
+"currency": "MZN",
+"currency_name": "Mozambican Metical",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MM",
+"name": "Myanmar (Burma)",
+"name_ar": "ميانمار (بورما)",
+"currency": "MMK",
+"currency_name": "Myanmar Kyat",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "NA",
+"name": "Namibia",
+"name_ar": "ناميبيا",
+"currency": "ZAR",
+"currency_name": "South African Rand",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "NR",
+"name": "Nauru",
+"name_ar": "ناورو",
+"currency": "AUD",
+"currency_name": "Australian Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "NP",
+"name": "Nepal",
+"name_ar": "نيبال",
+"currency": "NPR",
+"currency_name": "Nepalese Rupee",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "NL",
+"name": "Netherlands",
+"name_ar": "هولندا",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT",
+"tax_pct": 21
+},
+{
+"code": "NC",
+"name": "New Caledonia",
+"name_ar": "كاليدونيا الجديدة",
+"currency": "XPF",
+"currency_name": "CFP Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "NZ",
+"name": "New Zealand",
+"name_ar": "نيوزيلندا",
+"currency": "NZD",
+"currency_name": "New Zealand Dollar",
+"tax_name": "GST",
+"tax_pct": 15
+},
+{
+"code": "NI",
+"name": "Nicaragua",
+"name_ar": "نيكاراغوا",
+"currency": "NIO",
+"currency_name": "Nicaraguan Córdoba",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "NE",
+"name": "Niger",
+"name_ar": "النيجر",
+"currency": "XOF",
+"currency_name": "West African CFA Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "NG",
+"name": "Nigeria",
+"name_ar": "نيجيريا",
+"currency": "NGN",
+"currency_name": "Nigerian Naira",
+"tax_name": "VAT",
+"tax_pct": 7.5
+},
+{
+"code": "NU",
+"name": "Niue",
+"name_ar": "نيوي",
+"currency": "NZD",
+"currency_name": "New Zealand Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "NF",
+"name": "Norfolk Island",
+"name_ar": "جزيرة نورفولك",
+"currency": "AUD",
+"currency_name": "Australian Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "KP",
+"name": "North Korea",
+"name_ar": "كوريا الشمالية",
+"currency": "KPW",
+"currency_name": "North Korean Won",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MK",
+"name": "North Macedonia",
+"name_ar": "مقدونيا الشمالية",
+"currency": "MKD",
+"currency_name": "Macedonian Denar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MP",
+"name": "Northern Mariana Islands",
+"name_ar": "جزر ماريانا الشمالية",
+"currency": "USD",
+"currency_name": "US Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "NO",
+"name": "Norway",
+"name_ar": "النرويج",
+"currency": "NOK",
+"currency_name": "Norwegian Krone",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "OM",
+"name": "Oman",
+"name_ar": "عُمان",
+"currency": "OMR",
+"currency_name": "Omani Rial",
+"tax_name": "VAT",
+"tax_pct": 5
+},
+{
+"code": "PK",
+"name": "Pakistan",
+"name_ar": "باكستان",
+"currency": "PKR",
+"currency_name": "Pakistani Rupee",
+"tax_name": "Sales tax",
+"tax_pct": 0
+},
+{
+"code": "PW",
+"name": "Palau",
+"name_ar": "بالاو",
+"currency": "USD",
+"currency_name": "US Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "PS",
+"name": "Palestinian Territories",
+"name_ar": "الأراضي الفلسطينية",
+"currency": "ILS",
+"currency_name": "Israeli New Shekel",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "PA",
+"name": "Panama",
+"name_ar": "بنما",
+"currency": "PAB",
+"currency_name": "Panamanian Balboa",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "PG",
+"name": "Papua New Guinea",
+"name_ar": "بابوا غينيا الجديدة",
+"currency": "PGK",
+"currency_name": "Papua New Guinean Kina",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "PY",
+"name": "Paraguay",
+"name_ar": "باراغواي",
+"currency": "PYG",
+"currency_name": "Paraguayan Guarani",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "PE",
+"name": "Peru",
+"name_ar": "بيرو",
+"currency": "PEN",
+"currency_name": "Peruvian Sol",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "PH",
+"name": "Philippines",
+"name_ar": "الفلبين",
+"currency": "PHP",
+"currency_name": "Philippine Peso",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "PN",
+"name": "Pitcairn Islands",
+"name_ar": "جزر بيتكيرن",
+"currency": "NZD",
+"currency_name": "New Zealand Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "PL",
+"name": "Poland",
+"name_ar": "بولندا",
+"currency": "PLN",
+"currency_name": "Polish Zloty",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "PT",
+"name": "Portugal",
+"name_ar": "البرتغال",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT",
+"tax_pct": 23
+},
+{
+"code": "PR",
+"name": "Puerto Rico",
+"name_ar": "بورتوريكو",
+"currency": "USD",
+"currency_name": "US Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "QA",
+"name": "Qatar",
+"name_ar": "قطر",
+"currency": "QAR",
+"currency_name": "Qatari Riyal",
+"tax_name": "VAT",
+"tax_pct": 0
+},
+{
+"code": "RO",
+"name": "Romania",
+"name_ar": "رومانيا",
+"currency": "RON",
+"currency_name": "Romanian Leu",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "RU",
+"name": "Russia",
+"name_ar": "روسيا",
+"currency": "RUB",
+"currency_name": "Russian Ruble",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "RW",
+"name": "Rwanda",
+"name_ar": "رواندا",
+"currency": "RWF",
+"currency_name": "Rwandan Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "RE",
+"name": "Réunion",
+"name_ar": "روينيون",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "WS",
+"name": "Samoa",
+"name_ar": "ساموا",
+"currency": "WST",
+"currency_name": "Samoan Tala",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "SM",
+"name": "San Marino",
+"name_ar": "سان مارينو",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "SA",
+"name": "Saudi Arabia",
+"name_ar": "المملكة العربية السعودية",
+"currency": "SAR",
+"currency_name": "Saudi Riyal",
+"tax_name": "VAT",
+"tax_pct": 15
+},
+{
+"code": "SN",
+"name": "Senegal",
+"name_ar": "السنغال",
+"currency": "XOF",
+"currency_name": "West African CFA Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "RS",
+"name": "Serbia",
+"name_ar": "صربيا",
+"currency": "RSD",
+"currency_name": "Serbian Dinar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "SC",
+"name": "Seychelles",
+"name_ar": "سيشل",
+"currency": "SCR",
+"currency_name": "Seychellois Rupee",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "SL",
+"name": "Sierra Leone",
+"name_ar": "سيراليون",
+"currency": "SLE",
+"currency_name": "Sierra Leonean Leone",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "SG",
+"name": "Singapore",
+"name_ar": "سنغافورة",
+"currency": "SGD",
+"currency_name": "Singapore Dollar",
+"tax_name": "GST",
+"tax_pct": 9
+},
+{
+"code": "SX",
+"name": "Sint Maarten",
+"name_ar": "سانت مارتن",
+"currency": "XCG",
+"currency_name": "Caribbean guilder",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "SK",
+"name": "Slovakia",
+"name_ar": "سلوفاكيا",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "SI",
+"name": "Slovenia",
+"name_ar": "سلوفينيا",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "SB",
+"name": "Solomon Islands",
+"name_ar": "جزر سليمان",
+"currency": "SBD",
+"currency_name": "Solomon Islands Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "SO",
+"name": "Somalia",
+"name_ar": "الصومال",
+"currency": "SOS",
+"currency_name": "Somali Shilling",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "ZA",
+"name": "South Africa",
+"name_ar": "جنوب أفريقيا",
+"currency": "ZAR",
+"currency_name": "South African Rand",
+"tax_name": "VAT",
+"tax_pct": 15
+},
+{
+"code": "GS",
+"name": "South Georgia & South Sandwich Islands",
+"name_ar": "جورجيا الجنوبية وجزر ساندويتش الجنوبية",
+"currency": "GBP",
+"currency_name": "British Pound",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "KR",
+"name": "South Korea",
+"name_ar": "كوريا الجنوبية",
+"currency": "KRW",
+"currency_name": "South Korean Won",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "SS",
+"name": "South Sudan",
+"name_ar": "جنوب السودان",
+"currency": "SSP",
+"currency_name": "South Sudanese Pound",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "ES",
+"name": "Spain",
+"name_ar": "إسبانيا",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT",
+"tax_pct": 21
+},
+{
+"code": "LK",
+"name": "Sri Lanka",
+"name_ar": "سريلانكا",
+"currency": "LKR",
+"currency_name": "Sri Lankan Rupee",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "BL",
+"name": "St. Barthélemy",
+"name_ar": "سان بارتليمي",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "SH",
+"name": "St. Helena",
+"name_ar": "سانت هيلينا",
+"currency": "SHP",
+"currency_name": "St. Helena Pound",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "KN",
+"name": "St. Kitts & Nevis",
+"name_ar": "سانت كيتس ونيفيس",
+"currency": "XCD",
+"currency_name": "East Caribbean Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "LC",
+"name": "St. Lucia",
+"name_ar": "سانت لوسيا",
+"currency": "XCD",
+"currency_name": "East Caribbean Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "MF",
+"name": "St. Martin",
+"name_ar": "سان مارتن",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "PM",
+"name": "St. Pierre & Miquelon",
+"name_ar": "سان بيير ومكويلون",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "VC",
+"name": "St. Vincent & Grenadines",
+"name_ar": "سانت فنسنت وجزر غرينادين",
+"currency": "XCD",
+"currency_name": "East Caribbean Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "SD",
+"name": "Sudan",
+"name_ar": "السودان",
+"currency": "SDG",
+"currency_name": "Sudanese Pound",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "SR",
+"name": "Suriname",
+"name_ar": "سورينام",
+"currency": "SRD",
+"currency_name": "Surinamese Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "SJ",
+"name": "Svalbard & Jan Mayen",
+"name_ar": "سفالبارد وجان ماين",
+"currency": "NOK",
+"currency_name": "Norwegian Krone",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "SE",
+"name": "Sweden",
+"name_ar": "السويد",
+"currency": "SEK",
+"currency_name": "Swedish Krona",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "CH",
+"name": "Switzerland",
+"name_ar": "سويسرا",
+"currency": "CHF",
+"currency_name": "Swiss Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "SY",
+"name": "Syria",
+"name_ar": "سوريا",
+"currency": "SYP",
+"currency_name": "Syrian Pound",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "ST",
+"name": "São Tomé & Príncipe",
+"name_ar": "ساو تومي وبرينسيبي",
+"currency": "STN",
+"currency_name": "São Tomé & Príncipe Dobra",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "TW",
+"name": "Taiwan",
+"name_ar": "تايوان",
+"currency": "TWD",
+"currency_name": "New Taiwan Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "TJ",
+"name": "Tajikistan",
+"name_ar": "طاجيكستان",
+"currency": "TJS",
+"currency_name": "Tajikistani Somoni",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "TZ",
+"name": "Tanzania",
+"name_ar": "تنزانيا",
+"currency": "TZS",
+"currency_name": "Tanzanian Shilling",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "TH",
+"name": "Thailand",
+"name_ar": "تايلاند",
+"currency": "THB",
+"currency_name": "Thai Baht",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "TL",
+"name": "Timor-Leste",
+"name_ar": "تيمور - ليشتي",
+"currency": "USD",
+"currency_name": "US Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "TG",
+"name": "Togo",
+"name_ar": "توغو",
+"currency": "XOF",
+"currency_name": "West African CFA Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "TK",
+"name": "Tokelau",
+"name_ar": "توكيلاو",
+"currency": "NZD",
+"currency_name": "New Zealand Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "TO",
+"name": "Tonga",
+"name_ar": "تونغا",
+"currency": "TOP",
+"currency_name": "Tongan Paʻanga",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "TT",
+"name": "Trinidad & Tobago",
+"name_ar": "ترينيداد وتوباغو",
+"currency": "TTD",
+"currency_name": "Trinidad & Tobago Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "TN",
+"name": "Tunisia",
+"name_ar": "تونس",
+"currency": "TND",
+"currency_name": "Tunisian Dinar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "TM",
+"name": "Turkmenistan",
+"name_ar": "تركمانستان",
+"currency": "TMT",
+"currency_name": "Turkmenistani Manat",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "TC",
+"name": "Turks & Caicos Islands",
+"name_ar": "جزر توركس وكايكوس",
+"currency": "USD",
+"currency_name": "US Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "TV",
+"name": "Tuvalu",
+"name_ar": "توفالو",
+"currency": "AUD",
+"currency_name": "Australian Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "TR",
+"name": "Türkiye",
+"name_ar": "تركيا",
+"currency": "TRY",
+"currency_name": "Turkish Lira",
+"tax_name": "VAT",
+"tax_pct": 20
+},
+{
+"code": "VI",
+"name": "U.S. Virgin Islands",
+"name_ar": "جزر فيرجن الأمريكية",
+"currency": "USD",
+"currency_name": "US Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "UG",
+"name": "Uganda",
+"name_ar": "أوغندا",
+"currency": "UGX",
+"currency_name": "Ugandan Shilling",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "UA",
+"name": "Ukraine",
+"name_ar": "أوكرانيا",
+"currency": "UAH",
+"currency_name": "Ukrainian Hryvnia",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "AE",
+"name": "United Arab Emirates",
+"name_ar": "الإمارات العربية المتحدة",
+"currency": "AED",
+"currency_name": "United Arab Emirates Dirham",
+"tax_name": "VAT",
+"tax_pct": 5
+},
+{
+"code": "GB",
+"name": "United Kingdom",
+"name_ar": "المملكة المتحدة",
+"currency": "GBP",
+"currency_name": "British Pound",
+"tax_name": "VAT",
+"tax_pct": 20
+},
+{
+"code": "US",
+"name": "United States",
+"name_ar": "الولايات المتحدة",
+"currency": "USD",
+"currency_name": "US Dollar",
+"tax_name": "Sales tax",
+"tax_pct": 0
+},
+{
+"code": "UY",
+"name": "Uruguay",
+"name_ar": "أورغواي",
+"currency": "UYU",
+"currency_name": "Uruguayan Peso",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "UZ",
+"name": "Uzbekistan",
+"name_ar": "أوزبكستان",
+"currency": "UZS",
+"currency_name": "Uzbekistani Som",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "VU",
+"name": "Vanuatu",
+"name_ar": "فانواتو",
+"currency": "VUV",
+"currency_name": "Vanuatu Vatu",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "VA",
+"name": "Vatican City",
+"name_ar": "الفاتيكان",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "VE",
+"name": "Venezuela",
+"name_ar": "فنزويلا",
+"currency": "VES",
+"currency_name": "Venezuelan Bolívar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "VN",
+"name": "Vietnam",
+"name_ar": "فيتنام",
+"currency": "VND",
+"currency_name": "Vietnamese Dong",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "WF",
+"name": "Wallis & Futuna",
+"name_ar": "جزر والس وفوتونا",
+"currency": "XPF",
+"currency_name": "CFP Franc",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "EH",
+"name": "Western Sahara",
+"name_ar": "الصحراء الغربية",
+"currency": "MAD",
+"currency_name": "Moroccan Dirham",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "YE",
+"name": "Yemen",
+"name_ar": "اليمن",
+"currency": "YER",
+"currency_name": "Yemeni Rial",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "ZM",
+"name": "Zambia",
+"name_ar": "زامبيا",
+"currency": "ZMW",
+"currency_name": "Zambian Kwacha",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "ZW",
+"name": "Zimbabwe",
+"name_ar": "زيمبابوي",
+"currency": "USD",
+"currency_name": "US Dollar",
+"tax_name": "VAT/GST",
+"tax_pct": null
+},
+{
+"code": "AX",
+"name": "Åland Islands",
+"name_ar": "جزر آلاند",
+"currency": "EUR",
+"currency_name": "Euro",
+"tax_name": "VAT/GST",
+"tax_pct": null
+}
+]

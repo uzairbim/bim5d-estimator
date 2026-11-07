@@ -63,3 +63,21 @@ ELEC-DEV,Distribution boards and protective devices,nr,Electrical,26 24 16
 APPL,Appliances,nr,Electrical,11 30 00
 CTRL,Controls / sensors,nr,Electrical,25 00 00
 GEN-ITEM,Modelled item (generic allowance),nr,General,01 00 00
+FRM-EDG,Formwork to slab edges,m2,Concrete,03 11 00
+BLINDING,Blinding concrete 50 mm under foundations,m2,Concrete,03 30 00
+BACKFILL,Backfilling with selected excavated material,m3,Earthworks,31 23 23
+HARDCORE,Compacted hardcore / sub-base 150 mm,m2,Earthworks,31 23 23
+TERMITE,Anti-termite soil treatment,m2,Earthworks,31 31 16
+LINTEL,Lintels over openings in masonry,m,Masonry,04 05 23
+SILL,Window sills,m,Openings,08 50 00
+SEALANT,Sealant around windows (both sides),m,Thermal & Moisture,07 92 00
+EXT-RND,External render to walls,m2,Finishes,09 24 00
+EXT-PNT,External paint to walls,m2,Finishes,09 91 13
+STL-PNT,Protective paint to steelwork,m2,Metals,09 96 00
+FLR-SKRT,Skirting,m,Finishes,09 65 13
+WAL-TILE,Wall tiling,m2,Finishes,09 30 00
+WPF-WET,Waterproofing to wet areas (incl. upturns),m2,Thermal & Moisture,07 14 00
+CLG-PNT,Paint to ceilings / soffits,m2,Finishes,09 91 23
+FLR-HRD,Floor hardener / epoxy to technical rooms,m2,Finishes,09 67 00
+PIP-INS,Pipe insulation,m,Plumbing & HVAC,22 07 19
+DUCT-INS,Duct insulation,m2,Plumbing & HVAC,23 07 13

@@ -11,30 +11,28 @@ FIELDS = ["work_item", "material", "labour", "equipment", "source"]
 
 
 def _region_file(lib, region):
-    reg = lib.regions[region]
-    return DATA / "rates" / reg.get("rates_file", f"{region}.csv")
+    return DATA / "rates" / f"{region}.csv"
 
 
 def table(region, lib=None):
-    """Every work item with its base (converted) rate and any local override."""
+    """Every work item with its built-up rate (from resources) and any fixed local rate."""
     lib = lib or Library()
     reg = lib.regions[region]
-    k = reg["fx_per_usd"] * reg["location_factor"]
     local = lib.local_rates.get(region, {})
     rows = []
     for code, wi in lib.work_items.items():
-        b = lib.base_rates.get(code)
-        base = ([round(float(b[f]) * k, 2) for f in ("material", "labour", "equipment")]
-                if b else [0, 0, 0])
+        d = lib.rate_detail(region, code, ignore_fixed=True)
         lo = local.get(code)
         rows.append({
             "work_item": code, "description": wi["description"], "unit": wi["unit"],
-            "trade": wi["trade"], "base": base,
+            "trade": wi["trade"],
+            "base": [round(d["material"], 2), round(d["labour"], 2), round(d["equipment"], 2)],
+            "base_source": d["source"], "local_share": round(d["local_share"], 3), "build": d["build"],
             "local": ([float(lo["material"] or 0), float(lo["labour"] or 0),
                        float(lo["equipment"] or 0)] if lo else None),
-            "source": (lo.get("source") if lo else (b.get("source") if b else "")) or "",
+            "source": (lo.get("source") if lo else "") or "",
         })
-    return {"region": region, "currency": reg["currency"], "factor": round(k, 4), "rows": rows}
+    return {"region": region, "currency": reg["currency"], "factors": lib.factors(region), "rows": rows}
 
 
 def save(region, rows, lib=None):

@@ -261,26 +261,28 @@ def _props(el, psets):
 
 
 def _openings(el, scale, settings):
-    """Areas (m2) of the openings cut into a wall, slab or roof."""
+    """Openings cut into a wall, slab or roof: [area m2, width m, height m, kind]."""
     out = []
     for rel in getattr(el, "HasOpenings", []) or []:
         op = rel.RelatedOpeningElement
-        area = 0.0
+        w = h = 0.0
+        kind = "void"
         for fill in getattr(op, "HasFillings", []) or []:
             e = fill.RelatedBuildingElement
-            w, h = getattr(e, "OverallWidth", None), getattr(e, "OverallHeight", None)
-            if w and h:
-                area = w * h * scale ** 2
+            fw, fh = getattr(e, "OverallWidth", None), getattr(e, "OverallHeight", None)
+            kind = "door" if e.is_a("IfcDoor") else "window" if e.is_a("IfcWindow") else "void"
+            if fw and fh:
+                w, h = fw * scale, fh * scale
                 break
-        if not area:
+        if not w:
             try:
                 g = ifcopenshell.geom.create_shape(settings, op).geometry
                 v = np.asarray(g.verts).reshape(-1, 3)
                 d = sorted((v.max(axis=0) - v.min(axis=0)).tolist())
-                area = d[1] * d[2]          # width x height (depth is the wall)
+                w, h = d[1], d[2]          # width x height (depth is the wall)
             except Exception:
                 continue
-        out.append(round(area, 4))
+        out.append([round(w * h, 4), round(w, 4), round(h, 4), kind])
     return out
 
 
@@ -322,6 +324,10 @@ def extract(path, with_mesh=True, progress=None):
                 level, elev = _storey(el, scale)
                 if el.is_a() in ("IfcDoor", "IfcWindow") and el.OverallWidth and el.OverallHeight:
                     q["area"] = round(el.OverallWidth * el.OverallHeight * scale ** 2, 4)
+                if el.is_a() in ("IfcWall", "IfcSlab", "IfcRoof"):
+                    ops = _openings(el, scale, settings)
+                else:
+                    ops = []
                 elements[el.GlobalId] = {
                     "guid": el.GlobalId,
                     "ifc_class": el.is_a(),
@@ -337,18 +343,142 @@ def extract(path, with_mesh=True, progress=None):
                     "props": _props(el, psets),
                     "authored": authored,
                     "qty": q,
-                    "openings": _openings(el, scale, settings) if el.is_a("IfcWall") or el.is_a("IfcSlab") or el.is_a("IfcRoof") else [],
+                    "openings": ops,
                 }
+                e = elements[el.GlobalId]
+                if el.is_a() in ("IfcDoor", "IfcWindow"):
+                    if el.OverallWidth and el.OverallHeight:
+                        q["ow"] = round(el.OverallWidth * scale, 4)
+                        q["oh"] = round(el.OverallHeight * scale, 4)
+                    else:
+                        q["ow"], q["oh"] = round(q["length"], 4), round(q["height"], 4)
+                    e["host"] = _host(el)
+                if el.is_a("IfcWall"):
+                    ext = (psets.get("Pset_WallCommon") or {}).get("IsExternal")
+                    e["external"] = bool(ext) if ext is not None else None
+                m = np.array(shape.transformation.matrix).reshape(4, 4).T
+                v = np.asarray(g.verts).reshape(-1, 3)
+                w = v @ m[:3, :3].T + m[:3, 3]                     # world, Z-up, metres
+                if len(w):
+                    e["bbox"] = [round(float(x), 3) for x in (*w.min(axis=0), *w.max(axis=0))]
                 if with_mesh:
-                    m = np.array(shape.transformation.matrix).reshape(4, 4).T
-                    v = np.asarray(g.verts).reshape(-1, 3)
-                    w = v @ m[:3, :3].T + m[:3, 3]
-                    w = np.stack([w[:, 0], w[:, 2], -w[:, 1]], axis=1)  # Z-up -> Y-up
-                    meshes[el.GlobalId] = (w.astype(np.float32),
+                    wy = np.stack([w[:, 0], w[:, 2], -w[:, 1]], axis=1)  # Z-up -> Y-up
+                    meshes[el.GlobalId] = (wy.astype(np.float32),
                                            np.asarray(g.faces, dtype=np.uint32))
             if not it.next():
                 break
 
+    rooms = _spaces(model, scale)
+    _link_rooms(rooms, elements)
     project = model.by_type("IfcProject")[0]
     return {"project": project.LongName or project.Name or "Project", "schema": model.schema,
-            "elements": list(elements.values()), "meshes": meshes}
+            "elements": list(elements.values()) + rooms, "meshes": meshes}
+
+
+def _host(el):
+    """GlobalId of the wall (or slab) a door/window sits in."""
+    for rel in getattr(el, "FillsVoids", []) or []:
+        op = rel.RelatingOpeningElement
+        for v in getattr(op, "VoidsElements", []) or []:
+            return v.RelatingBuildingElement.GlobalId
+    return None
+
+
+# Room-like spaces that should not get finishes (shafts, voids, area schemes).
+NOT_A_ROOM = ("shaft", "void", "riser", "duct", "gross", "gfa", "area scheme", "schacht", "luftraum",
+              "roof", "dach", "attic space", "open to below")
+
+
+def _spaces(model, scale):
+    """Rooms (IfcSpace) measured from their 3D shape: floor area, perimeter, height."""
+    settings = ifcopenshell.geom.settings()
+    settings.set("use-world-coords", True)
+    out = []
+    for sp in model.by_type("IfcSpace"):
+        if not sp.Representation:
+            continue
+        try:
+            g = ifcopenshell.geom.create_shape(settings, sp).geometry
+        except Exception:
+            continue
+        v = np.asarray(g.verts, dtype=float).reshape(-1, 3)
+        f = np.asarray(g.faces, dtype=np.int64).reshape(-1, 3)
+        if not len(f):
+            continue
+        key = np.round(v, 4)
+        uniq, inv = np.unique(key, axis=0, return_inverse=True)
+        f = inv.ravel()[f]
+        v = uniq
+        a, b, c = v[f[:, 0]], v[f[:, 1]], v[f[:, 2]]
+        n = np.cross(b - a, c - a) / 2.0
+        zmin, zmax = float(v[:, 2].min()), float(v[:, 2].max())
+        area = float(np.abs(n[:, 2]).sum()) / 2.0
+        # perimeter = free edges of the floor faces
+        floor = f[(np.abs(n[:, 2]) > 1e-9) & (np.abs(n[:, 2]) / (np.linalg.norm(n, axis=1) + 1e-12) > 0.9)
+                  & (np.abs(v[f[:, 0], 2] - zmin) < 0.02)]
+        perim = 0.0
+        if len(floor):
+            edges = np.sort(np.concatenate([floor[:, [0, 1]], floor[:, [1, 2]], floor[:, [2, 0]]]), axis=1)
+            uniq_e, counts = np.unique(edges, axis=0, return_counts=True)
+            free = uniq_e[counts == 1]
+            perim = float(np.linalg.norm(v[free[:, 0]] - v[free[:, 1]], axis=1).sum())
+        x0, y0 = v[:, 0].min(), v[:, 1].min()
+        x1, y1 = v[:, 0].max(), v[:, 1].max()
+        check = 0.0
+        if perim < 2 * np.sqrt(np.pi * area) * 0.98:      # shorter than a circle: impossible
+            perim = 2 * ((x1 - x0) + (y1 - y0))          # fall back to the outline
+            check = 1.0
+        level, elev = _storey(sp, scale)
+        name = " ".join(x for x in (sp.Name, sp.LongName) if x)
+        try:
+            psets = uel.get_psets(sp)
+        except Exception:
+            psets = {}
+        finishes = {}
+        for ps in psets.values():
+            for k in ("Floor Finish", "Wall Finish", "Ceiling Finish", "Base Finish",
+                      "FloorCovering", "WallCovering", "CeilingCovering", "SkirtingBoard"):
+                if isinstance(ps.get(k), str) and ps.get(k).strip():
+                    finishes[k] = ps[k].strip()[:80]
+        out.append({
+            "guid": sp.GlobalId, "ifc_class": "IfcSpace", "kind": "IfcSpace",
+            "predefined": str(getattr(sp, "PredefinedType", "") or ""),
+            "name": name or "Room", "type": sp.LongName or sp.Name or "Room",
+            "level": level, "level_elev": elev, "materials": [], "layers": [],
+            "classification": [], "props": finishes, "authored": {},
+            "is_room": not any(w in name.lower() for w in NOT_A_ROOM),
+            "bbox": [round(x, 3) for x in (*v.min(axis=0), *v.max(axis=0))],
+            "qty": {"count": 1.0, "floor_area": round(area, 4), "perimeter": round(perim, 4),
+                    "height": round(zmax - zmin, 4), "volume": round(area * (zmax - zmin), 4),
+                    "footprint": round(area, 4), "check": check},
+        })
+    return out
+
+
+def _link_rooms(rooms, elements):
+    """For each room: doors and windows in its walls, and finishes already modelled in it."""
+    pad = 0.3
+    for r in rooms:
+        x0, y0, z0, x1, y1, z1 = r["bbox"]
+        doors, wins, modeled = [], [], []
+        area = max((x1 - x0) * (y1 - y0), 1e-6)
+        for e in elements.values():
+            b = e.get("bbox")
+            if not b:
+                continue
+            if e["ifc_class"] in ("IfcDoor", "IfcWindow"):
+                if (b[0] < x1 + pad and b[3] > x0 - pad and b[1] < y1 + pad and b[4] > y0 - pad
+                        and b[2] < z1 and b[5] > z0):
+                    (doors if e["ifc_class"] == "IfcDoor" else wins).append(
+                        [e["qty"].get("ow", 0.9), e["qty"].get("oh", 2.1)])
+            elif e["ifc_class"] in ("IfcCovering", "IfcSlab"):
+                ox = min(b[3], x1) - max(b[0], x0)
+                oy = min(b[4], y1) - max(b[1], y0)
+                if ox > 0 and oy > 0 and ox * oy / area > 0.3 and b[2] < z1 + 0.3 and b[5] > z0 - 0.3:
+                    modeled.append(e["guid"])
+        r["room_doors"], r["room_windows"], r["room_modeled"] = doors, wins, modeled
+        q = r["qty"]
+        q["door_width"] = round(sum(d[0] for d in doors), 4)
+        q["openings_area"] = round(sum(d[0] * d[1] for d in doors + wins), 4)
+        q["wall_area"] = round(max(q["perimeter"] * q["height"] - q["openings_area"], 0.0), 4)
+        q["skirting"] = round(max(q["perimeter"] - q["door_width"], 0.0), 4)

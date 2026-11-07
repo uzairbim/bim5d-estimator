@@ -3,3 +3,4 @@ web/node_modules/
 .git/
 **/__pycache__/
 .pytest_cache/
+.venv/

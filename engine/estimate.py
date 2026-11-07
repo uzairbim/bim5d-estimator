@@ -67,6 +67,19 @@ class Library:
         for code, reg in self.regions.items():
             f = root / "rates" / reg.get("rates_file", f"{code}.csv")
             self.local_rates[code] = {r["work_item"]: r for r in _csv(f)} if f.is_file() else {}
+        # Rate build-up: resources (labour, materials, plant) and norms per work item.
+        self.resources = ({r["code"]: r for r in _csv(root / "resources.csv")}
+                          if (root / "resources.csv").is_file() else {})
+        self.norms = defaultdict(list)
+        if (root / "norms.csv").is_file():
+            for r in _csv(root / "norms.csv"):
+                self.norms[r["work_item"]].append(r)
+        self.prices = {}
+        for code in self.regions:
+            f = root / "prices" / f"{code}.csv"
+            self.prices[code] = ({r["resource"]: r for r in _csv(f) if str(r.get("price", "")).strip()}
+                                 if f.is_file() else {})
+        self._cache = {}
 
     # -- classification -------------------------------------------------
     def rule_for(self, el):
@@ -88,22 +101,81 @@ class Library:
             return None, "none"
         if r["recipe"] == "EXCLUDE":   # site context, people, trees...
             return None, "excluded"
+        if el["ifc_class"] == "IfcSpace" and not el.get("is_room", True):
+            return None, "excluded"    # shafts, voids, roof spaces
         return r["recipe"], "rule"
 
     # -- rates ------------------------------------------------------------
+    def factors(self, region):
+        """Exchange rate and price factors used to convert USD base prices."""
+        reg = self.regions[region]
+        loc = float(reg.get("location_factor", 1.0))
+        return {"fx": float(reg.get("fx_per_usd", 1.0)),
+                "labour": float(reg.get("labour_factor", loc)),
+                "material": float(reg.get("material_factor", loc)),
+                "plant": float(reg.get("plant_factor", reg.get("material_factor", loc)))}
+
+    def resource_price(self, region, code):
+        """(price in local currency, is it the user's own price?)."""
+        p = self.prices.get(region, {}).get(code)
+        if p:
+            return float(p["price"]), True
+        r = self.resources.get(code)
+        if not r:
+            return 0.0, False
+        f = self.factors(region)
+        return float(r["price_usd"]) * f["fx"] * f.get(r["type"], f["material"]), False
+
+    def rate_detail(self, region, work_item, ignore_fixed=False):
+        """How a unit rate is made up. Order: your fixed rate > built up from
+        resources x norms (your prices where given) > converted base rate."""
+        key = (region, work_item, ignore_fixed)
+        if key in self._cache:
+            return self._cache[key]
+        local = None if ignore_fixed else self.local_rates[region].get(work_item)
+        if local:
+            src = local.get("source") or "your rate"
+            d = {"material": float(local["material"] or 0), "labour": float(local["labour"] or 0),
+                 "equipment": float(local["equipment"] or 0), "source": src, "build": [],
+                 "local_share": 0.0 if str(src).upper().startswith("SAMPLE") else 1.0, "method": "fixed"}
+        elif self.norms.get(work_item):
+            parts = {"material": 0.0, "labour": 0.0, "equipment": 0.0}
+            build, own = [], 0.0
+            for n in self.norms[work_item]:
+                res = self.resources.get(n["resource"], {})
+                price, mine = self.resource_price(region, n["resource"])
+                cost = float(n["qty"]) * price
+                kind = {"labour": "labour", "plant": "equipment"}.get(res.get("type"), "material")
+                parts[kind] += cost
+                own += cost if mine else 0.0
+                build.append({"resource": n["resource"], "name": res.get("name", n["resource"]),
+                              "unit": res.get("unit", ""), "qty": float(n["qty"]), "price": round(price, 4),
+                              "cost": round(cost, 4), "yours": mine})
+            total = sum(parts.values()) or 1.0
+            share = own / total
+            src = ("built up from your prices" if share > 0.999 else
+                   f"built up: {share:.0%} your prices, rest estimated" if share > 0 else
+                   "SAMPLE prices (built up)")
+            d = {**parts, "source": src, "build": build, "local_share": share, "method": "built-up"}
+        else:
+            base = self.base_rates.get(work_item)
+            f = self.factors(region)
+            if not base:
+                d = {"material": 0.0, "labour": 0.0, "equipment": 0.0, "source": "NO RATE",
+                     "build": [], "local_share": 0.0, "method": "none"}
+            else:
+                d = {"material": float(base["material"]) * f["fx"] * f["material"],
+                     "labour": float(base["labour"]) * f["fx"] * f["labour"],
+                     "equipment": float(base["equipment"]) * f["fx"] * f["plant"],
+                     "source": (base.get("source") or "base") + " (converted)", "build": [],
+                     "local_share": 0.0, "method": "base"}
+        self._cache[key] = d
+        return d
+
     def rate(self, region, work_item):
         """Unit rate in the region's currency: (material, labour, equipment, source)."""
-        reg = self.regions[region]
-        local = self.local_rates[region].get(work_item)
-        if local:
-            return (float(local["material"] or 0), float(local["labour"] or 0),
-                    float(local["equipment"] or 0), local.get("source") or region)
-        base = self.base_rates.get(work_item)
-        if not base:
-            return 0.0, 0.0, 0.0, "NO RATE"
-        k = reg["fx_per_usd"] * reg["location_factor"]
-        return (float(base["material"]) * k, float(base["labour"]) * k,
-                float(base["equipment"]) * k, (base.get("source") or "base") + " (converted)")
+        d = self.rate_detail(region, work_item)
+        return d["material"], d["labour"], d["equipment"], d["source"]
 
 
 # ---- a tiny, safe formula evaluator -----------------------------------------
@@ -193,6 +265,35 @@ SCOPE = [
 ]
 
 
+# Commonly forgotten items: (name, work item codes, allowance name, allowance %, note when it
+# normally sits elsewhere). A trailing * matches a code prefix.
+CHECKLIST = [
+    ("Excavation and backfill", ["EARTH-EXC", "BACKFILL"], "Earthworks allowance", 2, None),
+    ("Blinding under foundations", ["BLINDING"], "Blinding allowance", 0.3, None),
+    ("Anti-termite treatment", ["TERMITE"], "Anti-termite treatment allowance", 0.2, None),
+    ("Hardcore / sub-base and DPM", ["HARDCORE", "VAPOR"], "Sub-base and DPM allowance", 0.5, None),
+    ("Reinforcement", ["RBR", "MESH"], None, None, None),
+    ("Formwork (incl. slab edges)", ["FRM-*"], None, None, None),
+    ("Lintels over openings", ["LINTEL"], "Lintels allowance", 0.5, None),
+    ("Wall plaster", ["PLS", "EXT-RND"], "Plaster allowance", 3, None),
+    ("Paint to walls", ["PNT", "EXT-PNT"], "Wall painting allowance", 2.5, None),
+    ("Paint to ceilings", ["CLG-PNT"], "Ceiling painting allowance", 1, None),
+    ("Floor finishes", ["FLR-TIL", "FLR-WOOD", "FLR-HRD"], "Floor finishes allowance", 5, None),
+    ("Skirting", ["FLR-SKRT"], "Skirting allowance", 0.5, None),
+    ("Wall tiling in wet areas", ["WAL-TILE"], "Wall tiling allowance", 1.5, None),
+    ("Waterproofing (roofs and wet areas)", ["ROF-WP", "WPF-WET"], "Waterproofing allowance", 1.5, None),
+    ("Window sills and sealant", ["SILL", "SEALANT"], None, None, None),
+    ("Doors with frames and ironmongery", ["DOR"], None, None, None),
+    ("Handrails and balustrades", ["RAIL"], None, None, None),
+    ("Protective paint to steelwork", ["STL-PNT"], None, None, None),
+    ("Pipe and duct insulation", ["PIP-INS", "DUCT-INS"], None, None, None),
+    ("Testing and commissioning of services", [], "Testing and commissioning allowance", 1, None),
+    ("Fire stopping of service penetrations", [], "Fire stopping allowance", 0.3, None),
+    ("Scaffolding, temporary works, site facilities", [], None, None, "Normally in preliminaries"),
+    ("Final cleaning and handover", [], None, None, "Normally in preliminaries"),
+]
+
+
 def _deductions(elements, recipes, deduct):
     """Overlap volume each element gives up, and the overlap records."""
     give = defaultdict(float)
@@ -218,8 +319,31 @@ def _deductions(elements, recipes, deduct):
     return give, records
 
 
-def _env(el, give, min_open):
-    """Quantities used by the formulas, after overlap and opening rules."""
+# Measurement standards: how openings are treated in masonry and finishes.
+#   masonry_min   openings up to this size (m2) are not deducted from masonry
+#   finish_min    openings up to this size are not deducted from plaster / paint
+#   one_face_max  openings above finish_min and up to this size are deducted from one face only
+STANDARDS = {
+    "NRM2": {"label": "RICS NRM2 (UK, Gulf, international)", "masonry_min": 0.5, "finish_min": 0.5, "one_face_max": 0.0},
+    "POMI": {"label": "POMI (Gulf / international contracts)", "masonry_min": 0.5, "finish_min": 0.5, "one_face_max": 0.0},
+    "IS1200": {"label": "IS 1200 (India)", "masonry_min": 0.1, "finish_min": 0.5, "one_face_max": 3.0},
+    "EXACT": {"label": "Exact net quantities (deduct every opening)", "masonry_min": 0.0, "finish_min": 0.0, "one_face_max": 0.0},
+}
+MASONRY = {"BLOCK_WALL", "BRICK_WALL", "CAVITY_WALL"}
+INSULATED = re.compile(r"chilled|heating|hot water|hydronic|condens|refrig|supply air|return air|outside air|"
+                       r"fresh air|zuluft|abluft|kälte|heiz|kaltwasser", re.I)
+
+
+def _opening_areas(el):
+    out = []
+    for o in el.get("openings") or []:
+        out.append(o[0] if isinstance(o, (list, tuple)) else float(o))
+    return out
+
+
+def _env(el, give, rule, ctx):
+    """Quantities used by the formulas, after overlap and opening rules, plus
+    context flags (external wall, rooms in use, host wall of a window...)."""
     q = dict(el["qty"])
     d = give.get(el["guid"], 0.0)
     if d > 0 and q.get("volume", 0) > 0:
@@ -230,10 +354,31 @@ def _env(el, give, min_open):
             if k in q:
                 q[k] = q[k] * f
         q["overlap"] = d
-    small = sum(a for a in el.get("openings") or [] if a <= min_open)
-    q["openings_small"] = small
-    q["side_m"] = q.get("side", 0.0) + small          # face measured to the rule
-    q["footprint_m"] = q.get("footprint", 0.0) + small
+    areas = _opening_areas(el)
+    small_m = sum(a for a in areas if a <= rule["masonry_min"])
+    small_f = sum(a for a in areas if a <= rule["finish_min"])
+    mid_f = sum(a for a in areas if rule["finish_min"] < a <= rule["one_face_max"])
+    side = q.get("side", 0.0)
+    q["openings_small"] = small_m
+    q["side_m"] = side + small_m                       # masonry face measured to the rule
+    q["footprint_m"] = q.get("footprint", 0.0) + small_m
+    q["finish1"] = side + small_f                      # one finished face
+    q["finish2"] = 2 * side + 2 * small_f + mid_f      # both faces (IS 1200: mid openings one face)
+    # context flags
+    q["ext"] = 1.0 if el.get("external") else 0.0
+    q["rooms_on"] = ctx["rooms_on"]
+    host = ctx["by_guid"].get(el.get("host") or "")
+    if host is not None:
+        q["host_masonry"] = 1.0 if ctx["recipes"].get(host["guid"]) in MASONRY else 0.0
+        q["host_t"] = host["qty"].get("width", 0.2)
+    else:
+        q["host_masonry"], q["host_t"] = 0.0, 0.2
+    text = " ".join(str(v) for v in (el.get("props") or {}).values()) + " " + el.get("name", "")
+    q["insulated"] = 1.0 if INSULATED.search(text) else 0.0
+    if el["ifc_class"] == "IfcSpace":
+        mods = [ctx["recipes"].get(g) for g in el.get("room_modeled") or []]
+        q["has_floor"] = 1.0 if "FLOOR_FINISH" in mods else 0.0
+        q["has_ceiling"] = 1.0 if "CEILING" in mods else 0.0
     return q
 
 
@@ -249,12 +394,26 @@ def estimate(elements, region, lib=None, settings=None):
     mappings = settings.get("mappings") or {}
     rebar_mode = settings.get("rebar_mode") or "ratio"
     deduct = settings.get("deduct_overlaps", True) is not False
-    min_open = float(settings.get("min_deduct_m2") if settings.get("min_deduct_m2") is not None else 0.5)
+    std_code = settings.get("standard") or reg.get("standard") or "NRM2"
+    rule = dict(STANDARDS.get(std_code, STANDARDS["NRM2"]))
+    if settings.get("min_deduct_m2") is not None:      # user override of the threshold
+        rule["masonry_min"] = rule["finish_min"] = float(settings["min_deduct_m2"])
+    min_open = rule["masonry_min"]
     adjust = settings.get("adjustments") or {}
 
     # classify first (overlap rules depend on how each element is priced)
     cls = {e["guid"]: lib.classify(e, mappings) for e in elements}
-    give, overlap_records = _deductions(elements, {g: r for g, (r, _) in cls.items()}, deduct)
+    recipes = {g: r for g, (r, _) in cls.items()}
+    give, overlap_records = _deductions(elements, recipes, deduct)
+    n_rooms = sum(1 for e in elements if e["ifc_class"] == "IfcSpace" and recipes.get(e["guid"]))
+    finishes_from = settings.get("finishes_from") or "auto"
+    rooms_on = 1.0 if (finishes_from == "rooms" or (finishes_from == "auto" and n_rooms >= 3)) else 0.0
+    if not rooms_on:   # rooms switched off: don't price room finishes either
+        for e in elements:
+            if e["ifc_class"] == "IfcSpace" and recipes.get(e["guid"]):
+                cls[e["guid"]] = (None, "excluded")
+                recipes[e["guid"]] = None
+    ctx = {"rooms_on": rooms_on, "recipes": recipes, "by_guid": {e["guid"]: e for e in elements}}
 
     lines, per_element, groups = [], {}, {}
     unclassified, flagged, excluded = [], [], []
@@ -281,7 +440,7 @@ def estimate(elements, region, lib=None, settings=None):
             (excluded if source == "excluded" else unclassified).append(el["guid"])
             per_element[el["guid"]] = {"recipe": None, "source": source, "total": 0.0}
             continue
-        env = _env(el, give, min_open)
+        env = _env(el, give, rule, ctx)
         adj = adjust.get(key) or {}
         factor = float(adj.get("factor") or 1.0)
         grp = lib.groups.get(recipe, {})
@@ -301,7 +460,8 @@ def estimate(elements, region, lib=None, settings=None):
                     continue
             waste = float(item["waste_pct"] or 0)
             qty_w = qty * (1 + waste / 100)
-            mat, lab, eqp, src = lib.rate(region, item["work_item"])
+            rd = lib.rate_detail(region, item["work_item"])
+            mat, lab, eqp, src = rd["material"], rd["labour"], rd["equipment"], rd["source"]
             unit_rate = mat + lab + eqp
             wi = lib.work_items.get(item["work_item"], {})
             line = {
@@ -314,7 +474,7 @@ def estimate(elements, region, lib=None, settings=None):
                 "qty": round(qty_w, 4), "material": round(qty_w * mat, 2),
                 "labour": round(qty_w * lab, 2), "equipment": round(qty_w * eqp, 2),
                 "rate": round(unit_rate, 2), "amount": round(qty_w * unit_rate, 2),
-                "rate_source": src,
+                "rate_source": src, "local_share": round(rd["local_share"], 3),
                 "nrm1": grp.get("nrm1", "Other"), "uniformat": grp.get("uniformat", "Other"),
                 "stage": grp.get("stage", "9 Other"),
             }
@@ -325,6 +485,33 @@ def estimate(elements, region, lib=None, settings=None):
                                    "overlap_m3": round(env.get("overlap", 0.0), 4),
                                    "openings_kept_m2": round(env.get("openings_small", 0.0), 3)}
         g["total"] += el_total
+
+    # Items measured by hand ("virtual takeoff"): work that is not in the model.
+    for i, m in enumerate(settings.get("manual_items") or []):
+        qty = float(m.get("qty") or 0)
+        if qty <= 0:
+            continue
+        code = (m.get("work_item") or "").strip()
+        wi = lib.work_items.get(code, {})
+        if wi and not m.get("rate"):
+            mat, lab, eqp, src = lib.rate(region, code)
+        else:
+            mat, lab, eqp, src = float(m.get("rate") or 0), 0.0, 0.0, "your rate"
+        unit_rate = mat + lab + eqp
+        lines.append({
+            "guid": f"manual-{i}", "element": m.get("description") or wi.get("description") or "Manual item",
+            "ifc_class": "Manual", "level": m.get("level") or "(not in model)", "recipe": "MANUAL",
+            "work_item": code or f"MAN-{i + 1}",
+            "description": m.get("description") or wi.get("description") or "Manual item",
+            "trade": wi.get("trade") or m.get("trade") or "Manual items",
+            "unit": wi.get("unit") or m.get("unit") or "item", "formula": "measured by hand",
+            "net_qty": round(qty, 4), "waste_pct": 0.0, "qty": round(qty, 4),
+            "material": round(qty * mat, 2), "labour": round(qty * lab, 2), "equipment": round(qty * eqp, 2),
+            "rate": round(unit_rate, 2), "amount": round(qty * unit_rate, 2), "rate_source": src,
+            "local_share": 1.0 if src == "your rate" else lib.rate_detail(region, code)["local_share"] if wi else 1.0,
+            "nrm1": m.get("nrm1") or "8 External works" if "extern" in (m.get("description") or "").lower() else (m.get("nrm1") or "Manual items"),
+            "uniformat": "Manual items", "stage": "9 Other",
+        })
 
     # Bill of quantities: one row per work item.
     boq = {}
@@ -363,6 +550,18 @@ def estimate(elements, region, lib=None, settings=None):
         scope.append({"name": name, "cost": round(cost, 2), "present": cost > 0,
                       "suggest": None if cost > 0 or not allowance else
                       {"name": allowance, "kind": "pct", "value": pct}})
+    # Items estimators often forget: is each one priced, covered by an allowance, or missing?
+    priced_codes = {l["work_item"] for l in lines}
+    allow_names = " ".join(a.get("name", "") for a in settings.get("allowances") or []).lower()
+    checklist = []
+    for name, codes, allowance, pct, note in CHECKLIST:
+        hit = sorted(c for c in priced_codes if any(c == x or (x.endswith("*") and c.startswith(x[:-1])) for x in codes))
+        cost = round(sum(l["amount"] for l in lines if l["work_item"] in hit), 2)
+        status = ("priced" if cost > 0 else
+                  "allowance" if allowance and allowance.split(" (")[0].lower() in allow_names else
+                  "note" if note else "missing")
+        checklist.append({"name": name, "status": status, "cost": cost, "codes": hit, "note": note,
+                          "suggest": {"name": allowance, "kind": "pct", "value": pct} if allowance and status == "missing" else None})
     allowances = []
     for a in settings.get("allowances") or []:
         kind, val = a.get("kind", "lump"), float(a.get("value") or 0)
@@ -391,7 +590,7 @@ def estimate(elements, region, lib=None, settings=None):
                       "outliers": outliers[:50]}
 
     # ---- accuracy class ---------------------------------------------------------
-    sample_cost = sum(b["amount"] for b in boq if str(b["rate_source"]).upper().startswith("SAMPLE"))
+    sample_cost = sum(l["amount"] * (1 - l.get("local_share", 0.0)) for l in lines)
     sample_share = sample_cost / direct if direct else 1.0
     unpriced_share = len(unclassified) / max(len(elements), 1)
     flagged_cost = sum(per_element[g_]["total"] for g_ in flagged if g_ in per_element)
@@ -403,7 +602,7 @@ def estimate(elements, region, lib=None, settings=None):
     reasons = []
     if sample_share > 0.5:
         cls_ = 5
-        reasons.append(f"{sample_share:.0%} of the cost uses SAMPLE rates. Enter real rates.")
+        reasons.append(f"{sample_share:.0%} of the cost uses estimated prices, not yours. Open Prices & rates and enter local prices (start with the key ones).")
     elif missing_uncovered or unpriced_share > 0.1:
         cls_ = 4
         if missing_uncovered:
@@ -413,7 +612,7 @@ def estimate(elements, region, lib=None, settings=None):
     else:
         cls_ = 3
         if sample_share > 0:
-            reasons.append(f"{sample_share:.0%} of the cost still uses SAMPLE rates.")
+            reasons.append(f"{sample_share:.0%} of the cost still uses estimated prices.")
         if direct and flagged_cost / direct > 0.05:
             reasons.append("More than 5% of the cost is on shapes that could not be measured exactly.")
         if reconciliation["share"] is not None and reconciliation["share"] < 0.9:
@@ -446,7 +645,7 @@ def estimate(elements, region, lib=None, settings=None):
         f"Prices in {reg['currency']} at the date of the rates used.",
     ]
     if sample_share > 0:
-        assumptions.append(f"{sample_share:.0%} of the measured cost uses SAMPLE placeholder rates.")
+        assumptions.append(f"{sample_share:.0%} of the measured cost uses estimated (not local) prices.")
     assumptions += [a for a in settings.get("assumptions") or [] if a]
     exclusions = settings.get("exclusions")
     if exclusions is None:
@@ -470,7 +669,8 @@ def estimate(elements, region, lib=None, settings=None):
                     "tax_pct": reg["tax_pct"], "gfa": round(gfa, 1),
                     "per_m2": round(total / gfa, 2) if gfa > 1 else None,
                     "benchmark": reg.get("benchmark")},
-        "accuracy": accuracy, "scope": scope, "allowances": allowances,
+        "accuracy": accuracy, "scope": scope, "allowances": allowances, "checklist": checklist,
+        "standard": {"code": std_code, **rule}, "rooms_on": bool(rooms_on), "rooms": n_rooms,
         "assumptions": assumptions, "exclusions": exclusions,
         "by_trade": group("trade"), "by_level": group("level"),
         "by_nrm1": by_nrm1, "by_uniformat": group_sorted("uniformat"),

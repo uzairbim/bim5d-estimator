@@ -2,6 +2,7 @@
 
 Run:  uvicorn server:app --port 8000   then open http://localhost:8000
 """
+import json
 import re
 import tempfile
 from pathlib import Path
@@ -13,8 +14,9 @@ from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from engine import ai, rates, storage
+from engine import regions as regions_mod
 from engine.compare import compare
-from engine.estimate import Library, check_formula, estimate, group_key
+from engine.estimate import STANDARDS, Library, check_formula, estimate, group_key
 from engine.export import to_xlsx
 from engine.schedule import build as build_schedule
 
@@ -52,9 +54,10 @@ def _estimate(p, vid=None, region=None, lib=None):
     v = _ready_version(p, vid)
     s = p["settings"]
     lib = lib or Library()
-    region = region or s.get("region") or "SA"
+    region = region or s.get("region") or "GLOBAL"
     if region not in lib.regions:
-        raise HTTPException(400, "Unknown region")
+        # The project's region was removed or renamed: keep working in the global region.
+        region = "GLOBAL" if "GLOBAL" in lib.regions else next(iter(lib.regions))
     els = storage.elements(v["id"])
     return v, els, estimate(els, region, lib, s)
 
@@ -76,12 +79,88 @@ def library():
                          "label": g.get("label") or name, "nrm1": g.get("nrm1", ""),
                          "uniformat": g.get("uniformat", "")}
     return {"regions": {k: {"name": v["name"], "currency": v["currency"],
-                            "tax_name": v["tax_name"], "tax_pct": v["tax_pct"],
-                            "overhead_pct": v["overhead_pct"], "profit_pct": v["profit_pct"],
-                            "contingency_pct": v.get("contingency_pct", 0)}
+                            "tax_name": v.get("tax_name", "Tax"), "tax_pct": v.get("tax_pct", 0),
+                            "overhead_pct": v.get("overhead_pct", 10), "profit_pct": v.get("profit_pct", 10),
+                            "contingency_pct": v.get("contingency_pct", 0),
+                            "prelims_pct": v.get("prelims_pct", 10), "escalation_pct": v.get("escalation_pct", 0),
+                            "escalation_note": v.get("escalation_note", ""), "standard": v.get("standard", "NRM2"),
+                            "fx_per_usd": v.get("fx_per_usd", 1), "fx_source": v.get("fx_source", ""),
+                            "labour_factor": v.get("labour_factor", v.get("location_factor", 1)),
+                            "material_factor": v.get("material_factor", v.get("location_factor", 1)),
+                            "notes": v.get("notes", ""),
+                            "prices": len(lib.prices.get(k, {}))}
                         for k, v in lib.regions.items()},
+            "standards": {k: v["label"] for k, v in STANDARDS.items()},
             "recipes": recipes, "work_items": lib.work_items,
             "ai": ai.available()}
+
+
+@app.get("/api/countries")
+def get_countries():
+    return regions_mod.countries()
+
+
+@app.post("/api/regions")
+def post_region(body: dict = Body(...)):
+    try:
+        code, reg = regions_mod.create_region(body.get("code", ""), body.get("values") or {})
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    storage.log("", "region saved", f"{code}: {reg.get('name')} ({reg.get('currency')})")
+    return {"code": code, "region": reg}
+
+
+@app.post("/api/regions/{code}/worldbank")
+def region_worldbank(code: str):
+    if code not in Library().regions:
+        raise HTTPException(404, "Unknown region")
+    try:
+        values = regions_mod.worldbank(code)
+    except Exception as e:
+        raise HTTPException(502, f"Could not reach the World Bank from this computer ({e}). "
+                                 "Enter the exchange rate by hand instead.")
+    storage.log("", "World Bank update", f"{code}: {values}")
+    return values
+
+
+@app.get("/api/prices/{region}")
+def get_prices(region: str):
+    lib = Library()
+    if region not in lib.regions:
+        raise HTTPException(404, "Unknown region")
+    return regions_mod.price_table(region, lib)
+
+
+@app.put("/api/prices/{region}")
+def put_prices(region: str, rows: list = Body(...)):
+    if region not in Library().regions:
+        raise HTTPException(404, "Unknown region")
+    try:
+        n = regions_mod.save_prices(region, rows)
+    except (ValueError, TypeError) as e:
+        raise HTTPException(400, str(e))
+    storage.log("", "prices saved", f"{region}: {n} local prices")
+    return {"saved": n}
+
+
+@app.get("/api/regions/{code}/pack.json")
+def get_pack(code: str, author: str = ""):
+    if code not in Library().regions:
+        raise HTTPException(404, "Unknown region")
+    pack = regions_mod.export_pack(code, author)
+    return Response(json.dumps(pack, indent=1, ensure_ascii=False), media_type="application/json",
+                    headers={"Content-Disposition": f'attachment; filename="ratepack_{code}.json"'})
+
+
+@app.post("/api/regions/import")
+async def post_pack(file: UploadFile, as_code: Optional[str] = Form(None)):
+    try:
+        pack = json.loads((await file.read()).decode("utf-8"))
+        res = regions_mod.import_pack(pack, as_code)
+    except (ValueError, json.JSONDecodeError) as e:
+        raise HTTPException(400, str(e))
+    storage.log("", "rate pack imported", json.dumps(res))
+    return res
 
 
 @app.get("/api/samples")
@@ -143,7 +222,8 @@ def update_project(pid: str, changes: dict = Body(...)):
     allowed = {"name", "region", "rebar_mode", "mappings", "overhead_pct", "profit_pct",
                "contingency_pct", "tax_pct", "prelims_pct", "escalation_pct", "duration_months",
                "start", "deduct_overlaps", "min_deduct_m2", "rates_verified", "allowances",
-               "adjustments", "assumptions", "exclusions", "gfa_m2"}
+               "adjustments", "assumptions", "exclusions", "gfa_m2", "standard", "finishes_from",
+               "manual_items"}
     bad = set(changes) - allowed
     if bad:
         raise HTTPException(400, f"Unknown settings: {', '.join(sorted(bad))}")
@@ -314,7 +394,7 @@ def api_check_formula(body: dict = Body(...)):
 
 
 # ---- static ------------------------------------------------------------------------
-app.mount("/vendor/three", StaticFiles(directory=ROOT / "web" / "node_modules" / "three"), name="three")
+# three.js (MIT) is bundled in web/vendor so no Node.js is needed to run the app.
 
 
 @app.get("/")

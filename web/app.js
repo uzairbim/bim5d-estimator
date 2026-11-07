@@ -1,11 +1,23 @@
 import * as THREE from "three";
 import { Viewer } from "./viewer.js";
+import { LANGS, applyStatic, getLang, setLang, t } from "./i18n.js";
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const fmt = (n, d = 0) => (n === null || n === undefined || isNaN(n)) ? "–" : Number(n).toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d });
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const TRADE_COLORS = ["#4e79a7", "#f28e2b", "#59a14f", "#e15759", "#76b7b2", "#edc948", "#b07aa1", "#ff9da7", "#9c755f", "#bab0ac", "#86bcb6", "#d4a6c8", "#8cd17d", "#f1ce63"];
+// Display units: quantities are stored metric; imperial is for display only.
+const UNIT = { m: ["ft", 3.28084], m2: ["ft²", 10.7639], m3: ["yd³", 1.30795], kg: ["lb", 2.20462] };
+const imperial = () => S.units === "imperial";
+function uq(qty, unit) {           // -> [qty, unit] in display units
+  const u = UNIT[unit];
+  return imperial() && u ? [qty * u[1], u[0]] : [qty, unit === "m2" ? "m²" : unit === "m3" ? "m³" : unit];
+}
+function ur(rate, unit) {          // rate per display unit
+  const u = UNIT[unit];
+  return imperial() && u ? rate / u[1] : rate;
+}
 const STAGE_COLORS = { "1 Substructure": "#9c755f", "2 Frame & floors": "#4e79a7", "3 Roof": "#b07aa1", "4 Envelope & walls": "#f28e2b", "5 Services": "#59a14f", "6 Finishes": "#76b7b2", "7 Fit-out": "#edc948", "9 Other": "#bab0ac" };
 
 const S = {
@@ -106,7 +118,12 @@ async function init() {
   const regionOpts = Object.entries(lib.regions).map(([k, r]) => `<option value="${k}">${esc(r.name)} (${r.currency})</option>`).join("");
   $("#region").innerHTML = regionOpts;
   $("#startRegion").innerHTML = regionOpts;
-  $("#startRegion").value = localStorageGet("region") || "SA";
+  $("#startRegion").value = localStorageGet("region") || "GLOBAL";
+  $("#langSel").innerHTML = Object.entries(LANGS).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
+  $("#langSel").value = getLang();
+  S.units = localStorageGet("units") || "metric";
+  $("#unitSel").value = S.units;
+  applyStatic();
   $("#sample").innerHTML += samples.map((s) => `<option>${esc(s)}</option>`).join("");
   await loadProjects();
   route();
@@ -214,7 +231,7 @@ async function openProject(pid, vid) {
     S.project = p; S.version = p.versions.find((x) => x.id === v.id);
     renderVersions();
     const levels = [...new Set(Object.values(els).map((e) => e.level))].sort();
-    $("#levelSel").innerHTML = `<option value="">All levels</option>` + levels.map((l) => `<option>${esc(l)}</option>`).join("");
+    $("#levelSel").innerHTML = `<option value="">${t("All levels")}</option>` + levels.map((l) => `<option>${esc(l)}</option>`).join("");
     await refresh();
   } catch (err) { toast(err.message); }
   busy(false);
@@ -269,12 +286,12 @@ function steps() {
   const rec = c.reconciliation;
   const issues = c.duplicates.length + c.geometry_flagged.length + (rec.share !== null && rec.share < 0.95 ? 1 : 0);
   return [
-    { n: 1, label: "Model", tab: "summary", ok: true, tip: `${fmt(c.elements)} elements measured` },
-    { n: 2, label: "Map", tab: "mapping", ok: !unpriced, tip: unpriced ? `${unpriced} elements not priced` : "All elements priced" },
-    { n: 3, label: "Rates", tab: "rates", ok: sample < 0.01, tip: sample >= 0.01 ? `${Math.round(sample * 100)}% of cost on sample rates` : "Your rates in use" },
-    { n: 4, label: "Scope", tab: "summary#scope", ok: !gaps, tip: gaps ? `${gaps} missing parts without allowance` : "Scope covered" },
-    { n: 5, label: "Check", tab: "checks", ok: !issues, tip: issues ? "Review overlaps, duplicates and outliers" : "No issues found" },
-    { n: 6, label: "Report", tab: "report", ok: false, tip: "Client report and Excel" },
+    { n: 1, label: t("Model"), tab: "summary", ok: true, tip: `${fmt(c.elements)} elements measured` },
+    { n: 2, label: t("Map"), tab: "mapping", ok: !unpriced, tip: unpriced ? `${unpriced} elements not priced` : "All elements priced" },
+    { n: 3, label: t("Rates"), tab: "rates", ok: sample < 0.01, tip: sample >= 0.01 ? `${Math.round(sample * 100)}% of cost on sample rates` : "Your rates in use" },
+    { n: 4, label: t("Scope"), tab: "summary#scope", ok: !gaps, tip: gaps ? `${gaps} missing parts without allowance` : "Scope covered" },
+    { n: 5, label: t("Check"), tab: "checks", ok: !issues, tip: issues ? "Review overlaps, duplicates and outliers" : "No issues found" },
+    { n: 6, label: t("Report"), tab: "report", ok: false, tip: "Client report and Excel" },
   ];
 }
 function renderSteps() {
@@ -317,7 +334,7 @@ function renderSummary() {
     <div class="total">${fmt(s.total)} <small>${e.currency}</small></div>
     <div class="acc acc${a.class}"><b>${esc(a.label)}</b> · likely between <b>${fmt(a.low)}</b> and <b>${fmt(a.high)}</b> ${e.currency} (${Math.round(a.low_pct * 100)}% / +${Math.round(a.high_pct * 100)}%)
       ${a.reasons.length ? `<ul>${a.reasons.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}</div>
-    <h3>Cost build-up (${e.currency})</h3>
+    <h3>${t("Cost build-up")} (${e.currency})</h3>
     <table class="build">
       ${row("Measured work (from the model)", s.direct)}
       ${row("Allowances (work not modelled)", s.allowances)}
@@ -331,16 +348,30 @@ function renderSummary() {
     </table>
     ${c.unclassified.length ? `<div class="callout">${fmt(c.unclassified.length)} elements have no price yet. <a href="#" data-goto="mapping">Open Mapping</a>.</div>` : ""}
     ${bench}${rebarNote}
-    <h3 id="scope">Scope check: is the whole building in the model?</h3>
+    <h3 id="scope">${t("Scope check: is the whole building in the model?")}</h3>
     <table>${scopeRows}</table>
-    <h3>Allowances for work not in the model</h3>
+    <h3>${t("Commonly forgotten items")}</h3>
+    <table class="check">${e.checklist.map((c) => `<tr><td>${c.status === "priced" ? '<span class="ok">✓</span>' : c.status === "allowance" ? '<span class="ok">≈</span>' : c.status === "note" ? '<span class="muted">i</span>' : '<span class="bad">✗</span>'} ${esc(c.name)}</td>
+      <td class="n">${c.cost ? fmt(c.cost) : ""}</td>
+      <td>${c.status === "missing" && c.suggest ? `<button class="btn sm" data-allow='${esc(JSON.stringify(c.suggest))}'>${t("Add")} ${c.suggest.value}%</button>` : c.note ? `<span class="muted small">${esc(c.note)}</span>` : c.status === "missing" ? `<span class="muted small">${t("missing")}</span>` : `<span class="muted small">${t(c.status)}</span>`}</td></tr>`).join("")}</table>
+    <h3>${t("Items measured by hand (not in the model)")}</h3>
+    <p class="muted small">Like a virtual takeoff: boundary walls, external works, anything not modelled. Pick a work item to use its rate, or type your own rate.</p>
+    ${(st.manual_items || []).length ? `<table class="allow"><thead><tr><th>Description</th><th>Work item</th><th>Qty</th><th>Unit</th><th>Rate</th><th></th></tr></thead><tbody>${(st.manual_items || []).map((m, i) => `<tr>
+      <td><input type="text" data-mi="${i}" data-f="description" value="${esc(m.description || "")}"></td>
+      <td><select data-mi="${i}" data-f="work_item"><option value="">— own rate —</option>${Object.entries(S.lib.work_items).map(([k, w]) => `<option value="${k}" ${k === m.work_item ? "selected" : ""}>${esc(w.description)}</option>`).join("")}</select></td>
+      <td><input type="number" step="any" data-mi="${i}" data-f="qty" value="${m.qty ?? ""}"></td>
+      <td><input type="text" data-mi="${i}" data-f="unit" value="${esc(m.unit || "")}" style="width:50px"></td>
+      <td><input type="number" step="any" data-mi="${i}" data-f="rate" value="${m.rate ?? ""}" placeholder="auto"></td>
+      <td><button class="btn sm" data-mirm="${i}">×</button></td></tr>`).join("")}</tbody></table>` : ""}
+    <button class="btn sm" id="addManual">+ Add item</button>
+    <h3>${t("Allowances for work not in the model")}</h3>
     ${allowRows ? `<table class="allow"><thead><tr><th>Item</th><th>Basis</th><th>Value</th><th class="n">Amount</th><th></th></tr></thead><tbody>${allowRows}</tbody></table>` : '<p class="muted small">None yet.</p>'}
     <button class="btn sm" id="addAllow">+ Add allowance</button>
-    <h3>By trade (${e.currency})</h3>${bars(e.by_trade)}
-    <h3>Elemental cost plan</h3>
+    <h3>${t("By trade")} (${e.currency})</h3>${bars(e.by_trade)}
+    <h3>${t("Elemental cost plan")}</h3>
     <div class="seg" id="planSeg" style="display:inline-flex;margin-bottom:6px"><button data-plan="by_nrm1" class="on">NRM1</button><button data-plan="by_uniformat">Uniformat</button><button data-plan="by_level">Level</button></div>
     <div id="planBars">${bars(e.by_nrm1)}</div>
-    <h3>Project settings</h3>
+    <h3>${t("Project settings")}</h3>
     <div class="settings">
       <label>Preliminaries %<input type="number" step="0.5" min="0" data-set="prelims_pct" value="${st.prelims_pct ?? reg.prelims_pct ?? 10}"></label>
       <label>Contingency %<input type="number" step="0.5" min="0" data-set="contingency_pct" value="${st.contingency_pct ?? reg.contingency_pct}"></label>
@@ -348,6 +379,8 @@ function renderSummary() {
       <label>Profit %<input type="number" step="0.5" min="0" data-set="profit_pct" value="${st.profit_pct ?? reg.profit_pct}"></label>
       <label>Escalation %<input type="number" step="0.5" min="0" data-set="escalation_pct" value="${st.escalation_pct ?? reg.escalation_pct ?? 0}" title="${esc(reg.escalation_note || "")}"></label>
       <label>${esc(reg.tax_name)} %<input type="number" step="0.5" min="0" data-set="tax_pct" value="${st.tax_pct ?? reg.tax_pct}"></label>
+      <label>${t("Measurement standard")}<select data-set="standard">${Object.entries(S.lib.standards).map(([k, v]) => `<option value="${k}" ${k === e.standard.code ? "selected" : ""}>${esc(v)}</option>`).join("")}</select></label>
+      <label>Wall and ceiling finishes from<select data-set="finishes_from"><option value="auto" ${(st.finishes_from || "auto") === "auto" ? "selected" : ""}>Automatic (rooms if the model has them)</option><option value="rooms" ${st.finishes_from === "rooms" ? "selected" : ""}>Rooms (room perimeter x height)</option><option value="walls" ${st.finishes_from === "walls" ? "selected" : ""}>Walls (both faces)</option></select></label>
       <label>Rebar based on<select data-set="rebar_mode"><option value="ratio">Ratios (kg per m³)</option><option value="modeled">Modelled rebar bars</option></select></label>
       <label>Don't deduct openings up to (m²)<input type="number" step="0.1" min="0" data-set="min_deduct_m2" value="${st.min_deduct_m2 ?? 0.5}"></label>
       <label>Floor area for cost/m² (blank = from slabs)<input type="number" step="1" min="0" data-set="gfa_m2" value="${st.gfa_m2 ?? ""}" placeholder="${fmt(s.gfa)}"></label>
@@ -355,8 +388,8 @@ function renderSummary() {
       <label class="check"><input type="checkbox" data-set="deduct_overlaps" ${st.deduct_overlaps !== false ? "checked" : ""}> Deduct overlaps between elements</label>
       <label class="check"><input type="checkbox" data-set="rates_verified" ${st.rates_verified ? "checked" : ""}> Rates checked against current market prices</label>
     </div>
-    <h3>Assumptions</h3><ul class="small">${e.assumptions.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
-    <h3>Exclusions</h3>
+    <h3>${t("Assumptions")}</h3><ul class="small">${e.assumptions.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+    <h3>${t("Exclusions")}</h3>
     <textarea id="exclusions" rows="6" class="full">${esc(e.exclusions.filter((x) => !x.endsWith("(not in the model)")).join("\n"))}</textarea>
     <p class="muted small">One per line. Saved when you click outside the box.</p>`;
   $("[data-set=rebar_mode]").value = st.rebar_mode || "ratio";
@@ -380,6 +413,15 @@ function renderSummary() {
     saveSettings({ allowances: l });
   }));
   $("#exclusions").addEventListener("change", (ev) => saveSettings({ exclusions: ev.target.value.split("\n").map((x) => x.trim()).filter(Boolean) }));
+  const manual = () => JSON.parse(JSON.stringify(S.project.settings.manual_items || []));
+  $("#addManual").addEventListener("click", () => { const l = manual(); l.push({ description: "New item", qty: 1, unit: "item", rate: 0, work_item: "" }); saveSettings({ manual_items: l }); });
+  $$("[data-mirm]", $("#tab-summary")).forEach((b) => b.addEventListener("click", () => { const l = manual(); l.splice(Number(b.dataset.mirm), 1); saveSettings({ manual_items: l }); }));
+  $$("[data-mi]", $("#tab-summary")).forEach((inp) => inp.addEventListener("change", () => {
+    const l = manual(), i = Number(inp.dataset.mi), f = inp.dataset.f;
+    l[i][f] = (f === "qty" || f === "rate") ? (inp.value === "" ? null : Number(inp.value)) : inp.value;
+    if (f === "work_item" && inp.value) { l[i].unit = S.lib.work_items[inp.value]?.unit || l[i].unit; l[i].rate = null; }
+    saveSettings({ manual_items: l });
+  }));
 }
 
 // ---------- checks ----------
@@ -432,7 +474,7 @@ function renderBoq() {
   for (const b of e.boq) {
     if (b.trade !== trade) { trade = b.trade; html += `<tr><td colspan="4"><b>${esc(trade)}</b></td></tr>`; }
     html += `<tr class="click" data-wi="${b.work_item}"><td>${esc(b.description)}<br><span class="tag">${b.work_item}</span> <span class="muted small">${b.elements} elements</span>${String(b.rate_source).startsWith("SAMPLE") ? ' <span class="tag">sample rate</span>' : ""}</td>
-      <td class="n">${fmt(b.qty, 2)} ${b.unit}</td><td class="n">${fmt(b.rate, 2)}</td><td class="n">${fmt(b.amount)}</td></tr>`;
+      <td class="n">${fmt(uq(b.qty, b.unit)[0], 2)} ${uq(b.qty, b.unit)[1]}</td><td class="n">${fmt(ur(b.rate, b.unit), 2)}</td><td class="n">${fmt(b.amount)}</td></tr>`;
   }
   html += `</tbody><tfoot><tr><th>Direct cost</th><th></th><th></th><th class="n">${fmt(e.summary.direct)}</th></tr></tfoot></table>`;
   $("#tab-boq").innerHTML = html;
@@ -547,7 +589,7 @@ function renderElement(guid) {
     </div>
     <h3>Cost breakdown</h3>
     <table><thead><tr><th>Work item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead><tbody>
-    ${lines.map((l) => `<tr><td>${esc(l.description)}<br><span class="muted small" title="Quantity formula">= ${esc(l.formula)}${l.waste_pct ? ` + ${l.waste_pct}% waste` : ""}</span></td><td class="n">${fmt(l.qty, 2)} ${l.unit}</td><td class="n">${fmt(l.rate, 2)}</td><td class="n">${fmt(l.amount)}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">${pe.source === "excluded" ? "Excluded from the estimate." : "Not priced. Choose what it is above."}</td></tr>`}
+    ${lines.map((l) => `<tr><td>${esc(l.description)}<br><span class="muted small" title="Quantity formula">= ${esc(l.formula)}${l.waste_pct ? ` + ${l.waste_pct}% waste` : ""}</span></td><td class="n">${fmt(uq(l.qty, l.unit)[0], 2)} ${uq(l.qty, l.unit)[1]}</td><td class="n">${fmt(ur(l.rate, l.unit), 2)}</td><td class="n">${fmt(l.amount)}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">${pe.source === "excluded" ? "Excluded from the estimate." : "Not priced. Choose what it is above."}</td></tr>`}
     </tbody></table>
     <h3>Measured from the 3D shape</h3>
     <table>${[["Volume", q.volume, "m³", "volume"], ["Wall face (one side)", q.side, "m²", "side"], ["Plan area", q.footprint, "m²", "footprint"], ["Length", q.length, "m", "length"], ["Height", q.height, "m", "height"], ["Section size", q.section, "m", "section"]]
@@ -690,65 +732,193 @@ async function runCompare() {
   busy(false);
 }
 
-// ---------- rates ----------
-async function openRates() {
-  const region = S.est?.region || $("#region").value;
-  const t = await api(`/api/rates/${region}`);
-  S.rates = t;
-  $("#ratesRegion").textContent = `${S.lib.regions[region].name} · ${t.currency}`;
-  $("#rateTemplate").href = `/api/rates/${region}/template.xlsx`;
+// ---------- prices & rates ----------
+// Three tabs: local resource prices (quick setup), work item rates (built up, with
+// optional fixed rates), and region settings & sharing (rate packs, World Bank).
+S.rd = { tab: "prices", region: null, prices: null, rates: null, dirty: false };
+
+async function openRates(region, tabName) {
+  S.rd.region = region || S.est?.region || $("#region").value || "GLOBAL";
+  S.rd.tab = tabName || S.rd.tab || "prices";
+  $("#rdRegion").innerHTML = Object.entries(S.lib.regions).map(([k, r]) => `<option value="${k}">${esc(r.name)} (${r.currency})</option>`).join("");
+  $("#rdRegion").value = S.rd.region;
   $("#ratesDlg").hidden = false;
-  drawRates();
+  await loadRd();
 }
-function drawRates() {
-  const t = S.rates, q = ($("#rateSearch").value || "").toLowerCase();
-  let trade = null, html = `<table><thead><tr><th>Work item</th><th>Unit</th><th class="n">Base rate (converted)</th><th class="n">Material</th><th class="n">Labour</th><th class="n">Equipment</th><th>Source</th></tr></thead><tbody>`;
-  for (const r of t.rows) {
-    if (q && !(r.work_item + " " + r.description + " " + r.trade).toLowerCase().includes(q)) continue;
-    if (r.trade !== trade) { trade = r.trade; html += `<tr><td colspan="7"><b>${esc(trade)}</b></td></tr>`; }
-    const lo = r.local || ["", "", ""];
-    html += `<tr data-wi="${r.work_item}" class="${r.local ? "local" : ""}"><td>${esc(r.description)}<br><span class="tag">${r.work_item}</span></td><td>${r.unit}</td>
-      <td class="n">${fmt(r.base[0] + r.base[1] + r.base[2], 2)}</td>
-      ${[0, 1, 2].map((i) => `<td class="n"><input type="number" step="any" min="0" data-i="${i}" value="${lo[i]}" placeholder="${fmt(r.base[i], 2)}"></td>`).join("")}
-      <td><input type="text" data-src value="${esc(r.local ? r.source : "")}" placeholder="${esc(r.source)}"></td></tr>`;
+async function loadRd() {
+  const r = S.rd.region;
+  [S.rd.prices, S.rd.rates] = await Promise.all([api(`/api/prices/${r}`), api(`/api/rates/${r}`)]);
+  S.rd.dirty = false;
+  drawRd();
+}
+function drawRd() {
+  $$("#rdTabs button").forEach((b) => b.classList.toggle("on", b.dataset.rt === S.rd.tab));
+  $("#rateSearch").hidden = S.rd.tab === "region";
+  $("#rateSave").hidden = S.rd.tab === "region";
+  ({ prices: drawPrices, rates: drawRates, region: drawRegion })[S.rd.tab]();
+}
+
+function drawPrices() {
+  const tb = S.rd.prices, q = ($("#rateSearch").value || "").toLowerCase(), cur = tb.currency;
+  $("#rdHelp").innerHTML = t("Enter what things cost where you work, in {cur}. Every work-item rate is then built up from these prices (labour hours x wage + materials + plant). Start with the <b>key prices</b>; anything you leave empty is estimated from the region's exchange rate and price factors.", { cur }) +
+    ` <b>${tb.filled} / ${tb.rows.length}</b> ${t("prices entered")}.`;
+  let group = null, html = `<table><thead><tr><th>${t("Resource")}</th><th>${t("Unit")}</th><th class="n">${t("Estimated")} (${cur})</th><th class="n">${t("Your price")} (${cur})</th><th>${t("Source / supplier")}</th><th>${t("Date")}</th></tr></thead><tbody>`;
+  for (const r of tb.rows) {
+    if (q && !(r.resource + " " + r.name).toLowerCase().includes(q)) continue;
+    const g = r.key ? t("Key prices (enter these first)") : { labour: t("Labour"), material: t("Materials"), plant: t("Plant / equipment") }[r.type];
+    if (g !== group) { group = g; html += `<tr><td colspan="6"><b>${esc(g)}</b></td></tr>`; }
+    html += `<tr data-res="${r.resource}" class="${r.price !== null ? "local" : ""}"><td>${esc(r.name)}<br><span class="tag">${r.resource}</span></td><td>${esc(r.unit)}</td>
+      <td class="n muted">${fmt(r.estimated, 2)}</td>
+      <td class="n"><input type="number" step="any" min="0" data-f="price" value="${r.price ?? ""}" placeholder="${fmt(r.estimated, 2)}"></td>
+      <td><input type="text" data-f="source" value="${esc(r.source)}" placeholder="${t("e.g. supplier quote")}"></td>
+      <td><input type="text" data-f="date" value="${esc(r.date)}" placeholder="YYYY-MM-DD" style="width:100px"></td></tr>`;
   }
   $("#ratesBody").innerHTML = html + "</tbody></table>";
-  $$("#ratesBody tr[data-wi]").forEach((tr) => tr.addEventListener("input", () => {
-    const r = S.rates.rows.find((x) => x.work_item === tr.dataset.wi);
-    const vals = $$("input[data-i]", tr).map((i) => i.value);
-    r.local = vals.some((v) => v !== "") ? vals.map((v) => Number(v) || 0) : null;
-    r.source = $("input[data-src]", tr).value;
-    tr.classList.toggle("local", !!r.local);
-    S.ratesDirty = true;
+  $$("#ratesBody tr[data-res]").forEach((tr) => tr.addEventListener("input", () => {
+    const r = S.rd.prices.rows.find((x) => x.resource === tr.dataset.res);
+    const v = $("input[data-f=price]", tr).value;
+    r.price = v === "" ? null : Number(v);
+    r.source = $("input[data-f=source]", tr).value;
+    r.date = $("input[data-f=date]", tr).value;
+    tr.classList.toggle("local", r.price !== null);
+    S.rd.dirty = true;
   }));
 }
-$("#ratesBtn").addEventListener("click", openRates);
+
+function drawRates() {
+  const tb = S.rd.rates, q = ($("#rateSearch").value || "").toLowerCase(), cur = tb.currency;
+  $("#rdHelp").innerHTML = t("Each rate is built up from resources. Click a row to see how. Type a fixed rate only if you have a quote for the whole item; it replaces the build-up.");
+  let trade = null, html = `<table><thead><tr><th>${t("Work item")}</th><th>${t("Unit")}</th><th class="n">${t("Built-up rate")} (${cur})</th><th class="n">${t("Your prices")}</th><th class="n">${t("Fixed rate")} (${cur})</th><th>${t("Source")}</th></tr></thead><tbody>`;
+  for (const r of tb.rows) {
+    if (q && !(r.work_item + " " + r.description + " " + r.trade).toLowerCase().includes(q)) continue;
+    if (r.trade !== trade) { trade = r.trade; html += `<tr><td colspan="6"><b>${esc(trade)}</b></td></tr>`; }
+    const fixed = r.local ? r.local[0] + r.local[1] + r.local[2] : "";
+    html += `<tr data-wi="${r.work_item}" class="click ${r.local ? "local" : ""}"><td>${esc(r.description)}<br><span class="tag">${r.work_item}</span></td><td>${r.unit}</td>
+      <td class="n">${fmt(r.base[0] + r.base[1] + r.base[2], 2)}<br><span class="muted small">M ${fmt(r.base[0])} · L ${fmt(r.base[1])} · P ${fmt(r.base[2])}</span></td>
+      <td class="n"><span class="tag ${r.local_share > 0.99 ? "added" : r.local_share > 0 ? "changed" : ""}">${Math.round(r.local_share * 100)}%</span></td>
+      <td class="n"><input type="number" step="any" min="0" data-f="fixed" value="${fixed}" placeholder="—"></td>
+      <td><input type="text" data-f="source" value="${esc(r.local ? r.source : "")}" placeholder="${t("quote / reference")}"></td></tr>
+      <tr class="build" data-for="${r.work_item}" hidden><td colspan="6">${r.build.length ? `<table class="inner"><tr><th>${t("Resource")}</th><th class="n">${t("Qty per")} ${r.unit}</th><th class="n">${t("Price")}</th><th class="n">${t("Cost")}</th></tr>${r.build.map((b) => `<tr><td>${esc(b.name)} ${b.yours ? '<span class="tag added">' + t("your price") + "</span>" : '<span class="tag">' + t("estimated") + "</span>"}</td><td class="n">${fmt(b.qty, 3)} ${esc(b.unit)}</td><td class="n">${fmt(b.price, 2)}</td><td class="n">${fmt(b.cost, 2)}</td></tr>`).join("")}</table>` : `<span class="muted">${t("No build-up; converted base rate.")}</span>`}</td></tr>`;
+  }
+  $("#ratesBody").innerHTML = html + "</tbody></table>";
+  $$("#ratesBody tr[data-wi]").forEach((tr) => {
+    tr.addEventListener("click", (ev) => { if (ev.target.tagName === "INPUT") return; const b = $(`#ratesBody tr[data-for="${tr.dataset.wi}"]`); b.hidden = !b.hidden; });
+    tr.addEventListener("input", () => {
+      const r = S.rd.rates.rows.find((x) => x.work_item === tr.dataset.wi);
+      const v = $("input[data-f=fixed]", tr).value;
+      r.local = v === "" ? null : [Number(v) || 0, 0, 0];
+      r.source = $("input[data-f=source]", tr).value;
+      tr.classList.toggle("local", !!r.local);
+      S.rd.dirty = true;
+    });
+  });
+}
+
+async function drawRegion() {
+  const code = S.rd.region, reg = S.lib.regions[code];
+  $("#rdHelp").innerHTML = t("Set up any country. The tool is free: share your prices with colleagues as a rate pack file.");
+  const countries = S.countries || (S.countries = await api("/api/countries"));
+  $("#ratesBody").innerHTML = `
+    <div class="two-col">
+      <div>
+        <h3>${t("This region")}: ${esc(reg.name)}</h3>
+        <div class="settings">
+          <label>${t("Name")}<input type="text" id="rgName" value="${esc(reg.name)}"></label>
+          <label>${t("Currency")}<input type="text" id="rgCur" value="${esc(reg.currency)}" maxlength="3"></label>
+          <label>${t("Exchange rate (currency per 1 USD)")}<input type="number" step="any" id="rgFx" value="${reg.fx_per_usd}"></label>
+          <label>${esc(reg.tax_name)} %<input type="number" step="any" id="rgTax" value="${reg.tax_pct}"></label>
+          <label>${t("Labour factor (US = 1)")}<input type="number" step="any" id="rgLab" value="${reg.labour_factor}"></label>
+          <label>${t("Material factor (US = 1)")}<input type="number" step="any" id="rgMat" value="${reg.material_factor}"></label>
+          <label>${t("Measurement standard")}<select id="rgStd">${Object.entries(S.lib.standards).map(([k, v]) => `<option value="${k}" ${k === reg.standard ? "selected" : ""}>${esc(v)}</option>`).join("")}</select></label>
+          <label>${t("Preliminaries %")}<input type="number" step="any" id="rgPre" value="${reg.prelims_pct}"></label>
+        </div>
+        <p class="muted small">${esc(reg.notes || "")} ${reg.fx_source ? "· " + esc(reg.fx_source) : ""}</p>
+        <div class="toolbar">
+          <button class="btn primary" id="rgSave">${t("Save region")}</button>
+          <button class="btn" id="rgWb" ${code === "GLOBAL" ? "disabled" : ""}>${t("Update from World Bank")}</button>
+        </div>
+        <h3>${t("Share")}</h3>
+        <div class="toolbar">
+          <a class="btn" href="/api/regions/${code}/pack.json">${t("Download rate pack")}</a>
+          <label class="btn">${t("Import rate pack")}<input type="file" id="rgImport" accept=".json" hidden></label>
+          <a class="btn" href="/api/rates/${code}/template.xlsx">${t("Rates to Excel")}</a>
+          <label class="btn">${t("Rates from Excel / CSV")}<input type="file" id="rgRatesImport" accept=".xlsx,.csv" hidden></label>
+        </div>
+      </div>
+      <div>
+        <h3>${t("Add your country")}</h3>
+        <div class="settings" style="grid-template-columns:1fr">
+          <label>${t("Country")}<select id="rgNew"><option value="">${t("Choose…")}</option>${countries.map((c) => `<option value="${c.code}">${esc(c.name)} · ${c.currency}</option>`).join("")}</select></label>
+          <label>${t("Region code (optional, e.g. NG_LAGOS for a city)")}<input type="text" id="rgNewCode" placeholder="NG_LAGOS"></label>
+        </div>
+        <button class="btn primary" id="rgCreate">${t("Create region")}</button>
+        <p class="muted small">${t("After creating it: click Update from World Bank (needs internet) or type the exchange rate, then enter local prices in tab 1.")}</p>
+      </div>
+    </div>`;
+  $("#rgSave").addEventListener("click", async () => {
+    const values = { name: $("#rgName").value, currency: $("#rgCur").value.toUpperCase(), fx_per_usd: Number($("#rgFx").value),
+      tax_pct: Number($("#rgTax").value), labour_factor: Number($("#rgLab").value), material_factor: Number($("#rgMat").value),
+      plant_factor: Number($("#rgMat").value), standard: $("#rgStd").value, prelims_pct: Number($("#rgPre").value) };
+    try { await api("/api/regions", { method: "POST", json: { code, values } }); await reloadLib(); toast(t("Region saved.")); await loadRd(); if (S.project) refresh(); } catch (e) { toast(e.message); }
+  });
+  $("#rgWb").addEventListener("click", async () => {
+    toast(t("Asking the World Bank…"));
+    try { await api(`/api/regions/${code}/worldbank`, { method: "POST" }); await reloadLib(); toast(t("Exchange rate and price level updated.")); S.rd.tab = "region"; await loadRd(); if (S.project) refresh(); } catch (e) { toast(e.message); }
+  });
+  $("#rgCreate").addEventListener("click", async () => {
+    const c = $("#rgNew").value; if (!c) return toast(t("Choose a country."));
+    const codeNew = ($("#rgNewCode").value.trim() || c).toUpperCase();
+    try { await api("/api/regions", { method: "POST", json: { code: codeNew, values: {} } }); await reloadLib(); S.rd.region = codeNew; $("#rdRegion").innerHTML = Object.entries(S.lib.regions).map(([k, r]) => `<option value="${k}">${esc(r.name)} (${r.currency})</option>`).join(""); $("#rdRegion").value = codeNew; toast(t("Region created.")); await loadRd(); } catch (e) { toast(e.message); }
+  });
+  $("#rgImport").addEventListener("change", async (ev) => {
+    const f = ev.target.files[0]; if (!f) return;
+    const fd = new FormData(); fd.append("file", f);
+    try { const r = await api("/api/regions/import", { method: "POST", body: fd }); await reloadLib(); S.rd.region = r.region; toast(`${t("Imported")} ${r.prices} ${t("prices")}`); await openRates(r.region, "prices"); } catch (e) { toast(e.message); }
+    ev.target.value = "";
+  });
+  $("#rgRatesImport").addEventListener("change", async (ev) => {
+    const f = ev.target.files[0]; if (!f) return;
+    const fd = new FormData(); fd.append("file", f);
+    try { const r = await api(`/api/rates/${code}/import`, { method: "POST", body: fd }); toast(`${t("Imported")} ${r.imported}`); await loadRd(); if (S.project) refresh(); } catch (e) { toast(e.message); }
+    ev.target.value = "";
+  });
+}
+
+async function reloadLib() {
+  S.lib = await api("/api/library");
+  const opts = Object.entries(S.lib.regions).map(([k, r]) => `<option value="${k}">${esc(r.name)} (${r.currency})</option>`).join("");
+  const cur1 = $("#region").value, cur2 = $("#startRegion").value;
+  $("#region").innerHTML = opts; $("#startRegion").innerHTML = opts;
+  $("#region").value = S.project?.settings.region || cur1; $("#startRegion").value = cur2 || "GLOBAL";
+}
+
+$("#ratesBtn").addEventListener("click", () => openRates());
 $("#reportBtn").addEventListener("click", () => openReport());
-$("#rateSearch").addEventListener("input", drawRates);
+$("#rateSearch").addEventListener("input", () => drawRd());
+$$("#rdTabs button").forEach((b) => b.addEventListener("click", () => { S.rd.tab = b.dataset.rt; drawRd(); }));
+$("#rdRegion").addEventListener("change", async (e) => {
+  if (S.rd.dirty && !confirm(t("Discard unsaved changes?"))) { e.target.value = S.rd.region; return; }
+  S.rd.region = e.target.value; await loadRd();
+});
 $("#rateClose").addEventListener("click", () => {
-  if (S.ratesDirty && !confirm("Close without saving your rate changes?")) return;
-  S.ratesDirty = false; $("#ratesDlg").hidden = true;
+  if (S.rd.dirty && !confirm(t("Close without saving your changes?"))) return;
+  S.rd.dirty = false; $("#ratesDlg").hidden = true;
 });
 $("#rateSave").addEventListener("click", async () => {
-  const rows = S.rates.rows.filter((r) => r.local).map((r) => ({ work_item: r.work_item, material: r.local[0], labour: r.local[1], equipment: r.local[2], source: r.source || "user" }));
   try {
-    const res = await api(`/api/rates/${S.rates.region}`, { method: "PUT", json: rows });
-    S.ratesDirty = false; $("#ratesDlg").hidden = true;
-    toast(`Saved ${res.saved} rates.`);
+    if (S.rd.tab === "prices") {
+      const rows = S.rd.prices.rows.filter((r) => r.price !== null).map((r) => ({ resource: r.resource, price: r.price, source: r.source, date: r.date }));
+      const res = await api(`/api/prices/${S.rd.region}`, { method: "PUT", json: rows });
+      toast(`${t("Saved")} ${res.saved} ${t("prices")}`);
+    } else {
+      const rows = S.rd.rates.rows.filter((r) => r.local).map((r) => ({ work_item: r.work_item, material: r.local[0], labour: r.local[1], equipment: r.local[2], source: r.source || "quote" }));
+      const res = await api(`/api/rates/${S.rd.region}`, { method: "PUT", json: rows });
+      toast(`${t("Saved")} ${res.saved} ${t("fixed rates")}`);
+    }
+    await reloadLib();
+    await loadRd();
     if (S.project) refresh();
   } catch (err) { toast(err.message); }
-});
-$("#rateImport").addEventListener("change", async (ev) => {
-  const f = ev.target.files[0]; if (!f) return;
-  const fd = new FormData(); fd.append("file", f);
-  try {
-    const r = await api(`/api/rates/${S.rates.region}/import`, { method: "POST", body: fd });
-    toast(`Imported ${r.imported} rows.`);
-    S.ratesDirty = false;
-    await openRates();
-    if (S.project) refresh();
-  } catch (err) { toast(err.message); }
-  ev.target.value = "";
 });
 
 // ---------- misc UI ----------
@@ -767,6 +937,9 @@ $$("#colorMode button").forEach((b) => b.addEventListener("click", () => setMode
 $("#levelSel").addEventListener("change", (e) => { S.level = e.target.value; paint(); });
 $("#showAll").addEventListener("click", () => { S.highlight = null; $$("tr.sel").forEach((x) => x.classList.remove("sel")); viewer.fit(); paint(); });
 $("#fitBtn").addEventListener("click", () => viewer.fit(S.highlight ? [...S.highlight] : null));
+$("#langSel").addEventListener("change", (e) => { setLang(e.target.value); if (S.est) refresh(); if (S.lib) loadProjects(); });
+$("#unitSel").addEventListener("change", (e) => { S.units = e.target.value; localStorageSet("units", S.units); if (S.est) { renderBoq(); if (S.selected) renderElement(S.selected); } });
+$("#addCountry").addEventListener("click", () => openRates($("#startRegion").value || "GLOBAL", "region"));
 $("#export").addEventListener("click", () => { location.href = `/api/projects/${S.project.id}/export.xlsx?version=${S.version.id}`; });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") { S.highlight = null; S.selected = null; $$("tr.sel").forEach((x) => x.classList.remove("sel")); paint(); } });
 
