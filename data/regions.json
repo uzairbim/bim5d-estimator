@@ -1,0 +1,10 @@
+{
+  "_note": "SAMPLE settings. Exchange rates and location factors are rough placeholders - set your own. Base rates are in USD; a region file in rates/ (local currency) overrides them item by item.",
+  "SA": {"name": "Saudi Arabia", "currency": "SAR", "fx_per_usd": 3.75, "location_factor": 0.85, "tax_name": "VAT", "tax_pct": 15, "overhead_pct": 10, "profit_pct": 10, "rates_file": "SA.csv"},
+  "AE": {"name": "United Arab Emirates", "currency": "AED", "fx_per_usd": 3.6725, "location_factor": 0.95, "tax_name": "VAT", "tax_pct": 5, "overhead_pct": 10, "profit_pct": 10},
+  "PK": {"name": "Pakistan", "currency": "PKR", "fx_per_usd": 280, "location_factor": 0.35, "tax_name": "Sales tax", "tax_pct": 0, "overhead_pct": 10, "profit_pct": 10},
+  "IN": {"name": "India", "currency": "INR", "fx_per_usd": 85, "location_factor": 0.32, "tax_name": "GST", "tax_pct": 18, "overhead_pct": 10, "profit_pct": 10},
+  "GB": {"name": "United Kingdom", "currency": "GBP", "fx_per_usd": 0.78, "location_factor": 1.15, "tax_name": "VAT", "tax_pct": 20, "overhead_pct": 12, "profit_pct": 8},
+  "DE": {"name": "Germany", "currency": "EUR", "fx_per_usd": 0.92, "location_factor": 1.1, "tax_name": "VAT", "tax_pct": 19, "overhead_pct": 12, "profit_pct": 8},
+  "US": {"name": "United States", "currency": "USD", "fx_per_usd": 1, "location_factor": 1.0, "tax_name": "Sales tax", "tax_pct": 0, "overhead_pct": 10, "profit_pct": 10}
+}

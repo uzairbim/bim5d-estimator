@@ -1,0 +1,4 @@
+uploads/
+__pycache__/
+web/node_modules/
+*.pyc

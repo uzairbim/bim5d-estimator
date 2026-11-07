@@ -1,0 +1,41 @@
+code,description,unit,trade,masterformat
+EARTH-EXC,Excavation for foundations incl. disposal,m3,Earthworks,31 23 16
+CON-FTG,Concrete in footings,m3,Concrete,03 30 00
+CON-SOG,Concrete slab on grade,m3,Concrete,03 30 00
+CON-SLB,Concrete suspended slab / roof slab,m3,Concrete,03 30 00
+CON-WAL,Concrete walls,m3,Concrete,03 30 00
+CON-COL,Concrete columns,m3,Concrete,03 30 00
+CON-BEM,Concrete beams,m3,Concrete,03 30 00
+FRM-FTG,Formwork to footings,m2,Concrete,03 11 00
+FRM-SLB,Formwork to slab soffits,m2,Concrete,03 11 00
+FRM-WAL,Formwork to walls,m2,Concrete,03 11 00
+FRM-COL,Formwork to columns,m2,Concrete,03 11 00
+FRM-BEM,Formwork to beams,m2,Concrete,03 11 00
+RBR,Reinforcement steel bars,kg,Concrete,03 21 00
+MESH,Welded mesh reinforcement,m2,Concrete,03 21 00
+VAPOR,Polyethylene vapour barrier,m2,Concrete,07 26 00
+MAS-BLK,Concrete block masonry wall,m2,Masonry,04 22 00
+MAS-BRK,Brick masonry wall,m2,Masonry,04 21 00
+INS-WAL,Wall thermal insulation,m2,Thermal & Moisture,07 21 00
+DRY-PRT,Gypsum board stud partition,m2,Finishes,09 21 16
+PLS,Cement plaster to walls,m2,Finishes,09 24 00
+PNT,Emulsion paint to walls,m2,Finishes,09 91 00
+ROF-WP,Roof waterproofing membrane,m2,Thermal & Moisture,07 52 00
+ROF-INS,Roof thermal insulation,m2,Thermal & Moisture,07 22 00
+ROF-DECK,Lightweight roof deck / structure,m2,Roofing,06 10 00
+STL-STR,Structural steel members,kg,Metals,05 12 00
+MET-MISC,Miscellaneous metal members,m,Metals,05 50 00
+CLG-GYP,Gypsum board ceiling,m2,Finishes,09 51 00
+SCR,Cement sand screed to floors,m2,Finishes,03 54 00
+FLR-INS,Floor thermal insulation,m2,Thermal & Moisture,07 21 00
+TMB-FLR,Timber joist floor with subfloor,m2,Wood,06 10 00
+FLR-WOOD,Timber floor finish,m2,Finishes,09 64 00
+FLR-TIL,Floor tiling,m2,Finishes,09 30 00
+FIN-GEN,General finish (unspecified covering),m2,Finishes,09 00 00
+DOR,Door complete with frame and ironmongery,nr,Openings,08 10 00
+WIN,Window complete,m2,Openings,08 50 00
+CW-GLZ,Curtain wall glazed panels,m2,Openings,08 44 00
+CW-MUL,Curtain wall mullions / transoms,m,Openings,08 44 00
+STR-FLT,Stair flight complete,nr,Concrete,03 41 00
+RAIL,Balustrade / handrail,m,Metals,05 52 00
+FFE,Furniture and fittings (allowance),nr,FF&E,12 00 00

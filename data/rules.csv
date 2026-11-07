@@ -1,0 +1,31 @@
+priority,ifc_class,keywords,recipe
+10,IfcFooting,,RC_FOOTING
+5,IfcSlab,\broof\b.*(wood|joist|timber)|(wood|joist|timber).*\broof\b,ROOF_LIGHT
+6,IfcSlab,\broof\b,ROOF_RC
+7,IfcSlab,finish floor|ceramic|tile|wood - flooring|carpet|vinyl,FLOOR_FINISH
+8,IfcSlab,wood joist|timber|lumber|joist,TIMBER_FLOOR
+10,IfcSlab,on grade|grnd|ground|sog,SLAB_ON_GRADE
+20,IfcSlab,,RC_SLAB
+10,IfcRoof,concrete|\bconc|\brc\b,ROOF_RC
+20,IfcRoof,,ROOF_LIGHT
+10,IfcWall|IfcWallStandardCase,brick.*block|bwk.*blk|brick.*cmu,CAVITY_WALL
+20,IfcWall|IfcWallStandardCase,cmu|block|blk|masonry - concrete,BLOCK_WALL
+30,IfcWall|IfcWallStandardCase,brick|bwk,BRICK_WALL
+40,IfcWall|IfcWallStandardCase,stud|gypsum|plasterboard|partn|drywall,DRYWALL
+50,IfcWall|IfcWallStandardCase,concrete|\brc\b|shear|retaining,RC_WALL
+90,IfcWall|IfcWallStandardCase,,BLOCK_WALL
+10,IfcColumn,steel|metal|\b(ipe|hea|heb|uc|w[0-9]),STEEL_MEMBER
+20,IfcColumn,,RC_COLUMN
+10,IfcBeam,steel|metal|\b(ipe|hea|heb|ub|w[0-9]),STEEL_MEMBER
+20,IfcBeam,,RC_BEAM
+10,IfcCovering,ceiling|clg,CEILING
+20,IfcCovering,floor|tile|flr,FLOOR_FINISH
+90,IfcCovering,,FINISH_GENERIC
+10,IfcDoor,,DOOR
+10,IfcWindow,,WINDOW
+10,IfcPlate,glaz|glass|panel,CW_PANEL
+10,IfcMember,curtain|mullion|transom,CW_MULLION
+90,IfcMember,,MISC_METAL
+10,IfcStair|IfcStairFlight,,STAIR
+10,IfcRailing,,RAILING
+10,IfcFurnishingElement|IfcFurniture,,FFE

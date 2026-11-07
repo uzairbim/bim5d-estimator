@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BIM 5D Estimator</title>
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": {
+    "three": "/vendor/three/build/three.module.js",
+    "three/addons/": "/vendor/three/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<header>
+  <div class="brand"><span class="logo">5D</span> BIM Estimator</div>
+  <div class="controls">
+    <label class="btn primary">Upload IFC<input id="file" type="file" accept=".ifc" hidden></label>
+    <select id="sample"><option value="">Or open a sample…</option></select>
+    <select id="region" title="Region and currency"></select>
+    <button id="export" class="btn" disabled>Export Excel</button>
+  </div>
+</header>
+
+<main>
+  <section class="viewer">
+    <div id="canvas"></div>
+    <div class="legend">
+      <div class="seg" id="colorMode">
+        <button data-mode="cost" class="on">Cost</button>
+        <button data-mode="trade">Trade</button>
+        <button data-mode="check">Checks</button>
+      </div>
+      <div id="legendBody"></div>
+    </div>
+    <div id="empty" class="empty">
+      <h2>Upload a Revit model to start</h2>
+      <p>In Revit: <b>File → Export → IFC</b>. Then upload the .ifc file here, or open a sample.</p>
+    </div>
+    <div id="busy" class="busy" hidden><div class="spin"></div><span>Reading model…</span></div>
+  </section>
+
+  <aside class="panel">
+    <nav class="tabs">
+      <button data-tab="summary" class="on">Summary</button>
+      <button data-tab="boq">BOQ</button>
+      <button data-tab="element">Element</button>
+      <button data-tab="checks">Checks</button>
+    </nav>
+    <div id="tab-summary" class="tab on"><p class="muted">No model loaded.</p></div>
+    <div id="tab-boq" class="tab"></div>
+    <div id="tab-element" class="tab"><p class="muted">Click an element in the 3D view.</p></div>
+    <div id="tab-checks" class="tab"></div>
+  </aside>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>

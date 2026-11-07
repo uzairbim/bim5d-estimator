@@ -1,0 +1,59 @@
+recipe,work_item,qty,waste_pct
+RC_FOOTING,EARTH-EXC,volume*1.5,0
+RC_FOOTING,CON-FTG,volume,2.5
+RC_FOOTING,FRM-FTG,perimeter*height,0
+RC_FOOTING,RBR,volume*80,5
+SLAB_ON_GRADE,CON-SOG,footprint*t("^concrete$|cast in situ|in-situ|in situ|structural|precast|^rc") or volume,2.5
+SLAB_ON_GRADE,SCR,footprint*has("screed"),5
+SLAB_ON_GRADE,FLR-INS,footprint*has("insul"),5
+SLAB_ON_GRADE,MESH,footprint,10
+SLAB_ON_GRADE,VAPOR,footprint,10
+RC_SLAB,CON-SLB,footprint*t("^concrete$|cast in situ|in-situ|in situ|structural|precast|^rc") or volume,2.5
+RC_SLAB,FRM-SLB,footprint,0
+RC_SLAB,RBR,(footprint*t("^concrete$|cast in situ|in-situ|in situ|structural|precast|^rc") or volume)*100,5
+RC_SLAB,SCR,footprint*has("screed"),5
+RC_SLAB,FLR-INS,footprint*has("insul"),5
+TIMBER_FLOOR,TMB-FLR,footprint,5
+ROOF_RC,CON-SLB,footprint*t("^concrete$|cast in situ|in-situ|in situ|structural|precast|^rc") or volume*0.5,2.5
+ROOF_RC,FRM-SLB,footprint,0
+ROOF_RC,RBR,(footprint*t("^concrete$|cast in situ|in-situ|in situ|structural|precast|^rc") or volume*0.5)*100,5
+ROOF_RC,ROF-INS,footprint,5
+ROOF_RC,ROF-WP,footprint,10
+ROOF_LIGHT,ROF-DECK,footprint,5
+ROOF_LIGHT,ROF-INS,footprint,5
+ROOF_LIGHT,ROF-WP,footprint,10
+CAVITY_WALL,MAS-BRK,side,5
+CAVITY_WALL,MAS-BLK,side,5
+CAVITY_WALL,INS-WAL,side,5
+CAVITY_WALL,PLS,side,5
+CAVITY_WALL,PNT,side,5
+BLOCK_WALL,MAS-BLK,side,5
+BLOCK_WALL,PLS,side*2,5
+BLOCK_WALL,PNT,side*2,5
+BRICK_WALL,MAS-BRK,side,5
+BRICK_WALL,PLS,side*2,5
+BRICK_WALL,PNT,side*2,5
+DRYWALL,DRY-PRT,side,5
+DRYWALL,PNT,side*2,5
+RC_WALL,CON-WAL,volume,2.5
+RC_WALL,FRM-WAL,side*2,0
+RC_WALL,RBR,volume*90,5
+RC_COLUMN,CON-COL,volume,2.5
+RC_COLUMN,FRM-COL,perimeter*length,0
+RC_COLUMN,RBR,volume*160,5
+RC_BEAM,CON-BEM,volume,2.5
+RC_BEAM,FRM-BEM,side*2+footprint,0
+RC_BEAM,RBR,volume*140,5
+STEEL_MEMBER,STL-STR,volume*7850,5
+CEILING,CLG-GYP,footprint,5
+FLOOR_FINISH,FLR-TIL,footprint*has("tile|ceram|stone|marble|porcelain") or footprint*(1-has("wood|timber|carpet|vinyl")),7
+FLOOR_FINISH,FLR-WOOD,footprint*has("wood|timber|parquet"),7
+FINISH_GENERIC,FIN-GEN,area,5
+DOOR,DOR,count,0
+WINDOW,WIN,area,0
+CW_PANEL,CW-GLZ,side,0
+CW_MULLION,CW-MUL,length,0
+MISC_METAL,MET-MISC,length,5
+STAIR,STR-FLT,count,0
+RAILING,RAIL,length,0
+FFE,FFE,count,0

@@ -1,0 +1,6 @@
+ifcopenshell>=0.8
+numpy
+openpyxl
+fastapi
+uvicorn
+python-multipart
