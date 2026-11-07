@@ -153,3 +153,15 @@ def test_ai_off_without_key(client, project, monkeypatch):
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
     assert client.post(f"/api/projects/{project}/suggest", json={}).status_code == 400
+
+
+@pytest.mark.parametrize("text,value", [("12,5", 12.5), ("1.234,5", 1234.5), ("1,234.5", 1234.5),
+                                        ("1 234,5", 1234.5), ("300", 300.0), ("", 0.0)])
+def test_numbers_from_any_excel_locale(text, value):
+    assert rates_mod._num(text) == value
+
+
+def test_csv_from_european_excel():
+    data = "code;rate\nCON-FTG;12,5\n".encode("cp1252")
+    rows = rates_mod.parse_upload("rates.csv", data)
+    assert rows[0]["work_item"] == "CON-FTG" and rates_mod._num(rows[0]["material"]) == 12.5

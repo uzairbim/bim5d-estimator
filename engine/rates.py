@@ -46,7 +46,7 @@ def save(region, rows, lib=None):
         if code not in known:
             continue
         try:
-            vals = [round(float(r.get(f) or 0), 4) for f in ("material", "labour", "equipment")]
+            vals = [round(_num(r.get(f)), 4) for f in ("material", "labour", "equipment")]
         except (TypeError, ValueError):
             raise ValueError(f"Rate for {code} is not a number")
         if min(vals) < 0 or not all(math.isfinite(v) for v in vals):
@@ -67,13 +67,38 @@ _ALIASES = {"code": "work_item", "item": "work_item", "work item": "work_item",
             "rate": "rate", "unit rate": "rate", "total": "rate"}
 
 
+def _read_csv(data):
+    """CSV as Excel saves it anywhere: UTF-8 or Windows encoding, comma or semicolon columns."""
+    try:
+        text = data.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        text = data.decode("cp1252", errors="replace")
+    first = text.split("\n", 1)[0]
+    delim = ";" if first.count(";") > first.count(",") else "\t" if first.count("\t") > first.count(",") else ","
+    return list(csv.reader(io.StringIO(text), delimiter=delim))
+
+
+def _num(v):
+    """A number typed in any Excel locale: 1,234.5 / 1.234,5 / 12,5 / 1 234,5."""
+    if isinstance(v, (int, float)):
+        return float(v)
+    t = str(v or "").strip().replace("\u00a0", "").replace(" ", "")
+    if not t:
+        return 0.0
+    if "," in t and "." in t:
+        t = t.replace(".", "").replace(",", ".") if t.rfind(",") > t.rfind(".") else t.replace(",", "")
+    elif "," in t:
+        t = t.replace(",", ".") if len(t.split(",")[-1]) != 3 or t.count(",") == 1 and t.startswith("0") else t.replace(",", "")
+    return float(t)
+
+
 def parse_upload(name, data):
     """Read a CSV or Excel rate sheet. Accepts material/labour/equipment or a single 'rate'."""
     if name.lower().endswith((".xlsx", ".xlsm")):
         ws = load_workbook(io.BytesIO(data), read_only=True, data_only=True).active
         raw = [[("" if c is None else c) for c in row] for row in ws.iter_rows(values_only=True)]
     else:
-        raw = list(csv.reader(io.StringIO(data.decode("utf-8-sig"))))
+        raw = _read_csv(data)
     if not raw:
         return []
     head = [_ALIASES.get(str(h).strip().lower(), str(h).strip().lower()) for h in raw[0]]

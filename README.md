@@ -14,12 +14,27 @@ No licence fees, no account, works offline on your own computer.
 
 ## Start in 2 minutes
 
-**Windows:** install [Python 3.10+](https://www.python.org/downloads/) (tick *Add python.exe to PATH*),
-unzip, double-click **`start-windows.bat`**.
+**Windows:** install [Python](https://www.python.org/downloads/) 3.10 – 3.14, 64-bit (tick *Add python.exe to PATH*).
+Right-click the zip → **Extract All**, open the folder, double-click **`start-windows.bat`**.
+The first start installs what it needs (2–5 minutes, internet needed once); later starts take seconds.
 **Mac / Linux:** `bash start-mac-linux.sh`.
 **Docker:** `docker compose up --build`.
 
-The browser opens at http://localhost:8000. Pick your region, drop an IFC file or try a sample.
+The browser opens by itself when the app is ready (http://localhost:8000, or 8001… if 8000 is busy).
+Pick your region, click **Try the demo** or drop an IFC file. Keep the black window open while you work.
+
+**If something goes wrong**
+
+| What you see | What to do |
+|---|---|
+| "Python was not found" | Install Python from python.org and tick *Add python.exe to PATH*, then start again. |
+| "Installation did not finish" | Check the internet, start again. Still failing: delete the `.venv` folder and start again. Use 64-bit Python. |
+| "Please unzip the folder first" | Right-click the zip → Extract All; run the .bat from the extracted folder. |
+| Browser shows nothing | Open the address shown in the black window yourself (Chrome, Edge or Firefox). |
+| A model will not load | The message says how to re-export from Revit (IFC4 Reference View or IFC 2x3 CV 2.0). |
+
+Tip: extract to a normal folder such as `C:\BIM5D` or Documents, not inside *Program Files*. Projects and
+your prices are saved in that folder (`projects/`, `data/prices/`), so copy it to keep them.
 To share it with others for free (own computers, a free website, GitHub), see
 [docs/SHARE_FOR_FREE.md](docs/SHARE_FOR_FREE.md).
 

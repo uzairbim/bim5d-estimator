@@ -35,7 +35,7 @@ def main():
                     "currency_name": bn.get_currency_name(cur[0], locale="en"),
                     "tax_name": tax[0] if tax else "VAT/GST", "tax_pct": tax[1] if tax else None})
     path = Path(__file__).resolve().parent.parent / "data" / "countries.json"
-    path.write_text(json.dumps(out, ensure_ascii=False, indent=0))
+    path.write_text(json.dumps(out, ensure_ascii=False, indent=0), encoding="utf-8")
     print(len(out), "countries ->", path)
 
 

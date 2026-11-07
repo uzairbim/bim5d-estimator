@@ -1,18 +1,23 @@
 #!/usr/bin/env bash
-# BIM 5D Estimator - run:  bash start-mac-linux.sh   (needs Python 3.10+)
-set -e
+# BIM 5D Estimator - run:  bash start-mac-linux.sh   (needs Python 3.10 - 3.14)
 cd "$(dirname "$0")"
-PY=$(command -v python3 || command -v python)
+PY=""
+for c in python3.13 python3.12 python3.14 python3.11 python3.10 python3 python; do
+  if command -v "$c" >/dev/null 2>&1 && "$c" -c 'import sys; sys.exit(0 if (3,10) <= sys.version_info[:2] <= (3,14) else 1)' 2>/dev/null; then PY="$c"; break; fi
+done
 if [ -z "$PY" ]; then
-  echo "Python was not found. Install Python 3.10+ from https://www.python.org/downloads/"
+  echo "Python 3.10 - 3.14 was not found. Install it from https://www.python.org/downloads/"
   exit 1
 fi
-if [ ! -x .venv/bin/python ]; then
-  echo "First start: installing, this takes a few minutes..."
-  "$PY" -m venv .venv
-  .venv/bin/python -m pip install --upgrade pip
-  .venv/bin/python -m pip install -r requirements.txt
+if [ ! -f .venv/installed.ok ]; then
+  echo "First start: installing the parts it needs (2-5 minutes, needs internet)..."
+  { [ -x .venv/bin/python ] || "$PY" -m venv .venv; } &&
+  .venv/bin/python -m pip install --disable-pip-version-check --upgrade pip &&
+  .venv/bin/python -m pip install --disable-pip-version-check -r requirements.txt &&
+  touch .venv/installed.ok || {
+    echo "Installation did not finish. Check the internet connection and run this again."
+    echo "If it keeps failing: rm -rf .venv and try again."
+    exit 1
+  }
 fi
-echo "Starting BIM 5D Estimator on http://localhost:8000  (Ctrl+C to stop)"
-( sleep 2; (command -v open >/dev/null && open http://localhost:8000) || (command -v xdg-open >/dev/null && xdg-open http://localhost:8000) || true ) &
-.venv/bin/python -m uvicorn server:app --port 8000
+exec .venv/bin/python run.py
