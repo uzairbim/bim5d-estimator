@@ -19,7 +19,7 @@ SA = {
     "M-PE": 2, "M-PLY": 40, "M-TMB": 1800, "M-BLK": 2.5, "M-BRK": 1.5, "M-INS": 25, "M-GYP": 18,
     "M-STUD": 8, "M-PNT": 14, "M-PRM": 12, "M-EPNT": 22, "M-SPNT": 35, "M-TILE": 55, "M-WTILE": 45,
     "M-ADH": 1.2, "M-GRT": 5, "M-WOOD": 140, "M-CLGSYS": 25, "M-WPM": 35, "M-WPC": 30, "M-STL": 7500,
-    "M-RAIL": 350, "M-CLAD": 350, "M-DOOR": 1500, "M-WIN": 750, "M-CWP": 750, "M-CWM": 140,
+    "M-RAIL": 350, "M-CLAD": 350, "M-DOOR": 1500, "M-DOORL": 650, "M-DOORG": 850, "M-DOORF": 3200, "M-WIN": 750, "M-CWP": 750, "M-CWM": 140,
     "M-STAIR": 7000, "M-LIFT": 120000, "M-FFE": 1200, "M-PIPE-S": 25, "M-PIPE-M": 120, "M-PIPE-L": 350,
     "M-PFIT": 30, "M-VALVE": 250, "M-SAN": 1500, "M-SPRK": 70, "M-GALV": 9, "M-DIFF": 220,
     "M-MECH": 12000, "M-TRAY": 45, "M-TFIT": 35, "M-CBL": 8, "M-LUM": 250, "M-ACC": 35, "M-DB": 2500,

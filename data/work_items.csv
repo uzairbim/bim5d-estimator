@@ -99,3 +99,6 @@ FIRE-EQ,Fire extinguisher / hose reel cabinet,nr,Fire Protection,10 44 00
 MANHOLE,Manhole / inspection chamber with cover,nr,External works,33 05 13
 POWER,Generator / transformer / power plant item,nr,Electrical,26 32 00
 POWER-S,Small transformer / UPS / inverter,nr,Electrical,26 22 00
+DOR-L,Large / double / sliding / garage door complete (per m2),m2,Openings,08 10 00
+DOR-G,Aluminium and glass door complete (per m2),m2,Openings,08 41 13
+DOR-F,Fire-rated door set complete with closer,nr,Openings,08 11 13

@@ -57,6 +57,8 @@ def is_existing(el):
 
 
 FINISH_FLOOR_RECIPES = {"FLOOR_FINISH", "SCREED_LAYER"}
+FIRE_DOOR = re.compile(r"fire|(?<![a-z])fd ?\d|(?<![a-z])ei ?\d{2}|(?<![a-z])rated\b|brandschutz|(?<![a-z])t(30|60|90)\b|coupe.?feu|حريق", re.I)
+GLASS_DOOR = re.compile(r"glass|\bglas\b|- glas|aluminium|aluminum|storefront|curtain wall|زجاج|ألمنيوم|المنيوم", re.I)
 
 # Typical whole-building cost per m2 relative to a mid-range house (indicative ratios from
 # international cost guides). The region's benchmark is for a house; other types are scaled.
@@ -655,6 +657,10 @@ def _env(el, give, rule, ctx):
     # context flags
     q["ext"] = 1.0 if is_external(el) else 0.0
     q["is_beam"] = 1.0 if el["ifc_class"] == "IfcBeam" else 0.0
+    if el["ifc_class"] == "IfcDoor":
+        text = f'{el.get("name", "")} {el.get("type", "")} {" ".join(el.get("materials") or [])}'
+        q["fire"] = 1.0 if FIRE_DOOR.search(text) else 0.0
+        q["glass_door"] = 1.0 if GLASS_DOOR.search(text) else 0.0
     q["dig"] = _dig_depth(el, q, ctx.get("ground_tops", ()))
     q["is_roof"] = 1.0 if (el["ifc_class"] == "IfcSlab" and (el.get("predefined") == "ROOF"
                                                               or el.get("level") in ctx.get("roof_levels", ()))

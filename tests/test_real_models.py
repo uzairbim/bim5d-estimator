@@ -495,3 +495,20 @@ def test_typical_revit_mep_families(lib, cls, name, recipe):
     el = {"ifc_class": cls, "kind": cls, "name": name, "type": name, "predefined": "", "materials": [],
           "classification": [], "props": {}, "qty": {"volume": 0.05}}
     assert lib.classify(el)[0] == recipe
+
+
+@pytest.mark.parametrize("name,w,h,item,qty", [
+    ("M_Single-Flush:0915 x 2134mm", 0.915, 2.134, "DOR", 1),
+    ("M_Door-Overhead-Sectional:2400 x 2000mm", 4.0, 2.0, "DOR-L", 8.0),
+    ("M_Double-Flush:1730 x 2134mm", 1.73, 2.134, "DOR-L", 1.73 * 2.134),
+    ("Türelement 2-flg - Drehflügel - Glas", 2.0, 2.5, "DOR-G", 5.0),
+    ("Interior_Door_EI60_Single", 0.9, 2.1, "DOR-F", 1),
+    ("باب حريق 90×210", 0.9, 2.1, "DOR-F", 1),
+])
+def test_doors_priced_by_kind_and_size(lib, name, w, h, item, qty):
+    el = {"guid": "d", "ifc_class": "IfcDoor", "kind": "IfcDoor", "name": name, "type": name, "predefined": "",
+          "materials": [], "classification": [], "props": {}, "level": "L1", "openings": [],
+          "qty": {"count": 1, "area": w * h, "ow": w, "oh": h, "volume": 0.1, "height": h, "length": w}}
+    q = {l["work_item"]: l["net_qty"] for l in estimate([el], "SA", lib, {})["lines"]}
+    assert q.get(item) == pytest.approx(qty, rel=0.01)
+    assert sum(1 for k in q if k.startswith("DOR")) == 1
