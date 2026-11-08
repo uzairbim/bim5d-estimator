@@ -271,7 +271,7 @@ def friendly_error(e):
     if "unable to parse" in low or "parse" in low or "token" in low or "not a valid" in low or "schema" in low:
         return ("This file could not be read as IFC. Export it again from Revit (File > Export > IFC, "
                 f"IFC 2x3 Coordination View 2.0 or IFC4 Reference View) and upload the new file. Details: {msg[:200]}")
-    if "memory" in low:
+    if isinstance(e, MemoryError) or "memory" in low or "bad_alloc" in low:
         return ("The model is too large for this computer's memory. Export a smaller part (one building "
                 f"or one discipline) or use a computer with more memory. Details: {msg[:200]}")
     return f"Something went wrong while reading the model: {msg[:300]}"

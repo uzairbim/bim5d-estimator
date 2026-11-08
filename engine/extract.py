@@ -6,6 +6,7 @@ exporter (Revit, ArchiCAD, Tekla...) wrote quantity sets or which units the
 model was drawn in.
 """
 import multiprocessing
+import os
 
 import numpy as np
 
@@ -289,6 +290,39 @@ def _openings(el, scale, settings):
     return out
 
 
+def _ram_gb():
+    """Physical memory of this computer in GB (Windows, macOS, Linux); 8 if unknown."""
+    try:
+        if os.name == "nt":
+            import ctypes
+
+            class MEM(ctypes.Structure):
+                _fields_ = [("dwLength", ctypes.c_ulong), ("dwMemoryLoad", ctypes.c_ulong),
+                            ("ullTotalPhys", ctypes.c_ulonglong), ("ullAvailPhys", ctypes.c_ulonglong),
+                            ("ullTotalPageFile", ctypes.c_ulonglong), ("ullAvailPageFile", ctypes.c_ulonglong),
+                            ("ullTotalVirtual", ctypes.c_ulonglong), ("ullAvailVirtual", ctypes.c_ulonglong),
+                            ("ullAvailExtendedVirtual", ctypes.c_ulonglong)]
+            m = MEM()
+            m.dwLength = ctypes.sizeof(MEM)
+            ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(m))
+            return m.ullTotalPhys / 1e9
+        return os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES") / 1e9
+    except Exception:  # noqa: BLE001 - any platform quirk: assume a common laptop
+        return 8.0
+
+
+def _threads(path):
+    """Parallel geometry threads: as many cores as the memory allows. Each thread holds its own
+    copy of geometry (measured: about 17 MB per MB of IFC per thread, plus 30 MB per MB once),
+    so a big model on a laptop uses fewer threads instead of running out of memory."""
+    if os.environ.get("BIM5D_THREADS"):
+        return max(1, int(os.environ["BIM5D_THREADS"]))
+    size_mb = max(os.path.getsize(path) / 1e6, 1.0)
+    base, per = 0.4 + 0.03 * size_mb, max(0.2, 0.017 * size_mb)
+    fit = int((_ram_gb() * 0.6 - base) / per)
+    return max(1, min(multiprocessing.cpu_count(), fit))
+
+
 def extract(path, with_mesh=True, progress=None):
     """Read and measure every element.
 
@@ -303,7 +337,7 @@ def extract(path, with_mesh=True, progress=None):
     total = max(len(model.by_type("IfcProduct")), 1)
     elements, meshes = {}, {}
     origin = None
-    it = ifcopenshell.geom.iterator(settings, model, multiprocessing.cpu_count())
+    it = ifcopenshell.geom.iterator(settings, model, _threads(path))
     done = 0
     if it.initialize():
         while True:
