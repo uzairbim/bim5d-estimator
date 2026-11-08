@@ -79,3 +79,4 @@ M-BIT,Bitumen coating,litre,material,3,0,
 M-TBLK,Insulated thermal block 400x200x200,nr,material,1.6,1,Polystyrene-filled hollow block (energy code walls)
 M-STONE,Natural stone cladding (supply),m2,material,35,0,
 M-RTILE,Roof tiles / pavers (supply),m2,material,12,0,
+M-PNL,Main / sub-main distribution panel (supply),nr,material,3200,0,

@@ -23,7 +23,7 @@ SA = {
     "M-STAIR": 7000, "M-LIFT": 120000, "M-FFE": 1200, "M-PIPE-S": 25, "M-PIPE-M": 120, "M-PIPE-L": 350,
     "M-PFIT": 30, "M-VALVE": 250, "M-SAN": 1500, "M-SPRK": 70, "M-GALV": 9, "M-DIFF": 220,
     "M-MECH": 12000, "M-TRAY": 45, "M-TFIT": 35, "M-CBL": 8, "M-LUM": 250, "M-ACC": 35, "M-DB": 2500,
-    "M-APPL": 2500, "M-CTRL": 500, "M-GEN": 800, "M-LINT": 45, "M-SILL": 120, "M-SEAL": 18,
+    "M-APPL": 2500, "M-PNL": 12000, "M-CTRL": 500, "M-GEN": 800, "M-LINT": 45, "M-SILL": 120, "M-SEAL": 18,
     "M-SKRT": 25, "M-HRD": 35, "M-PINS": 20, "M-DINS": 35, "M-TERM": 5,
     "M-JOIN": 1100, "M-PV": 650, "M-MECH-S": 1500,
     "M-BIT": 6, "M-TBLK": 6.5, "M-STONE": 130, "M-RTILE": 35,

@@ -44,6 +44,12 @@ def _like(els, ifc_class, **changes):
     ("IfcWall", "Basic Wall:Thermal Block 200", ["Thermal block"], "THERMAL_BLOCK_WALL"),
     ("IfcWall", "Basic Wall:بلوك عازل 20 سم", [], "THERMAL_BLOCK_WALL"),
     ("IfcWall", "Basic Wall:Block 200", ["Concrete Masonry Units"], "BLOCK_WALL"),
+    ("IfcBuildingElementProxy", "M_Lavatory - Wall Mounted:485 mmx355 mm - Public", [], "SANITARY"),
+    ("IfcBuildingElementProxy", "M_Water Closet - Flush Valve - Wall Mounted:Public", [], "SANITARY"),
+    ("IfcBuildingElementProxy", "M_Cooling Tower - Closed Circuit - Counterflow - 177 kW", [], "MECH_EQUIP"),
+    ("IfcBuildingElementProxy", "M_Base Cabinet-Single Door:500mm", ["Handle", "Wood"], "JOINERY"),
+    ("IfcBuildingElementProxy", "M_Lighting and Appliance Panelboard - 208V MLO - Surface:400 A", [], "ELEC_PANEL"),
+    ("IfcBuildingElementProxy", "M_Lighting and Appliance Panelboard - 480V MCB - Surface:100 A", [], "ELEC_DEVICE"),
 ])
 def test_real_names_are_priced_sensibly(lib, cls, name, materials, recipe):
     el = {"ifc_class": cls, "kind": cls, "name": name, "type": name, "predefined": "",

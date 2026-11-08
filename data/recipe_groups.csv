@@ -62,3 +62,4 @@ LINTEL_ELEMENT,Lintel (modelled),2.5 External walls,B20 Exterior enclosure,4 Env
 TIMBER_MEMBER,Timber beam / column / joist,2.1 Frame,B10 Superstructure,2 Frame & floors
 THERMAL_BLOCK_WALL,Insulated (thermal) block wall,2.5 External walls,B20 Exterior enclosure,4 Envelope & walls
 STONE_WALL,Block wall with stone cladding,2.5 External walls,B20 Exterior enclosure,4 Envelope & walls
+ELEC_PANEL,Main / sub-main panel,5.8 Electrical installations,D50 Electrical,5 Services

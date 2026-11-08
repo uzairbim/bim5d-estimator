@@ -173,3 +173,5 @@ unit,m,م.ط
 unit,kg,كجم
 unit,nr,عدد
 unit,t,طن
+work_item,ELEC-PNL,لوحة توزيع رئيسية / فرعية رئيسية
+recipe,ELEC_PANEL,لوحة كهرباء رئيسية

@@ -35,7 +35,7 @@ priority,ifc_class,keywords,recipe
 5,IfcStair|IfcStairFlight,concrete|\bstb\b|beton|massiv|cast|in.?situ|precast,STAIR_RC
 10,IfcStair|IfcStairFlight,,STAIR
 10,IfcRailing,,RAILING
-5,IfcFurnishingElement|IfcFurniture|IfcSystemFurnitureElement|IfcBuildingElementProxy,cabinet|casework|counter|vanity|wardrobe|kitchen|shelv|enclosure|worktop|joinery|cupboard|closet|schrank|خزانة,JOINERY
+5,IfcFurnishingElement|IfcFurniture|IfcSystemFurnitureElement|IfcBuildingElementProxy,cabinet|casework|\bcounter\b|countertop|counter top|vanity|wardrobe|kitchen|shelv|enclosure|worktop|joinery|cupboard|(?<!water )closet|schrank|خزانة,JOINERY
 10,IfcFurnishingElement|IfcFurniture|IfcSystemFurnitureElement,,LOOSE_FFE
 10,IfcTransportElement,,LIFT
 10,IfcReinforcingBar|IfcReinforcingMesh,,REBAR_MODELED
@@ -57,11 +57,11 @@ priority,ifc_class,keywords,recipe
 10,IfcPump|IfcFan|IfcBoiler|IfcChiller|IfcHeatExchanger|IfcUnitaryEquipment|IfcAirToAirHeatRecovery|IfcCoolingTower|IfcCoil|IfcTank|IfcCompressor|IfcHumidifier|IfcEvaporativeCooler|IfcCondenser|IfcSpaceHeater,,MECH_EQUIP
 10,IfcController|IfcSensor|IfcActuator|IfcAlarm|IfcFlowInstrument|IfcUnitaryControlElement,,CONTROLS
 10,IfcFlowTerminal,closet|\bwc\b|toilet|lavatory|sink|basin|urinal|shower|bath|faucet|tap\b|hot.?tub|jacuzzi|whirlpool,SANITARY
-10,IfcBuildingElementProxy|IfcFlowTerminal,wshp|heat pump|\bahu\b|\bfcu\b|fan coil|chiller|pump|boiler|split unit|condens|furnace|water.?heater|air conditioner|outside unit|outdoor unit|\bac unit|package unit|مكيف|سخان,MECH_EQUIP
-30,IfcBuildingElementProxy,sink|basin|\bwc\b|toilet|shower|bowl|urinal|bidet|hot.?tub|jacuzzi|whirlpool|\bspa\b,SANITARY
+10,IfcBuildingElementProxy|IfcFlowTerminal,wshp|heat pump|\bahu\b|\bfcu\b|fan coil|chiller|pump|boiler|split unit|condens|furnace|water.?heater|cooling tower|\bvrf\b|\bvrv\b|\bcrac\b|air handling|air conditioner|outside unit|outdoor unit|\bac unit|package unit|مكيف|سخان,MECH_EQUIP
+4,IfcBuildingElementProxy,sink|basin|lavatory|water closet|\bwc\b|toilet|shower|urinal|bidet|hot.?tub|jacuzzi|whirlpool|\bspa\b,SANITARY
 33,IfcBuildingElementProxy|IfcSolarDevice|IfcElectricGenerator,photovoltaic|solar|\bpv\b,SOLAR_PV
 35,IfcBuildingElementProxy,tank|generator|inverter,MECH_EQUIP
-5,IfcBuildingElementProxy|IfcFurnishingElement|IfcFurniture|IfcSite|IfcGeographicElement,\btree\b|\bplant|shrub|entourage|\bpeople\b|person|rpc|\bcar\b|vehicle|suv|sedan|truck|bicycle|\bbike|\bbaum\b|\bwater\b|vase|flower|porcelain plate|decor|accessor,EXCLUDE
+5,IfcBuildingElementProxy|IfcFurnishingElement|IfcFurniture|IfcSite|IfcGeographicElement,\btree\b|\bplanting|planter|potted plant|\bplants?\b(?! room)(?!-)|shrub|entourage|\bpeople\b|person|rpc|\bcar\b|vehicle|suv|sedan|truck|bicycle|\bbike|\bbaum\b|water feature|fountain|\bpond\b|vase|flower|porcelain plate|decor,EXCLUDE
 10,IfcGeographicElement,,EXCLUDE
 10,IfcSpace,bath|toilet|\bwc\b|shower|washroom|lavator|ablution|laundry|washing|wash room|restroom|powder|\bbad\b|dusche|حمام|دورة مياه|وضوء,ROOM_WET
 20,IfcSpace,kitchen|pantry|kitchenette|küche|مطبخ,ROOM_KITCHEN
@@ -91,10 +91,11 @@ priority,ifc_class,keywords,recipe
 10,IfcStair|IfcStairFlight,trap\b|escalier|escalera|scala|escada,STAIR
 3,IfcBeam|IfcMember,latei|lintel|linteau|dintel|architrave|sturz,LINTEL_ELEMENT
 2,IfcSlab|IfcCovering,\brugs?\b|area rug|\bcarpet rug|teppich lose|loose mat,LOOSE_FFE
-2,IfcBuildingElementProxy|IfcFurnishingElement|IfcFurniture|IfcFlowTerminal,handtag|\bhandles?\b|\bknobs?\b|\bgriff|poign[eé]e|tirador|maniglia|مقبض,EXCLUDE
+2,IfcBuildingElementProxy|IfcFurnishingElement|IfcFurniture|IfcFlowTerminal,^[^:]*(handtag|\bhandles?\b|\bknobs?\b|\bgriff|poign[eé]e|tirador|maniglia|مقبض),EXCLUDE
 20,IfcBuildingElementProxy,display|\blcd\b|\bled tv|\btv\b|television|monitor|projector screen,LOOSE_FFE
 25,IfcBuildingElementProxy,\bbeds?\b|_bed|bench|sofa|couch|\btables?\b|table\d|chair|\bdesk|stool|ottoman|bookcase|lounger|armchair|möbel|meuble|mueble|كنب|سرير|طاولة|كرسي,LOOSE_FFE
 10,IfcRamp|IfcRampFlight,,STAIR_RC
 4,IfcBeam|IfcColumn|IfcMember,lumber|timber|glulam|\blvl\b|laminated veneer|\bwood|softwood|hardwood|\bclt\b|holz|\bbois|madera|legno|houten|خشب,TIMBER_MEMBER
 12,IfcWall|IfcWallStandardCase,stone|marble|granite|limestone|travertine|naturstein|pierre|piedra|حجر|رخام|جرانيت,STONE_WALL
 11,IfcWall|IfcWallStandardCase,thermal ?block|insulated block|thermo ?block|isolated block|بلوك عازل|بلوك حراري|عازل حراري,THERMAL_BLOCK_WALL
+3,IfcBuildingElementProxy|IfcElectricDistributionBoard|IfcElectricDistributionPoint|IfcFlowController,switchboard|switchgear|\bmdb\b|\bsmdb\b|\bmcc\b|main panel|panelboard.*\b([2-9]\d\d|\d{4}) ?a\b|\b([4-9]\d\d|\d{4}) ?a\b,ELEC_PANEL
