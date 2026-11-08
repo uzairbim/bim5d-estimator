@@ -382,3 +382,25 @@ def test_room_finishes_match_hand_calculation(villa):
     assert q("4 حمام", "WPF-WET") == pytest.approx(7.84 + 11.2 * 0.3, abs=0.05)
     # kitchen splashback 600 mm on 40% of the perimeter, taken off the paint
     assert q("2 مطبخ", "WAL-TILE") == pytest.approx(23.2 * 0.4 * 0.6, abs=0.05)
+
+
+def test_pipes_and_ducts_measured_along_their_run(tmp_path, lib):
+    """A 10 m DN50 pipe at 45 degrees is 10 m of small pipe; a sloped DN100 drain is medium pipe;
+    ducts: area = perimeter x length; insulation on chilled water and supply air only."""
+    import subprocess
+    import sys as _sys
+    out = tmp_path / "mep.ifc"
+    subprocess.run([_sys.executable, str(SAMPLES.parent / "tools" / "make_mep_check.py"), str(out)], check=True)
+    els = extract(str(out), with_mesh=False)["elements"]
+    est = estimate(els, "SA", lib, {})
+    by_name = {e["name"]: e["guid"] for e in els}
+    q = lambda n, wi: sum(l["net_qty"] for l in est["lines"] if l["guid"] == by_name[n] and l["work_item"] == wi)
+    assert q("Pipe DN50 diagonal 45", "PIP-S") == pytest.approx(10, abs=0.05)
+    assert q("Pipe DN50 straight", "PIP-S") == pytest.approx(10, abs=0.05)
+    assert q("Pipe DN100 sloped drain", "PIP-M") == pytest.approx(12, abs=0.05)
+    assert q("Pipe DN200 chilled riser", "PIP-L") == pytest.approx(9, abs=0.05)
+    assert q("Pipe DN200 chilled riser", "PIP-INS") == pytest.approx(9, abs=0.05)
+    assert q("Pipe DN50 straight", "PIP-INS") == 0
+    for n in ("Duct 600x400 straight", "Duct 600x400 diagonal"):
+        assert q(n, "DUCT") == pytest.approx(2 * (0.6 + 0.4) * 8, rel=0.04)       # + end caps
+    assert q("Duct 600x400 straight", "DUCT-INS") > 0 and q("Duct 600x400 diagonal", "DUCT-INS") == 0

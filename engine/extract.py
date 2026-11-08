@@ -111,6 +111,18 @@ def _orient(f):
     return f
 
 
+ORIENTED = LINEAR | {"IfcBeam", "IfcRailing"}
+
+
+def _along_axis(v):
+    """(length, section) of a long element along its principal axis, whatever its direction."""
+    c = v - v.mean(axis=0)
+    _, vec = np.linalg.eigh(np.cov(c.T) + np.eye(3) * 1e-12)
+    proj = c @ vec
+    ext = np.sort(proj.max(axis=0) - proj.min(axis=0))[::-1]
+    return float(ext[0]), float(ext[1])
+
+
 def _measure(geom, ifc_class, thickness=0.0, authored=None):
     """Quantities in m / m2 / m3, measured in the element's local axes.
 
@@ -170,6 +182,12 @@ def _measure(geom, ifc_class, thickness=0.0, authored=None):
         "surface": surface,                       # full outer surface (ducts, cladding)
         "section": sorted((x, y, z))[1],          # middle dimension ~ pipe/duct size
     }
+    if ifc_class in ORIENTED and len(v) >= 4:
+        # Runs that go diagonally or slope (drainage, diagonal ducts, stair railings) are measured
+        # along their own axis: a 10 m pipe at 45 degrees is 10 m long and still DN50.
+        run_len, run_sec = _along_axis(v)
+        if run_len > q["length"] * 1.01 or run_sec < q["section"] * 0.95:
+            q["length"], q["section"] = run_len, run_sec
     # Is it a closed solid? Every edge must be shared by exactly two faces.
     edges = np.sort(np.concatenate([f[:, [0, 1]], f[:, [1, 2]], f[:, [2, 0]]]), axis=1)
     _, counts = np.unique(edges, axis=0, return_counts=True)
