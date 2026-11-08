@@ -1048,6 +1048,10 @@ def estimate(elements, region, lib=None, settings=None):
         assumptions.append("Structural steel weight = member volume x 7,850 kg/m3"
                            + (" (connection plates as modelled)." if ctx.get("plates") else
                               " + 10% for connections (plates, bolts, cleats) not in the model."))
+    flat = sum(1 for e in elements if e["ifc_class"] == "IfcSpace" and (e.get("qty") or {}).get("height_assumed"))
+    if flat:
+        assumptions.append(f"{flat} rooms were exported as a 2D outline without a height: 3.0 m assumed for their "
+                           "wall finishes. Export rooms in 3D (Revit IFC options) or check these rooms.")
     n_existing = sum(1 for e in elements if e["ifc_class"] != "IfcSpace" and is_existing(e)
                      and not (mappings and mappings.get(group_key(e))))
     if n_existing:

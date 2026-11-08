@@ -487,12 +487,20 @@ def _spaces(model, scale):
             continue
         try:
             g = ifcopenshell.geom.create_shape(settings, sp).geometry
+            v = np.asarray(g.verts, dtype=float).reshape(-1, 3)
+            f = np.asarray(g.faces, dtype=np.int64).reshape(-1, 3)
         except Exception:
-            continue
-        v = np.asarray(g.verts, dtype=float).reshape(-1, 3)
-        f = np.asarray(g.faces, dtype=np.int64).reshape(-1, 3)
+            f = np.zeros((0, 3), dtype=np.int64)
         if not len(f):
-            continue
+            # Room exported as a flat outline (FootPrint) only: build a prism from the outline and
+            # the room height, so its finishes are not lost.
+            prism = _flat_room(model, sp, scale)
+            if prism is None:
+                continue
+            v, f = prism
+            flat_height_assumed = _room_height(sp, scale) is None
+        else:
+            flat_height_assumed = False
         key = np.round(v, 4)
         uniq, inv = np.unique(key, axis=0, return_inverse=True)
         f = inv.ravel()[f]
@@ -538,9 +546,75 @@ def _spaces(model, scale):
             "bbox": [round(x, 3) for x in (*v.min(axis=0), *v.max(axis=0))],
             "qty": {"count": 1.0, "floor_area": round(area, 4), "perimeter": round(perim, 4),
                     "height": round(zmax - zmin, 4), "volume": round(area * (zmax - zmin), 4),
-                    "footprint": round(area, 4), "check": check},
+                    "footprint": round(area, 4), "check": check,
+                    "height_assumed": 1.0 if flat_height_assumed else 0.0},
         })
     return out
+
+
+def _room_height(sp, scale):
+    """Room height from IFC quantities or Revit properties; None when not exported."""
+    try:
+        psets = uel.get_psets(sp)
+    except Exception:
+        return None
+    for ps in psets.values():
+        for k in ("Height", "FinishCeilingHeight", "Unbounded Height", "ClearHeight"):
+            val = ps.get(k)
+            if isinstance(val, (int, float)) and val > 0:
+                return float(val) * scale
+    return None
+
+
+def _outline(item, scale):
+    """2D points (m) of a polyline-like outline: IfcPolyline, IfcIndexedPolyCurve, IfcCompositeCurve."""
+    if item.is_a("IfcPolyline"):
+        return [tuple(c * scale for c in p.Coordinates[:2]) for p in item.Points]
+    if item.is_a("IfcIndexedPolyCurve"):
+        return [tuple(c * scale for c in p[:2]) for p in item.Points.CoordList]
+    if item.is_a("IfcCompositeCurve"):
+        pts = []
+        for seg in item.Segments:
+            pts += _outline(seg.ParentCurve, scale) or []
+        return pts
+    if item.is_a("IfcGeometricCurveSet") or item.is_a("IfcGeometricSet"):
+        for el in item.Elements:
+            pts = _outline(el, scale)
+            if pts:
+                return pts
+    return None
+
+
+def _flat_room(model, sp, scale):
+    """(verts, faces) of a prism made from a room's 2D outline and height, in world metres."""
+    import ifcopenshell.util.placement as uplace
+    pts = None
+    for rep in sp.Representation.Representations:
+        for it in rep.Items:
+            pts = _outline(it, scale)
+            if pts and len(pts) >= 3:
+                break
+        if pts and len(pts) >= 3:
+            break
+    if not pts or len(pts) < 3:
+        return None
+    if np.allclose(pts[0], pts[-1]):
+        pts = pts[:-1]
+    h = _room_height(sp, scale)
+    h = h or 3.0
+    m = np.array(uplace.get_local_placement(sp.ObjectPlacement), dtype=float)
+    m[:3, 3] *= scale
+    n = len(pts)
+    base = np.array([[x, y, 0.0, 1.0] for x, y in pts] + [[x, y, h, 1.0] for x, y in pts]) @ m.T
+    v = base[:, :3]
+    faces = []
+    for i in range(1, n - 1):                       # floor and ceiling (fan; outlines are simple)
+        faces.append([0, i + 1, i])
+        faces.append([n, n + i, n + i + 1])
+    for i in range(n):                              # sides
+        j = (i + 1) % n
+        faces += [[i, j, n + j], [i, n + j, n + i]]
+    return v, np.array(faces, dtype=np.int64)
 
 
 def _link_rooms(rooms, elements):

@@ -512,3 +512,18 @@ def test_doors_priced_by_kind_and_size(lib, name, w, h, item, qty):
     q = {l["work_item"]: l["net_qty"] for l in estimate([el], "SA", lib, {})["lines"]}
     assert q.get(item) == pytest.approx(qty, rel=0.01)
     assert sum(1 for k in q if k.startswith("DOR")) == 1
+
+
+def test_rooms_exported_as_2d_outline_keep_their_finishes(tmp_path, lib):
+    import subprocess
+    import sys as _sys
+    out = tmp_path / "flat.ifc"
+    subprocess.run([_sys.executable, str(SAMPLES.parent / "tools" / "make_flat_rooms.py"), str(out)], check=True)
+    els = extract(str(out), with_mesh=False)["elements"]
+    rooms = {e["name"].split()[0]: e for e in els if e["ifc_class"] == "IfcSpace"}
+    assert rooms["Bedroom"]["qty"]["floor_area"] == pytest.approx(20) and rooms["Bedroom"]["qty"]["perimeter"] == pytest.approx(18)
+    assert rooms["Bathroom"]["qty"]["floor_area"] == pytest.approx(6) and rooms["Bathroom"]["qty"]["height_assumed"] == 1
+    est = estimate(els, "SA", lib, {"finishes_from": "rooms"})
+    q = lambda r, wi: sum(l["net_qty"] for l in est["lines"] if l["guid"] == rooms[r]["guid"] and l["work_item"] == wi)
+    assert q("Bedroom", "PNT") == pytest.approx(18 * 3.0) and q("Bathroom", "WAL-TILE") == pytest.approx(10 * 3.0)
+    assert any("2D outline" in a for a in est["assumptions"])
