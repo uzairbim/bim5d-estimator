@@ -308,6 +308,15 @@ def _openings(el, scale, settings):
     return out
 
 
+def _assembly(el):
+    """GlobalId of the element this one is a part of (curtain wall, roof, stair, truss), if any."""
+    try:
+        a = uel.get_aggregate(el)
+    except Exception:  # noqa: BLE001
+        return None
+    return a.GlobalId if a is not None and a.is_a("IfcElement") else None
+
+
 def _ram_gb():
     """Physical memory of this computer in GB (Windows, macOS, Linux); 8 if unknown."""
     try:
@@ -401,6 +410,7 @@ def extract(path, with_mesh=True, progress=None):
                     "ifc_class": el.is_a(),
                     "kind": kind,
                     "part_of": part_of.GlobalId if part_of is not None else None,
+                    "assembly": _assembly(el),
                     "predefined": str(getattr(el, "PredefinedType", "") or ""),
                     "name": ((part_of.Name or "") + " / " if part_of is not None else "") + (el.Name or ""),
                     "type": (typ.Name if typ else "") or "",

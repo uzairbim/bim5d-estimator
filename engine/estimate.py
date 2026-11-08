@@ -337,6 +337,8 @@ class Library:
             # price the concrete, and the finish layers on top of it.
             structural = sum(l.get("t") or 0 for l in el.get("layers") or []
                              if STRUCTURAL_LAYER.search(l.get("name") or ""))
+            if not el.get("layers") and any(STRUCTURAL_LAYER.search(m) for m in el.get("materials") or []):
+                structural = (el.get("qty") or {}).get("height") or 0     # one material, no layer set
             if structural >= 0.1:
                 ground = GROUND_SLAB.search(f'{el.get("name", "")} {el.get("type", "")}')
                 return ("SLAB_ON_GRADE" if ground else "RC_SLAB"), "rule"
@@ -709,6 +711,11 @@ def estimate(elements, region, lib=None, settings=None):
                 cls[e["guid"]] = (None, "excluded")
             else:
                 seen_rooms[k] = e["guid"]
+    # A container (curtain wall, roof, stair, assembly) whose parts are priced is not priced again.
+    parents = {e.get("assembly") for e in elements if e.get("assembly") and cls[e["guid"]][0]}
+    for e in elements:
+        if e["guid"] in parents and cls[e["guid"]][0]:
+            cls[e["guid"]] = (None, "excluded")
     dup_models = _same_in_two_models(elements, cls)
     recipes = {g: r for g, (r, _) in cls.items()}
     give, overlap_records = _deductions(elements, recipes, deduct)

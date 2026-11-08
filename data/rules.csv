@@ -17,9 +17,9 @@ priority,ifc_class,keywords,recipe
 40,IfcWall|IfcWallStandardCase,stud|gypsum (wall )?board|gyp\.? ?bd|plasterboard|partn|drywall|gipskarton|gipsplaat|trockenbau|ألواح جبس|جبس بورد,DRYWALL
 50,IfcWall|IfcWallStandardCase,concrete|\brc\b|shear|retaining|\bstb\b|beton|cl_w|خرسان,RC_WALL
 90,IfcWall|IfcWallStandardCase,,BLOCK_WALL
-10,IfcColumn,steel|metal|\b(ipe|hea|heb|uc|ub|shs|rhs|chs|w[0-9])|stahl(?!beton),STEEL_MEMBER
+10,IfcColumn,steel|metal|\b(ipe|hea|heb|uc|ub|shs|rhs|chs|hss|w[0-9])|hollow structural|stahl(?!beton),STEEL_MEMBER
 20,IfcColumn,,RC_COLUMN
-10,IfcBeam,steel|metal|\b(ipe|hea|heb|ub|uc|pfc|w[0-9])|stahl(?!beton)|universal beam,STEEL_MEMBER
+10,IfcBeam,steel|metal|\b(ipe|hea|heb|ub|uc|pfc|shs|rhs|chs|hss|w[0-9])|hollow structural|stahl(?!beton)|universal beam,STEEL_MEMBER
 20,IfcBeam,,RC_BEAM
 10,IfcCovering,ceiling|clg|decke|CEILING,CEILING
 20,IfcCovering,floor|tile|flr|FLOORING,FLOOR_FINISH
@@ -103,3 +103,4 @@ priority,ifc_class,keywords,recipe
 3,IfcSlab|IfcCovering|IfcBuildingElementProxy|IfcPavement|IfcCourse,interlock|paving|pavers?\b|انترلوك|إنترلوك|hardscape|sidewalk|walkway|driveway|pavement|\bkerbs?\b|\bcurbs?\b,PAVING
 15,IfcWall|IfcWallStandardCase,\brc\b|\brcc\b|reinforced|cast.?in.?place|cast.?in.?situ|in.?situ|shear wall|retaining|\bstb\b|stahlbeton|خرسان,RC_WALL
 4,IfcBeam|IfcWall|IfcWallStandardCase,\bfoundation\b|أساس,RC_FOOTING
+6,IfcSlab,wood joist|\bjoists?\b|lumber|dimensional|\bclt\b|i-joist|tji,TIMBER_FLOOR

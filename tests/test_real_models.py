@@ -446,3 +446,30 @@ def test_stone_cladding_on_concrete_and_thermal_block_replaces_render(lib):
     for recipe in ("RC_WALL", "THERMAL_BLOCK_WALL"):
         items = {i["work_item"]: evaluate(i["_expr"], env, stone) for i in lib.recipes[recipe]}
         assert items.get("STONE-CLAD") == 10 and not items.get("EXT-PNT") and not items.get("EXT-RND")
+
+
+@pytest.mark.parametrize("cls,pre,name,materials,recipe", [
+    ("IfcSlab", "FLOOR", "Floor:Insulation on Concrete 250", ["Concrete", "Insulation"], "RC_SLAB"),
+    ("IfcSlab", "FLOOR", 'Floor:Wood Joist 10" - Wood Finish', ["Wood - Flooring", "Wood - Dimensional Lumber"], "TIMBER_FLOOR"),
+    ("IfcSlab", "FLOOR", "Floor:Timber Suspended Floor", ["Timber"], "TIMBER_FLOOR"),
+    ("IfcSlab", "BASESLAB", "Foundation Slab:150mm Foundation Slab", ["Concrete"], "SLAB_ON_GRADE"),
+    ("IfcSlab", "FLOOR", "Floor:Tiles 20mm", ["Ceramic Tile"], "FLOOR_FINISH"),
+    ("IfcBeam", "BEAM", "HSS-Hollow Structural Section:HSS6X4X.250", [], "STEEL_MEMBER"),
+    ("IfcColumn", "COLUMN", "HSS-Hollow Structural Section-Column:HSS6X6X.500", ["Metal - Steel"], "STEEL_MEMBER"),
+    ("IfcBeam", "BEAM", "K-Series Bar Joist-Rod Web:16K5", ["Metal - Steel"], "STEEL_MEMBER"),
+    ("IfcBeam", "BEAM", "Precast-Inverted Tee:IT24LB", ["Concrete, Precast"], "RC_BEAM"),
+])
+def test_typical_revit_floor_beam_column_types(lib, cls, pre, name, materials, recipe):
+    el = {"ifc_class": cls, "kind": cls, "name": name, "type": name, "predefined": pre, "materials": materials,
+          "classification": [], "props": {}, "layers": [], "qty": {"height": 0.25}}
+    assert lib.classify(el)[0] == recipe
+
+
+def test_container_with_priced_parts_is_not_priced_again(duplex, lib):
+    els = copy.deepcopy(duplex)
+    wall = next(e for e in els if e["ifc_class"] in ("IfcWall", "IfcWallStandardCase"))
+    part = {**copy.deepcopy(wall), "guid": "part-1", "assembly": wall["guid"]}
+    base = estimate(copy.deepcopy(duplex), "SA", lib, {})["summary"]["direct"]
+    est = estimate(els + [part], "SA", lib, {})
+    assert est["per_element"].get(wall["guid"], {}).get("total", 0) == 0
+    assert est["summary"]["direct"] == pytest.approx(base, rel=0.02)
