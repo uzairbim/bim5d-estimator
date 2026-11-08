@@ -167,6 +167,23 @@ masonry and finishes), IS 1200 (masonry 0.1 m²; finishes: up to 0.5 m² not ded
 deducted from one face, larger from both), or Exact (every opening deducted). Check the measurement
 clause of your contract.
 
+## Things the tool checks in real Revit models
+
+- **Floor area** is measured level by level: the larger of the floor slabs, floor build-ups or rooms. The roof
+  level is not counted. If one level is much bigger than the others (paving or a podium modelled as floor), a
+  warning appears; open *Floor area by level* under the cost per m² and type the correct total if needed.
+- **Revit phases**: elements created in an *Existing* phase or demolished are not priced as new work
+  (listed in the assumptions). Map them if they are new.
+- **Generic types** ("Generic - 200mm", "Default Floor"): their share of the cost is shown. Above 15% the
+  estimate stays Class 4 until you choose what they are in Mapping.
+- **Duplicates**: elements or rooms modelled twice in the same place are counted once and listed in Checks.
+
+## Arabic BOQ
+
+Choose العربية (top right): the BOQ, element costs and mapping show Arabic names with English below. The Excel
+BOQ has Arabic description, trade and unit columns for Saudi Arabia and other Arab countries. To change a
+name, edit `data/translations.csv` in Excel.
+
 ## Language and units
 
 Top right: interface language (English, Arabic, Urdu, Spanish, French) and display units
