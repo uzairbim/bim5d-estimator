@@ -85,7 +85,7 @@ def test_floor_area_counts_each_level_once_and_not_the_roof(duplex, lib):
     parapet = _like(els, "IfcWall", guid="parapet", level="Roof")
     parapet["qty"]["height"] = 1.0
     est = estimate(els + [slab, parapet], "SA", lib, {})
-    assert "Roof" not in est["summary"]["gfa_by_level"]
+    assert "Upper roof" not in est["summary"]["gfa_by_level"]
 
 
 def test_floor_area_from_floor_build_ups_without_structure(lib):
@@ -253,3 +253,34 @@ def test_survey_coordinates_keep_full_precision(tmp_path):
         return sum(v for vals in found.values() for _, v in vals)
     va, vb = overlap_total(a), overlap_total(b)
     assert abs(va - vb) <= 0.02 * max(va, 1e-3)
+
+
+def test_roof_slab_modelled_as_floor_gets_the_roof_build_up(duplex, lib):
+    els = copy.deepcopy(duplex)
+    top = max(e.get("level_elev") or 0 for e in els)
+    base = copy.deepcopy(next(e for e in els if e["ifc_class"] == "IfcSlab"))
+    base.update({"name": "Floor:RC Slab 200", "type": "Floor:RC Slab 200", "materials": ["Concrete"],
+                 "layers": [{"name": "Concrete", "t": 0.2}], "classification": [], "props": {}})
+    assert lib.classify(base)[0] == "RC_SLAB"
+    roof = {**copy.deepcopy(base), "guid": "roof-slab", "level": "Upper roof", "level_elev": top + 3.0, "predefined": "FLOOR"}
+    roof["bbox"] = [roof["bbox"][0], roof["bbox"][1], top + 2.8, roof["bbox"][3], roof["bbox"][4], top + 3.0]
+    found = {**copy.deepcopy(base), "guid": "fdn-slab", "level": "Foundation", "level_elev": -2.0, "predefined": "FLOOR"}
+    est = estimate(els + [roof, found], "SA", lib, {})
+    items = lambda g: {l["work_item"] for l in est["lines"] if l["guid"] == g}
+    assert {"ROF-WP", "ROF-INS"} <= items("roof-slab")
+    assert "ROF-WP" not in items("fdn-slab")
+    assert "Upper roof" not in est["summary"]["gfa_by_level"]
+
+
+def test_external_wall_known_from_its_name(duplex, lib):
+    from engine.estimate import is_external
+    assert is_external({"name": "Basic Wall:Ext - Thermal Block 200", "type": ""})
+    assert is_external({"name": "جدار خارجي 20", "type": ""})
+    assert not is_external({"name": "Basic Wall:Int - Hollow Block 150", "type": ""})
+    assert not is_external({"name": "Basic Wall:Ext - Block", "external": False})
+
+
+def test_single_material_answers_has(duplex, lib):
+    from engine.estimate import layers_of
+    assert layers_of({"materials": ["Marble"]})[0]["name"] == "Marble"
+    assert layers_of({"layers": [{"name": "Tile", "t": 0.01}], "materials": ["Marble"]})[0]["name"] == "Tile"

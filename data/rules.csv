@@ -63,11 +63,11 @@ priority,ifc_class,keywords,recipe
 35,IfcBuildingElementProxy|IfcFlowTerminal|IfcFlowStorageDevice,tank|generator|inverter|خزان,MECH_EQUIP
 5,IfcBuildingElementProxy|IfcFurnishingElement|IfcFurniture|IfcSite|IfcGeographicElement,\btree\b|\bplanting|planter|potted plant|\bplants?\b(?! room)(?!-)|shrub|entourage|\bpeople\b|person|rpc|\bcar\b|vehicle|suv|sedan|truck|bicycle|\bbike|\bbaum\b|water feature|fountain|\bpond\b|^water\b|water glass|wine|bottles?\b|\bglasses\b|\bcups?\b|\bbooks?\b|cushion|pillow|towel|vase|flower|porcelain plate|decor,EXCLUDE
 10,IfcGeographicElement,,EXCLUDE
-10,IfcSpace,bath|toilet|\bwc\b|shower|washroom|lavator|ablution|laundry|washing|wash room|restroom|powder|\bbad\b|dusche|حمام|دورة مياه|وضوء,ROOM_WET
+10,IfcSpace,bath|toilet|\bwc\b|shower|washroom|lavator|ablution|laundry|washing|wash room|restroom|powder|\bbad\b|dusche|حمام|دورة مياه|وضوء|مغاسل|مغسلة|غسيل|غسالة,ROOM_WET
 20,IfcSpace,kitchen|pantry|kitchenette|küche|مطبخ,ROOM_KITCHEN
-30,IfcSpace,plant|mechanical|electrical|technology|technik|server|\bstore|storage|garage|parking|janitor|cleaning|\bmep\b|pump|generator|lager|مخزن|موقف,ROOM_TECH
-40,IfcSpace,balcony|terrace|veranda|loggia|patio|balkon|terrasse|شرفة|تراس,ROOM_EXTERNAL
-50,IfcSpace,stair|treppe|درج,ROOM_STAIR
+30,IfcSpace,plant|mechanical|electrical|technology|technik|server|\bstore|storage|garage|parking|janitor|cleaning|\bmep\b|pump|generator|lager|مخزن|مستودع|موقف|كراج|جراج|غرفة كهرباء|غرفة مضخات|غرفة الخزان,ROOM_TECH
+40,IfcSpace,balcony|terrace|veranda|loggia|patio|balkon|terrasse|شرفة|تراس|بلكونة|حوش|فناء|سطح,ROOM_EXTERNAL
+50,IfcSpace,stair|treppe|درج|سلم|بيت الدرج,ROOM_STAIR
 90,IfcSpace,,ROOM_DRY
 15,IfcBuildingElementProxy|IfcFlowTerminal,oven|fridge|refrigerator|freezer|washing machine|washer|dryer|dishwasher|cook ?top|hob\b|range ?hood|\brange:|stove|cooker|microwave|kühlschrank|geschirrsp|waschmasch|\bkyl|frys|diskmaskin|tvättmaskin|réfrigérateur|lave-|frigor|lavadora|ثلاجة|غسالة|فرن|appliance,APPLIANCE
 1,IfcFlowTerminal|IfcSanitaryTerminal|IfcBuildingElementProxy|IfcValve,faucet|\btap\b|mixer|armatur,EXCLUDE

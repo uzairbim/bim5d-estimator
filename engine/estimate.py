@@ -103,6 +103,71 @@ def _level_clusters(elements):
     return lambda e: mapping.get((e.get("model"), e.get("level")), e.get("level") or "(no level)")
 
 
+def roof_levels(elements, recipes):
+    """Levels whose slabs are roofs: above every occupied floor and with nothing built on them
+    (no rooms, doors or full-height walls), as with a Revit roof slab modelled as a floor on the
+    "Roof" level. Foundation levels below the building are not roofs."""
+    has_slab, used, elev = set(), set(), {}
+    for e in elements:
+        L = e.get("level")
+        if not L or L == "(no level)":
+            continue
+        elev.setdefault(L, float(e.get("level_elev") or 0.0))
+        if e["ifc_class"] == "IfcSlab" and recipes.get(e["guid"]) in FLOOR_RECIPES:
+            has_slab.add(L)
+        elif e["ifc_class"] in ("IfcSpace", "IfcDoor", "IfcStair", "IfcStairFlight") or (
+                e["ifc_class"] in ("IfcWall", "IfcWallStandardCase", "IfcColumn") and (e["qty"].get("height") or 0) > 2.0):
+            used.add(L)
+    if not used:          # a model without rooms, doors or walls: cannot tell
+        return set()
+    top = max(elev[L] for L in used)
+    return {L for L in has_slab - used if elev[L] > top}
+
+
+def _roof_twins(elements, recipes):
+    """With combined discipline models, the roof slab is often in both the architect's and the
+    engineer's model. The roof build-up (insulation, waterproofing, tiles) goes on once: on the
+    main model's slab; the other model's overlapping roof slab keeps only its concrete."""
+    models = {e.get("model") for e in elements if e.get("model")}
+    if len(models) < 2:
+        return set()
+    levels = roof_levels(elements, recipes)
+    cand = [e for e in elements if e["ifc_class"] == "IfcSlab" and e.get("bbox")
+            and recipes.get(e["guid"]) in FLOOR_RECIPES
+            and (e.get("predefined") == "ROOF" or e.get("level") in levels)]
+    main = [e for e in cand if not re.search(r"struct|tragwerk|إنشائ|انشائ", e.get("model") or "", re.I)]
+    plan = lambda b: max((b[3] - b[0]) * (b[4] - b[1]), 1e-6)
+    twins = set()
+    for e in cand:
+        if e in main:
+            continue
+        b = e["bbox"]
+        for m in main:
+            r = m["bbox"]
+            ox, oy = min(b[3], r[3]) - max(b[0], r[0]), min(b[4], r[4]) - max(b[1], r[1])
+            if ox <= 0 or oy <= 0:
+                continue
+            if ox * oy > 0.5 * plan(b):          # the main model's slab covers this one
+                twins.add(e["guid"])
+            elif ox * oy > 0.5 * plan(r):        # this slab covers the main model's piece
+                twins.add(m["guid"])
+    return twins
+
+
+def _under_a_roof(el, roofs):
+    """A slab with a modelled roof (pitched roof, roof deck) above it is a ceiling, not the roof."""
+    b = el.get("bbox")
+    if not b:
+        return False
+    area = max((b[3] - b[0]) * (b[4] - b[1]), 1e-6)
+    for r in roofs:
+        ox = min(b[3], r[3]) - max(b[0], r[0])
+        oy = min(b[4], r[4]) - max(b[1], r[1])
+        if ox > 0 and oy > 0 and ox * oy > 0.5 * area and r[5] > b[5] + 0.3:
+            return True
+    return False
+
+
 def gross_floor_area(elements, per_element):
     """Gross floor area, level by level, like an estimator measures it.
 
@@ -150,6 +215,22 @@ def gfa_warning(levels):
         return (f"{', '.join(big)} is much larger than the other floors: it may include external paving, "
                 "podium or site slabs. Check the floor area by level and type the correct total if needed.")
     return None
+
+
+def layers_of(el):
+    """Material layers for t() and has(); an element with one material (no layer set) still
+    answers has("marble")."""
+    return el.get("layers") or [{"name": m, "t": 0.0} for m in el.get("materials") or []]
+
+
+EXTERNAL_NAME = re.compile(r"\bext\b|\bext[ .:_-]|exterior|external|outer|fa[cç]ade|aussen|außen|خارجي|خارجية", re.I)
+
+
+def is_external(el):
+    """External wall: Revit's IsExternal when exported, otherwise the type name says so."""
+    if el.get("external") is not None:
+        return bool(el["external"])
+    return bool(EXTERNAL_NAME.search(f'{el.get("name", "")} {el.get("type", "")}'))
 
 
 def match_text(el):
@@ -375,7 +456,7 @@ OVERLAP_PRIORITY = {
     "RC_PILE": 0, "RC_FOOTING": 0,
     "SLAB_ON_GRADE": 1, "RC_SLAB": 1, "RIBBED_SLAB": 1, "ROOF_RC": 1, "TIMBER_FLOOR": 1, "ROOF_LIGHT": 1,
     "RC_COLUMN": 2, "RC_BEAM": 3, "RC_WALL": 4, "STAIR_RC": 4,
-    "CAVITY_WALL": 5, "BLOCK_WALL": 5, "BRICK_WALL": 5, "DRYWALL": 6,
+    "CAVITY_WALL": 5, "BLOCK_WALL": 5, "BRICK_WALL": 5, "THERMAL_BLOCK_WALL": 5, "STONE_WALL": 5, "DRYWALL": 6,
 }
 
 # AACE 18R-97 style classes used to express the expected accuracy range.
@@ -503,7 +584,7 @@ STANDARDS = {
     "IS1200": {"label": "IS 1200 (India)", "masonry_min": 0.1, "finish_min": 0.5, "one_face_max": 3.0},
     "EXACT": {"label": "Exact net quantities (deduct every opening)", "masonry_min": 0.0, "finish_min": 0.0, "one_face_max": 0.0},
 }
-MASONRY = {"BLOCK_WALL", "BRICK_WALL", "CAVITY_WALL"}
+MASONRY = {"BLOCK_WALL", "BRICK_WALL", "CAVITY_WALL", "THERMAL_BLOCK_WALL", "STONE_WALL"}
 INSULATED = re.compile(r"chilled|heating|hot water|hydronic|condens|refrig|supply air|return air|outside air|"
                        r"fresh air|zuluft|abluft|kälte|heiz|kaltwasser", re.I)
 
@@ -539,7 +620,11 @@ def _env(el, give, rule, ctx):
     q["finish1"] = side + small_f                      # one finished face
     q["finish2"] = 2 * side + 2 * small_f + mid_f      # both faces (IS 1200: mid openings one face)
     # context flags
-    q["ext"] = 1.0 if el.get("external") else 0.0
+    q["ext"] = 1.0 if is_external(el) else 0.0
+    q["is_roof"] = 1.0 if (el["ifc_class"] == "IfcSlab" and (el.get("predefined") == "ROOF"
+                                                              or el.get("level") in ctx.get("roof_levels", ()))
+                            and not _under_a_roof(el, ctx.get("roofs", ()))
+                            and el["guid"] not in ctx.get("roof_twins", ())) else 0.0
     q["rooms_on"] = ctx["rooms_on"]
     q["lintels_modeled"] = ctx.get("lintels", 0.0)
     host = ctx["by_guid"].get(el.get("host") or "")
@@ -604,6 +689,9 @@ def estimate(elements, region, lib=None, settings=None):
                 cls[e["guid"]] = (None, "excluded")
                 recipes[e["guid"]] = None
     ctx = {"rooms_on": rooms_on, "recipes": recipes, "by_guid": {e["guid"]: e for e in elements},
+           "roof_levels": roof_levels(elements, recipes),
+           "roofs": [e["bbox"] for e in elements if e.get("bbox") and recipes.get(e["guid"]) in ("ROOF_RC", "ROOF_LIGHT")],
+           "roof_twins": _roof_twins(elements, recipes),
            "lintels": 1.0 if "LINTEL_ELEMENT" in set(recipes.values()) else 0.0}
 
     lines, per_element, groups = [], {}, {}
@@ -646,7 +734,7 @@ def estimate(elements, region, lib=None, settings=None):
         grp = lib.groups.get(recipe, {})
         el_total = 0.0
         for item in lib.recipes.get(recipe, []):
-            qty = evaluate(item["_expr"], env, el.get("layers", [])) * factor
+            qty = evaluate(item["_expr"], env, layers_of(el)) * factor
             if qty <= 0:
                 continue
             opt = (item.get("option") or "").strip()
