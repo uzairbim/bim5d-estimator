@@ -324,3 +324,17 @@ resource,M-HORDI,بلوك هوردي
 resource,M-MARBLE,رخام / جرانيت (توريد)
 resource,M-PAVER,بلاط انترلوك (توريد)
 work_item,CLG-PLS,لياسة الأسقف
+work_item,DRAIN,صفاية أرضية / كلين آوت
+work_item,FIRE-EQ,طفاية حريق / كابينة خرطوم حريق
+work_item,MANHOLE,غرفة تفتيش (منهول) بالغطاء
+work_item,POWER,مولد / محول كهربائي
+recipe,DRAIN,صفاية أرضية
+recipe,FIRE_EQUIP,طفاية / خرطوم حريق
+recipe,MANHOLE,غرفة تفتيش
+recipe,POWER_PLANT,مولد / محول
+resource,M-DRAIN,صفاية أرضية بالشبك (توريد)
+resource,M-FIRE,طفاية / كابينة خرطوم حريق (توريد)
+resource,M-MH,منهول جاهز بالغطاء (توريد)
+resource,M-POWER,مولد / محول (توريد)
+work_item,POWER-S,محول صغير / UPS / عاكس
+resource,M-POWER-S,محول صغير / UPS (توريد)

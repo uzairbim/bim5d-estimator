@@ -65,3 +65,7 @@ STONE_WALL,Block wall with stone cladding,2.5 External walls,B20 Exterior enclos
 ELEC_PANEL,Main / sub-main panel,5.8 Electrical installations,D50 Electrical,5 Services
 RIBBED_SLAB,Ribbed (hordi) slab,2.2 Upper floors,B10 Superstructure,2 Frame & floors
 PAVING,External paving,8 External works,G20 Site improvements,7 Fit-out
+DRAIN,Floor drain / gully,5.4 Water installations,D20 Plumbing,5 Services
+FIRE_EQUIP,Fire extinguisher / hose reel,5.11 Fire and lightning protection,D40 Fire Protection,5 Services
+MANHOLE,Manhole / inspection chamber,8 External works,G30 Site civil / mechanical utilities,7 Fit-out
+POWER_PLANT,Generator / transformer,5.8 Electrical installations,D50 Electrical,5 Services

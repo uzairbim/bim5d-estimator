@@ -26,7 +26,7 @@ SA = {
     "M-APPL": 2500, "M-PNL": 12000, "M-CTRL": 500, "M-GEN": 800, "M-LINT": 45, "M-SILL": 120, "M-SEAL": 18,
     "M-SKRT": 25, "M-HRD": 35, "M-PINS": 20, "M-DINS": 35, "M-TERM": 5,
     "M-JOIN": 1100, "M-PV": 650, "M-MECH-S": 1500,
-    "M-BIT": 6, "M-TBLK": 4.5, "M-STONE": 130, "M-RTILE": 35, "M-HORDI": 3.5, "M-MARBLE": 160, "M-PAVER": 32,
+    "M-BIT": 6, "M-TBLK": 4.5, "M-STONE": 130, "M-RTILE": 35, "M-HORDI": 3.5, "M-DRAIN": 120, "M-FIRE": 900, "M-MH": 1500, "M-POWER": 110000, "M-POWER-S": 25000, "M-MARBLE": 160, "M-PAVER": 32,
 }
 
 # UAE (AED): close to Saudi levels, slightly higher.

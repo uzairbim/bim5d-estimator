@@ -19,8 +19,10 @@ M-DB,2625.0,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-DIFF,231.0,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-DINS,36.75,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-DOOR,1575.0,ASSUMED indicative market price 2026-11 - verify,2026-11
+M-DRAIN,126.0,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-EPNT,23.1,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-FFE,1260.0,ASSUMED indicative market price 2026-11 - verify,2026-11
+M-FIRE,945.0,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-GALV,9.45,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-GEN,840.0,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-GRT,5.25,ASSUMED indicative market price 2026-11 - verify,2026-11
@@ -36,6 +38,7 @@ M-MARBLE,168.0,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-MECH,12600.0,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-MECH-S,1575.0,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-MESH,12.6,ASSUMED indicative market price 2026-11 - verify,2026-11
+M-MH,1575.0,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-PAVER,33.6,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-PE,2.1,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-PFIT,31.5,ASSUMED indicative market price 2026-11 - verify,2026-11
@@ -46,6 +49,8 @@ M-PIPE-S,26.25,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-PLY,42.0,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-PNL,12600.0,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-PNT,14.7,ASSUMED indicative market price 2026-11 - verify,2026-11
+M-POWER,115500.0,ASSUMED indicative market price 2026-11 - verify,2026-11
+M-POWER-S,26250.0,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-PRM,12.6,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-PV,682.5,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-RAIL,367.5,ASSUMED indicative market price 2026-11 - verify,2026-11

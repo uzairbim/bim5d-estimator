@@ -473,3 +473,25 @@ def test_container_with_priced_parts_is_not_priced_again(duplex, lib):
     est = estimate(els + [part], "SA", lib, {})
     assert est["per_element"].get(wall["guid"], {}).get("total", 0) == 0
     assert est["summary"]["direct"] == pytest.approx(base, rel=0.02)
+
+
+@pytest.mark.parametrize("cls,name,recipe", [
+    ("IfcBuildingElementProxy", "M_Split System - Indoor Unit - Wall Mounted:2.5 kW", "MECH_EQUIP"),
+    ("IfcWasteTerminal", "Floor Drain 100mm", "DRAIN"),
+    ("IfcBuildingElementProxy", "M_Fire Extinguisher Cabinet - Recessed", "FIRE_EQUIP"),
+    ("IfcFireSuppressionTerminal", "Fire Hose Reel Cabinet", "FIRE_EQUIP"),
+    ("IfcFireSuppressionTerminal", "M_Sprinkler - Pendent - Hosted", "SPRINKLER"),
+    ("IfcBuildingElementProxy", "M_Fire Alarm Horn Strobe - Wall", "CONTROLS"),
+    ("IfcFlowController", "M_Check Valve", "VALVE"),
+    ("IfcBuildingElementProxy", "Water Meter", "VALVE"),
+    ("IfcBuildingElementProxy", "CCTV Camera - Dome", "CONTROLS"),
+    ("IfcCommunicationsAppliance", "Data Outlet - CAT6", "OUTLET"),
+    ("IfcBuildingElementProxy", "M_Manhole 600x600", "MANHOLE"),
+    ("IfcElectricGenerator", "Diesel Generator 250 kVA", "POWER_PLANT"),
+    ("IfcSanitaryTerminal", "M_Water Closet - Flush Tank", "SANITARY"),
+    ("IfcBuildingElementProxy", "Kitchen Cabinet Base 600", "JOINERY"),
+])
+def test_typical_revit_mep_families(lib, cls, name, recipe):
+    el = {"ifc_class": cls, "kind": cls, "name": name, "type": name, "predefined": "", "materials": [],
+          "classification": [], "props": {}, "qty": {"volume": 0.05}}
+    assert lib.classify(el)[0] == recipe

@@ -94,3 +94,8 @@ HORDI,Hollow hordi blocks to ribbed slabs,m2,Concrete,03 30 00
 FLR-MRB,Marble / granite flooring,m2,Finishes,09 63 40
 EXT-PAV,Interlocking concrete paving incl. sand bed,m2,External works,32 14 13
 CLG-PLS,Cement plaster / skim to ceilings (soffits),m2,Finishes,09 24 00
+DRAIN,Floor drain / gully / clean-out,nr,Plumbing & HVAC,22 13 19
+FIRE-EQ,Fire extinguisher / hose reel cabinet,nr,Fire Protection,10 44 00
+MANHOLE,Manhole / inspection chamber with cover,nr,External works,33 05 13
+POWER,Generator / transformer / power plant item,nr,Electrical,26 32 00
+POWER-S,Small transformer / UPS / inverter,nr,Electrical,26 22 00

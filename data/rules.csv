@@ -50,7 +50,8 @@ priority,ifc_class,keywords,recipe
 10,IfcCableSegment,,CABLE
 10,IfcLightFixture|IfcLamp,,LIGHT
 10,IfcOutlet|IfcSwitchingDevice|IfcJunctionBox,,OUTLET
-10,IfcProtectiveDevice|IfcElectricDistributionBoard|IfcDistributionBoard|IfcTransformer|IfcElectricGenerator|IfcElectricMotor,,ELEC_DEVICE
+10,IfcProtectiveDevice|IfcElectricDistributionBoard|IfcDistributionBoard|IfcElectricMotor,,ELEC_DEVICE
+10,IfcTransformer|IfcElectricGenerator,,POWER_PLANT
 10,IfcSanitaryTerminal|IfcWasteTerminal,,SANITARY
 10,IfcFireSuppressionTerminal,,SPRINKLER
 10,IfcElectricAppliance,,APPLIANCE
@@ -61,7 +62,7 @@ priority,ifc_class,keywords,recipe
 4,IfcBuildingElementProxy,sink|basin|lavatory|water closet|\bwc\b|toilet|shower|urinal|bidet|hung bowl|\bbowl\b|hot.?tub|jacuzzi|whirlpool|\bspa\b,SANITARY
 33,IfcBuildingElementProxy|IfcSolarDevice|IfcElectricGenerator,photovoltaic|solar|\bpv\b,SOLAR_PV
 35,IfcBuildingElementProxy|IfcFlowTerminal|IfcFlowStorageDevice,tank|generator|inverter|خزان,MECH_EQUIP
-5,IfcBuildingElementProxy|IfcFurnishingElement|IfcFurniture|IfcSite|IfcGeographicElement,\btree\b|\bplanting|planter|potted plant|\bplants?\b(?! room)(?!-)|shrub|entourage|\bpeople\b|person|rpc|\bcar\b|vehicle|suv|sedan|truck|bicycle|\bbike|\bbaum\b|water feature|fountain|\bpond\b|^water\b|water glass|wine|bottles?\b|\bglasses\b|\bcups?\b|\bbooks?\b|cushion|pillow|towel|vase|flower|porcelain plate|decor,EXCLUDE
+5,IfcBuildingElementProxy|IfcFurnishingElement|IfcFurniture|IfcSite|IfcGeographicElement,\btree\b|\bplanting|planter|potted plant|\bplants?\b(?! room)(?!-)|shrub|entourage|\bpeople\b|person|rpc|\bcar\b|vehicle|suv|sedan|truck|bicycle|\bbike|\bbaum\b|water feature|fountain|\bpond\b|^water\s*(:|$)|water glass|wine|bottles?\b|\bglasses\b|\bcups?\b|\bbooks?\b|cushion|pillow|towel|vase|flower|porcelain plate|decor,EXCLUDE
 10,IfcGeographicElement,,EXCLUDE
 10,IfcSpace,bath|toilet|\bwc\b|shower|washroom|lavator|ablution|laundry|washing|wash room|restroom|powder|\bbad\b|dusche|حمام|دورة مياه|وضوء|مغاسل|مغسلة|غسيل|غسالة,ROOM_WET
 20,IfcSpace,kitchen|pantry|kitchenette|küche|مطبخ,ROOM_KITCHEN
@@ -73,7 +74,7 @@ priority,ifc_class,keywords,recipe
 1,IfcFlowTerminal|IfcSanitaryTerminal|IfcBuildingElementProxy|IfcValve,faucet|\btap\b|mixer|armatur,EXCLUDE
 10,IfcSolarDevice,,SOLAR_PV
 12,IfcBuildingElementProxy,receptacle|socket|switch|outlet|steckdose|schalter|data point,OUTLET
-13,IfcBuildingElementProxy,sensor|detector|thermostat|melder|fühler,CONTROLS
+13,IfcBuildingElementProxy,sensor|detector|thermostat|melder|fühler|horn|strobe|sounder|\bbell\b|call point|break glass|pull station|beacon|cctv|camera|intercom|access control|card reader|كاميرا|انتركم,CONTROLS
 14,IfcBuildingElementProxy,transformer|switchboard|panelboard|breaker|distribution board|\bdb\b|verteiler,ELEC_DEVICE
 16,IfcBuildingElementProxy,\bfan\b|ventilator|exhaust|\bahu\b|air handling,MECH_EQUIP
 17,IfcBuildingElementProxy,\blift\b|elevator|aufzug|escalator,LIFT
@@ -104,3 +105,12 @@ priority,ifc_class,keywords,recipe
 15,IfcWall|IfcWallStandardCase,\brc\b|\brcc\b|reinforced|cast.?in.?place|cast.?in.?situ|in.?situ|shear wall|retaining|\bstb\b|stahlbeton|خرسان,RC_WALL
 4,IfcBeam|IfcWall|IfcWallStandardCase,\bfoundation\b|أساس,RC_FOOTING
 6,IfcSlab,wood joist|\bjoists?\b|lumber|dimensional|\bclt\b|i-joist|tji,TIMBER_FLOOR
+3,IfcFlowTerminal|IfcWasteTerminal|IfcBuildingElementProxy|IfcSanitaryTerminal,floor drain|\bgully\b|clean ?out|\bfd\b|roof drain|صفاية|بالوعة|كلين,DRAIN
+3,IfcBuildingElementProxy|IfcFireSuppressionTerminal|IfcFlowTerminal,extinguisher|hose reel|fire hose|\bfhc\b|landing valve|طفاية|خرطوم,FIRE_EQUIP
+3,IfcBuildingElementProxy|IfcDistributionChamberElement,manhole|inspection chamber|\bmh\b|catch basin|منهول|غرفة تفتيش,MANHOLE
+3,IfcBuildingElementProxy,generator|genset|transformer|\bkva\b|مولد|محول,POWER_PLANT
+5,IfcBuildingElementProxy,split (system|unit|ac)|indoor unit|cassette|\bfcu\b|fan coil|مكيف,MECH_EQUIP
+10,IfcFlowController|IfcBuildingElementProxy|IfcFlowMeter,valve|damper|\bmeter\b|عداد|محبس,VALVE
+10,IfcCommunicationsAppliance,data|telephone|\btv\b|socket|outlet,OUTLET
+20,IfcCommunicationsAppliance,,CONTROLS
+10,IfcDistributionChamberElement,,MANHOLE
