@@ -13,3 +13,4 @@ before redistributing them.
 | Ifc4_Revit_STR.ifc | Revit structural model with 3,680 modelled rebar bars |
 | Ifc4_Revit_MEP.ifc | Revit MEP model (ducts, pipes, fittings, lights, sprinklers), German names |
 | Ifc2x3_Duplex_MEP.ifc | IFC2x3 MEP model using generic flow classes |
+| Saudi_Villa_Example.ifc | Simple two-storey Saudi villa made with `tools/make_saudi_villa.py` (CC0): isolated footings, tie beams, hordi roof slab, thermal block external walls, marble floors, rooms with Arabic names. Shows the Gulf items. |

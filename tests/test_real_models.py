@@ -284,3 +284,17 @@ def test_single_material_answers_has(duplex, lib):
     from engine.estimate import layers_of
     assert layers_of({"materials": ["Marble"]})[0]["name"] == "Marble"
     assert layers_of({"layers": [{"name": "Tile", "t": 0.01}], "materials": ["Marble"]})[0]["name"] == "Tile"
+
+
+def test_saudi_villa_example_is_priced_like_a_saudi_estimator_would(lib):
+    """The demo villa: hordi roof with the roof build-up, tie beams with bitumen, thermal block with
+    render and lintels, marble and porcelain floors, Arabic wet rooms, roof not in the floor area."""
+    els = extract(str(SAMPLES / "Saudi_Villa_Example.ifc"), with_mesh=False)["elements"]
+    est = estimate(els, "SA", lib, {})
+    boq = {b["work_item"]: b["qty"] for b in est["boq"]}
+    for wi in ("HORDI", "BIT-COAT", "MAS-TBLK", "MAS-BLK", "FLR-MRB", "FLR-TIL", "ROF-WP", "ROF-INS",
+               "ROF-TILE", "EXT-RND", "LINTEL", "WAL-TILE", "WPF-WET", "CON-FTG", "RBR"):
+        assert boq.get(wi, 0) > 0, wi
+    assert est["summary"]["gfa"] == pytest.approx(288, abs=1)
+    assert not est["checks"]["unclassified"]
+    assert 1200 < est["summary"]["per_m2"] < 2600          # shell and finishes, no MEP, SAR/m2
