@@ -12,9 +12,9 @@ priority,ifc_class,keywords,recipe
 10,IfcRoof,concrete|\bconc|\brc\b|\bstb\b|beton|خرسان,ROOF_RC
 20,IfcRoof,,ROOF_LIGHT
 10,IfcWall|IfcWallStandardCase,brick.*block|bwk.*blk|brick.*cmu,CAVITY_WALL
-20,IfcWall|IfcWallStandardCase,cmu|block|blk|masonry - concrete|bloque|بلوك|طوب,BLOCK_WALL
+20,IfcWall|IfcWallStandardCase,cmu|block|blk|masonry - concrete|concrete masonry|masonry unit|bloque|بلوك|طوب,BLOCK_WALL
 30,IfcWall|IfcWallStandardCase,brick|bwk|ziegel|mauerwerk,BRICK_WALL
-40,IfcWall|IfcWallStandardCase,stud|gypsum|plasterboard|partn|drywall|gips|trockenbau,DRYWALL
+40,IfcWall|IfcWallStandardCase,stud|gypsum (wall )?board|gyp\.? ?bd|plasterboard|partn|drywall|gipskarton|gipsplaat|trockenbau|ألواح جبس|جبس بورد,DRYWALL
 50,IfcWall|IfcWallStandardCase,concrete|\brc\b|shear|retaining|\bstb\b|beton|cl_w|خرسان,RC_WALL
 90,IfcWall|IfcWallStandardCase,,BLOCK_WALL
 10,IfcColumn,steel|metal|\b(ipe|hea|heb|uc|ub|shs|rhs|chs|w[0-9])|stahl(?!beton),STEEL_MEMBER
@@ -96,8 +96,10 @@ priority,ifc_class,keywords,recipe
 25,IfcBuildingElementProxy,\bbeds?\b|_bed|bench|sofa|couch|\btables?\b|table\d|chair|\bdesk|stool|ottoman|bookcase|lounger|armchair|möbel|meuble|mueble|كنب|سرير|طاولة|كرسي,LOOSE_FFE
 10,IfcRamp|IfcRampFlight,,STAIR_RC
 4,IfcBeam|IfcColumn|IfcMember,lumber|timber|glulam|\blvl\b|laminated veneer|\bwood|softwood|hardwood|\bclt\b|holz|\bbois|madera|legno|houten|خشب,TIMBER_MEMBER
-12,IfcWall|IfcWallStandardCase,stone|marble|granite|limestone|travertine|naturstein|pierre|piedra|حجر|رخام|جرانيت,STONE_WALL
+16,IfcWall|IfcWallStandardCase,stone|marble|granite|limestone|travertine|naturstein|pierre|piedra|حجر|رخام|جرانيت,STONE_WALL
 11,IfcWall|IfcWallStandardCase,thermal ?block|insulated block|thermo ?block|isolated block|بلوك عازل|بلوك حراري|عازل حراري,THERMAL_BLOCK_WALL
 3,IfcBuildingElementProxy|IfcElectricDistributionBoard|IfcElectricDistributionPoint|IfcFlowController,switchboard|switchgear|\bmdb\b|\bsmdb\b|\bmcc\b|main panel|panelboard.*\b([2-9]\d\d|\d{4}) ?a\b|\b([4-9]\d\d|\d{4}) ?a\b,ELEC_PANEL
 3,IfcSlab,hordi|hourdi|hordy|هوردي|هردي|ribbed|waffle|rib slab|hollow block slab,RIBBED_SLAB
 3,IfcSlab|IfcCovering|IfcBuildingElementProxy|IfcPavement|IfcCourse,interlock|paving|pavers?\b|انترلوك|إنترلوك|hardscape|sidewalk|walkway|driveway|pavement|\bkerbs?\b|\bcurbs?\b,PAVING
+15,IfcWall|IfcWallStandardCase,\brc\b|\brcc\b|reinforced|cast.?in.?place|cast.?in.?situ|in.?situ|shear wall|retaining|\bstb\b|stahlbeton|خرسان,RC_WALL
+4,IfcBeam|IfcWall|IfcWallStandardCase,\bfoundation\b|أساس,RC_FOOTING

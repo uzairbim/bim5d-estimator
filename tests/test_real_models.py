@@ -418,3 +418,31 @@ def test_floor_type_with_finish_layers_prices_the_concrete_too(duplex, lib):
     # a finish-only build-up (no structural layer) stays a floor finish
     f = {**s, "layers": [{"name": "Porcelain tile", "t": 0.02}, {"name": "Screed", "t": 0.05}], "materials": ["Porcelain tile", "Screed"]}
     assert lib.classify(f)[0] == "FLOOR_FINISH"
+
+
+@pytest.mark.parametrize("name,materials,recipe", [
+    ("Basic Wall:Generic - 200mm", ["Concrete Masonry Units"], "BLOCK_WALL"),
+    ("Basic Wall:RC 250 + gypsum plaster", ["Concrete, Cast-in-Place gray", "Gypsum Plaster"], "RC_WALL"),
+    ("Basic Wall:Interior - 138mm Partition (1-hr)", ["Gypsum Wall Board", "Metal Stud Layer"], "DRYWALL"),
+    ("Basic Wall:Concrete 200 + stone cladding", ["Concrete, Cast-in-Place gray", "Stone"], "RC_WALL"),
+    ("Basic Wall:Foundation - 300mm Concrete", ["Concrete"], "RC_FOOTING"),
+    ("Basic Wall:Ext Thermal Block 200 + Stone", ["Thermal block", "Stone"], "THERMAL_BLOCK_WALL"),
+    ("Basic Wall:Block 200 + Riyadh stone", ["Concrete Block", "Stone"], "STONE_WALL"),
+    ("Basic Wall:Block 200 Gypsum plaster both sides", ["Concrete Block", "Gypsum plaster"], "BLOCK_WALL"),
+    ("Basic Wall:جدار خرساني 25 سم", ["خرسانة"], "RC_WALL"),
+    ("Basic Wall:Exterior - Brick on CMU", ["Brick, Common", "Concrete Masonry Units"], "CAVITY_WALL"),
+])
+def test_typical_revit_wall_types(lib, name, materials, recipe):
+    el = {"ifc_class": "IfcWall", "kind": "IfcWall", "name": name, "type": name, "predefined": "",
+          "materials": materials, "classification": [], "props": {}}
+    assert lib.classify(el)[0] == recipe
+
+
+def test_stone_cladding_on_concrete_and_thermal_block_replaces_render(lib):
+    from engine.estimate import evaluate
+    import ast
+    env = {"finish1": 10.0, "side": 10.0, "ext": 1.0}
+    stone = [{"name": "Stone", "t": 0.03}]
+    for recipe in ("RC_WALL", "THERMAL_BLOCK_WALL"):
+        items = {i["work_item"]: evaluate(i["_expr"], env, stone) for i in lib.recipes[recipe]}
+        assert items.get("STONE-CLAD") == 10 and not items.get("EXT-PNT") and not items.get("EXT-RND")
