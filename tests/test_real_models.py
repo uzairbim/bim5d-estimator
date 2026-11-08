@@ -404,3 +404,17 @@ def test_pipes_and_ducts_measured_along_their_run(tmp_path, lib):
     for n in ("Duct 600x400 straight", "Duct 600x400 diagonal"):
         assert q(n, "DUCT") == pytest.approx(2 * (0.6 + 0.4) * 8, rel=0.04)       # + end caps
     assert q("Duct 600x400 straight", "DUCT-INS") > 0 and q("Duct 600x400 diagonal", "DUCT-INS") == 0
+
+
+def test_floor_type_with_finish_layers_prices_the_concrete_too(duplex, lib):
+    s = copy.deepcopy(next(e for e in duplex if e["ifc_class"] == "IfcSlab"))
+    s.update({"guid": "layered", "name": "Floor:RC 200 + screed + porcelain", "type": "Floor:RC 200 + screed + porcelain",
+              "materials": ["Concrete", "Screed", "Porcelain tile"], "classification": [], "props": {},
+              "layers": [{"name": "Porcelain tile", "t": 0.02}, {"name": "Screed", "t": 0.05}, {"name": "Concrete", "t": 0.2}]})
+    s["qty"].update({"footprint": 100.0, "volume": 27.0})
+    assert lib.classify(s)[0] == "RC_SLAB"
+    q = {l["work_item"]: l["net_qty"] for l in estimate([s], "SA", lib, {})["lines"]}
+    assert q["CON-SLB"] == pytest.approx(20.0) and q["SCR"] == pytest.approx(100) and q["FLR-TIL"] == pytest.approx(100)
+    # a finish-only build-up (no structural layer) stays a floor finish
+    f = {**s, "layers": [{"name": "Porcelain tile", "t": 0.02}, {"name": "Screed", "t": 0.05}], "materials": ["Porcelain tile", "Screed"]}
+    assert lib.classify(f)[0] == "FLOOR_FINISH"

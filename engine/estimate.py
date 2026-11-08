@@ -38,6 +38,9 @@ def group_key(el):
 
 
 NOT_MATCHED_PROPS = {"phase", "demolished"}
+STRUCTURAL_LAYER = re.compile(r"concrete|beton|b[ée]ton|hormig|calcestruzzo|\brc\b|\brcc\b|cast.?in|in.?situ|"
+                              r"structur|\bstb\b|خرسان", re.I)
+GROUND_SLAB = re.compile(r"on grade|ground|\bsog\b|grnd|bodenplatte|ارضي|أرضي", re.I)
 EXISTING_PHASE = re.compile(r"exist|bestand|existant|existente|bestaand|موجود|قائم", re.I)
 EXISTING_NAME = re.compile(r"\bexisting\b|\(existing\)|\bbestand\b|\bexistant", re.I)
 NO_DEMOLITION = re.compile(r"^\s*(none|keine|aucune|ninguna|geen|nessuna|لا يوجد|-)?\s*$", re.I)
@@ -329,6 +332,14 @@ class Library:
             return None, "none"
         if r["recipe"] == "EXCLUDE":   # site context, people, trees...
             return None, "excluded"
+        if el["ifc_class"] == "IfcSlab" and r["recipe"] in ("FLOOR_FINISH", "SCREED_LAYER", "INSULATION_LAYER"):
+            # A floor type with its finishes ("RC 200 + screed + porcelain") is still a structural slab:
+            # price the concrete, and the finish layers on top of it.
+            structural = sum(l.get("t") or 0 for l in el.get("layers") or []
+                             if STRUCTURAL_LAYER.search(l.get("name") or ""))
+            if structural >= 0.1:
+                ground = GROUND_SLAB.search(f'{el.get("name", "")} {el.get("type", "")}')
+                return ("SLAB_ON_GRADE" if ground else "RC_SLAB"), "rule"
         if el["ifc_class"] == "IfcSpace" and not el.get("is_room", True):
             return None, "excluded"    # shafts, voids, roof spaces
         return r["recipe"], "rule"
