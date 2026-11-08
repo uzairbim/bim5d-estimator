@@ -344,6 +344,7 @@ const D = {
   "yours": { ar: "أسعارك", ur: "آپ کی", es: "suyo", fr: "le vôtre" },
   "Please choose an .ifc file.": { ar: "اختر ملف ‎.ifc (أو ‎.ifcZIP).", ur: "‎.ifc فائل منتخب کریں (یا ‎.ifcZIP)۔", es: "Elija un archivo .ifc (o .ifcZIP).", fr: "Choisissez un fichier .ifc (ou .ifcZIP)." },
   "New item": { ar: "بند جديد", ur: "نئی مد", es: "Nueva partida", fr: "Nouveau poste" },
+  "Items measured by hand without a rate: {n}. Choose a work item or type a rate.": { ar: "بنود مقاسة يدوياً بدون سعر: {n}. اختر بند عمل أو أدخل سعراً.", ur: "ہاتھ سے ناپی گئی مدیں بغیر ریٹ: {n}۔ کام کی مد منتخب کریں یا ریٹ لکھیں۔", es: "Partidas medidas a mano sin precio: {n}. Elija una partida o escriba un precio.", fr: "Postes mesurés à la main sans prix : {n}. Choisissez un ouvrage ou saisissez un prix." },
 };
 
 let lang = "en";

@@ -292,6 +292,8 @@ function bars(obj) {
 function nextSteps(e) {
   const c = e.checks, a = e.accuracy, items = [];
   const unpricedTypes = e.groups.filter((g) => g.recipe === null && g.source === "none").length;
+  const noRate = (S.project.settings.manual_items || []).filter((m) => Number(m.qty) > 0 && !m.work_item && !Number(m.rate)).length;
+  if (noRate) items.push([t("Items measured by hand without a rate: {n}. Choose a work item or type a rate.", { n: noRate }), t("Show list"), "scroll:manualSec"]);
   const gen = c.generic;
   if (gen && gen.share > 0.15) items.push([t("{p}% of the cost is on generic placeholder types ({types}). Choose what they are built of.", { p: Math.round(gen.share * 100), types: gen.types.slice(0, 2).join(", ") }), t("Open Mapping"), "goto:mapping"]);
   if (unpricedTypes) items.push([t("Element types not priced yet: {n}. Tell the tool what they are.", { n: unpricedTypes }), t("Open Mapping"), "goto:mapping"]);
@@ -399,7 +401,7 @@ function renderSummary() {
       <td class="n">${c.cost ? fmt(c.cost) : ""}</td>
       <td>${c.status === "missing" && c.suggest ? `<button class="btn sm" data-allow='${esc(JSON.stringify(c.suggest))}'>${t("Add")} ${c.suggest.value}%</button>` : c.note ? `<span class="muted small">${esc(t(c.note))}</span>` : c.status === "missing" ? `<span class="muted small">${t("missing")}</span>` : `<span class="muted small">${t(c.status)}</span>`}</td></tr>`).join("")}</table>
     </details>
-    <details class="sec" ${(st.manual_items || []).length || (st.allowances || []).length ? "open" : ""}><summary>${t("Items measured by hand (not in the model)")} &amp; ${t("Allowances for work not in the model").toLowerCase()} <span class="muted small">${fmt(s.allowances + e.lines.filter((l) => l.recipe === "MANUAL").reduce((x, l) => x + l.amount, 0))} ${e.currency}</span></summary>
+    <details class="sec" id="manualSec" ${(st.manual_items || []).length || (st.allowances || []).length ? "open" : ""}><summary>${t("Items measured by hand (not in the model)")} &amp; ${t("Allowances for work not in the model").toLowerCase()} <span class="muted small">${fmt(s.allowances + e.lines.filter((l) => l.recipe === "MANUAL").reduce((x, l) => x + l.amount, 0))} ${e.currency}</span></summary>
     <h3>${t("Items measured by hand (not in the model)")}</h3>
     <p class="muted small">Like a virtual takeoff: boundary walls, external works, anything not modelled. Pick a work item to use its rate, or type your own rate.</p>
     ${(st.manual_items || []).length ? `<table class="allow"><thead><tr><th>Description</th><th>Work item</th><th>Qty</th><th>Unit</th><th>Rate</th><th></th></tr></thead><tbody>${(st.manual_items || []).map((m, i) => `<tr>
