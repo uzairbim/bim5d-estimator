@@ -165,3 +165,30 @@ def test_csv_from_european_excel():
     data = "code;rate\nCON-FTG;12,5\n".encode("cp1252")
     rows = rates_mod.parse_upload("rates.csv", data)
     assert rows[0]["work_item"] == "CON-FTG" and rates_mod._num(rows[0]["material"]) == 12.5
+
+
+def test_discipline_models_are_combined(client):
+    import pathlib
+    root = pathlib.Path(__file__).resolve().parent.parent / "samples"
+    r = client.post("/api/projects/sample/Ifc4_Revit_ARC.ifc?region=SA")
+    pid = r.json()["project_id"]
+
+    def wait():
+        for _ in range(900):
+            st = [v["status"] for v in client.get(f"/api/projects/{pid}").json()["versions"]]
+            if st and all(x not in ("queued", "processing") for x in st):
+                return st
+            time.sleep(0.2)
+    wait()
+    alone = client.get(f"/api/projects/{pid}/estimate").json()["summary"]
+    with open(root / "Ifc4_Revit_STR.ifc", "rb") as fh:
+        client.post("/api/projects", data={"project_id": pid, "discipline": "Structure"},
+                    files={"file": ("Ifc4_Revit_STR.ifc", fh)})
+    assert wait() == ["ready", "ready"]
+    est = client.get(f"/api/projects/{pid}/estimate").json()
+    assert {m["discipline"] for m in est["models"]} == {None, "Structure"}
+    assert est["summary"]["total"] > alone["total"] and est["summary"]["gfa"] == alone["gfa"]
+    # a project file keeps the disciplines
+    pkg = client.get(f"/api/projects/{pid}/package.zip").content
+    new = client.post("/api/projects/import", files={"file": ("p.zip", pkg)}).json()["project_id"]
+    assert {v.get("discipline") for v in client.get(f"/api/projects/{new}").json()["versions"]} == {None, "Structure"}

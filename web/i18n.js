@@ -200,6 +200,18 @@ const D = {
   "Every element type is priced.": { ar: "كل أنواع العناصر مسعّرة.", ur: "ہر عنصر کی قسم کی قیمت لگ چکی ہے۔", es: "Todos los tipos de elemento tienen precio.", fr: "Tous les types d'éléments sont chiffrés." },
   "Nothing found.": { ar: "لا توجد نتائج.", ur: "کچھ نہیں ملا۔", es: "No se encontró nada.", fr: "Rien trouvé." },
   "Suggest with AI": { ar: "اقتراح بالذكاء الاصطناعي", ur: "AI سے تجویز", es: "Sugerir con IA", fr: "Suggérer avec l'IA" },
+  "Upload new revision": { ar: "رفع نسخة جديدة", ur: "نئی نظرثانی اپ لوڈ کریں", es: "Subir nueva revisión", fr: "Charger une nouvelle révision" },
+  "of": { ar: "من", ur: "کی", es: "de", fr: "de" },
+  "this model": { ar: "هذا النموذج", ur: "یہ ماڈل", es: "este modelo", fr: "cette maquette" },
+  "Separate Revit models for structure or MEP? Add each one here: the estimate adds them up (the latest revision of each), shows them together in 3D and counts elements drawn in two models once.": { ar: "هل لديك نماذج Revit منفصلة للإنشائي أو الكهروميكانيك؟ أضف كل نموذج هنا: يجمعها التقدير (آخر نسخة من كل نموذج)، ويعرضها معاً ثلاثي الأبعاد، ويحسب العنصر المرسوم في نموذجين مرة واحدة.", ur: "اسٹرکچر یا MEP کے الگ Revit ماڈل ہیں؟ ہر ایک یہاں شامل کریں: تخمینہ انہیں جمع کرتا ہے (ہر ایک کی تازہ ترین نظرثانی)، 3D میں ساتھ دکھاتا ہے اور دو ماڈلز میں موجود عنصر کو ایک بار گنتا ہے۔", es: "¿Modelos Revit separados de estructura o instalaciones? Añada cada uno aquí: la estimación los suma (la última revisión de cada uno), los muestra juntos en 3D y cuenta una vez los elementos dibujados en dos modelos.", fr: "Maquettes Revit séparées pour la structure ou les fluides ? Ajoutez-les ici : l'estimation les additionne (dernière révision de chacune), les affiche ensemble en 3D et compte une seule fois les éléments présents dans deux maquettes." },
+  "Structure": { ar: "الإنشائي", ur: "اسٹرکچر", es: "Estructura", fr: "Structure" },
+  "MEP": { ar: "الكهروميكانيك", ur: "MEP", es: "Instalaciones", fr: "Fluides (CVC/plomberie/élec.)" },
+  "Electrical": { ar: "الكهرباء", ur: "بجلی", es: "Electricidad", fr: "Électricité" },
+  "Plumbing": { ar: "السباكة", ur: "پلمبنگ", es: "Fontanería", fr: "Plomberie" },
+  "Architecture": { ar: "المعماري", ur: "آرکیٹیکچر", es: "Arquitectura", fr: "Architecture" },
+  "Landscape": { ar: "تنسيق المواقع", ur: "لینڈ اسکیپ", es: "Paisajismo", fr: "Paysage" },
+  "Add a discipline model": { ar: "إضافة نموذج تخصص", ur: "شعبہ کا ماڈل شامل کریں", es: "Añadir un modelo de disciplina", fr: "Ajouter une maquette métier" },
+  "Combined now": { ar: "المدمج حالياً", ur: "اب شامل", es: "Combinados ahora", fr: "Combinées actuellement" },
 };
 
 let lang = "en";

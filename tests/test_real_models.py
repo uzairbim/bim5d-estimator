@@ -55,6 +55,10 @@ def _like(els, ifc_class, **changes):
     ("IfcBeam", "Concrete-Rectangular Beam:Tie Beam 30x60", ["Concrete"], "RC_FOOTING"),
     ("IfcSlab", "Floor:Interlock paving 80mm", [], "PAVING"),
     ("IfcSlab", "Floor:Marble flooring 30mm", ["Marble"], "FLOOR_FINISH"),
+    ("IfcBuildingElementProxy", "Water Glass:Water Glass", ["Juice"], None),
+    ("IfcBuildingElementProxy", "Wine Bottles:Wine Bottles", ["Water"], None),
+    ("IfcBuildingElementProxy", "Walvit_Hung Bowl_604118 W:Walvit", ["Porcelain"], "SANITARY"),
+    ("IfcFlowTerminal", "DC_Tankworks_PLM_5000L:5000L water tank", [], "MECH_EQUIP"),
 ])
 def test_real_names_are_priced_sensibly(lib, cls, name, materials, recipe):
     el = {"ifc_class": cls, "kind": cls, "name": name, "type": name, "predefined": "",
@@ -162,3 +166,26 @@ def test_marble_floor_priced_as_marble_not_tiles(duplex, lib):
     slab["layers"] = [{"name": "Marble", "t": 0.03}]
     items = {l["work_item"] for l in estimate(els, "SA", lib, {})["lines"] if l["guid"] == slab["guid"]}
     assert "FLR-MRB" in items and "FLR-TIL" not in items
+
+
+# ---- separate discipline models (architecture + structure + MEP) ---------------------------
+def test_element_in_two_models_is_counted_once(duplex, lib):
+    arch = [{**e, "model": "Main model"} for e in duplex]
+    col = next(e for e in duplex if e["ifc_class"] in ("IfcColumn", "IfcWall", "IfcWallStandardCase"))
+    twin = {**copy.deepcopy(col), "guid": "struct-copy", "model": "Structure"}
+    base = estimate(arch, "SA", lib, {})
+    est = estimate(arch + [twin], "SA", lib, {})
+    dup = [d for d in est["checks"]["duplicates"] if d["kind"] == "in two models"]
+    assert len(dup) == 1 and dup[0]["b"] == col["guid"]          # the structure model's copy is kept
+    assert abs(est["summary"]["direct"] - base["summary"]["direct"]) < 0.02 * base["summary"]["direct"]
+
+
+def test_levels_of_two_models_are_matched_by_height(duplex, lib):
+    arch = [{**e, "model": "Main model"} for e in duplex]
+    levels = sorted({(e["level"], e.get("level_elev") or 0) for e in duplex if e.get("level")}, key=lambda x: x[1])
+    name, z = levels[-1]
+    extra = {**copy.deepcopy(next(e for e in duplex if e["ifc_class"] == "IfcSlab")),
+             "guid": "str-slab", "model": "Structure", "level": "L-top SSL", "level_elev": z - 0.05}
+    extra["bbox"] = [x + 50 for x in extra["bbox"]]
+    gfa = estimate(arch + [extra], "SA", lib, {})["summary"]["gfa_by_level"]
+    assert "L-top SSL" not in gfa

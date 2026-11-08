@@ -58,6 +58,32 @@ GENERIC_TYPE = re.compile(r"\bgeneric\b|\bdefault\b|placeholder|allgemein|g[ée]
                           r"\bstandaard\b|عام", re.I)
 
 
+def _level_clusters(elements):
+    """Level name for floor area. With several discipline models, a level of another model is
+    matched by height to the main model's level (the architect's "Level 1" and the engineer's
+    "L1 SSL" a few cm lower are the same floor). Levels of one model are never merged."""
+    if not any(e.get("model") for e in elements):
+        return lambda e: e.get("level") or "(no level)"
+    per_model = defaultdict(dict)
+    for e in elements:
+        if e.get("level") and e["level"] != "(no level)":
+            per_model[e.get("model")][e["level"]] = float(e.get("level_elev") or 0.0)
+    if not per_model:
+        return lambda e: "(no level)"
+    ref_model = max(per_model, key=lambda m: (not re.search(r"struct|mep|elec|plumb", m or "", re.I),
+                                              len(per_model[m])))
+    ref = per_model[ref_model]
+    mapping = {}
+    for m, levels in per_model.items():
+        for name, z in levels.items():
+            if m == ref_model:
+                mapping[(m, name)] = name
+                continue
+            best = min(ref, key=lambda r: abs(ref[r] - z))
+            mapping[(m, name)] = best if abs(ref[best] - z) <= 0.6 else name
+    return lambda e: mapping.get((e.get("model"), e.get("level")), e.get("level") or "(no level)")
+
+
 def gross_floor_area(elements, per_element):
     """Gross floor area, level by level, like an estimator measures it.
 
@@ -66,8 +92,9 @@ def gross_floor_area(elements, per_element):
     stands on it (rooms, doors or full-height walls), so the roof slab is not taken as a floor.
     """
     lv = {}
+    level_of = _level_clusters(elements)
     for e in elements:
-        L = e.get("level") or "(no level)"
+        L = level_of(e)
         d = lv.setdefault(L, {"slab": 0.0, "finish": 0.0, "rooms": 0.0, "used": False})
         recipe = per_element.get(e["guid"], {}).get("recipe")
         q = e["qty"]
@@ -396,6 +423,32 @@ CHECKLIST = [
 ]
 
 
+_STRUCTURAL = {"IfcColumn": "col", "IfcBeam": "beam", "IfcFooting": "ftg", "IfcSlab": "slab", "IfcWall": "wall",
+               "IfcWallStandardCase": "wall", "IfcStair": "stair", "IfcStairFlight": "stair", "IfcPile": "pile"}
+
+
+def _same_in_two_models(elements, cls):
+    """An element drawn in two discipline models (structural columns kept in the architect's model)
+    is counted once: the copy in the structure model wins. Returns the duplicate records."""
+    if not any(e.get("model") for e in elements):
+        return []
+    seen, out = {}, []
+    order = sorted(elements, key=lambda e: 0 if re.search(r"struct|tragwerk|إنشائ|انشائ", e.get("model") or "", re.I) else 1)
+    for e in order:
+        fam = _STRUCTURAL.get(e["ifc_class"])
+        if not fam or not e.get("bbox") or not cls[e["guid"]][0]:
+            continue
+        k = (fam, *(round(x / 0.05) for x in e["bbox"]))
+        first = seen.get(k)
+        if first and first["model"] != e.get("model"):
+            out.append({"a": first["guid"], "b": e["guid"], "volume": 0, "loser": e["guid"],
+                        "kind": "in two models"})
+            cls[e["guid"]] = (None, "excluded")
+        elif not first:
+            seen[k] = e
+    return out
+
+
 def _deductions(elements, recipes, deduct):
     """Overlap volume each element gives up, and the overlap records."""
     give = defaultdict(float)
@@ -518,9 +571,10 @@ def estimate(elements, region, lib=None, settings=None):
                 cls[e["guid"]] = (None, "excluded")
             else:
                 seen_rooms[k] = e["guid"]
+    dup_models = _same_in_two_models(elements, cls)
     recipes = {g: r for g, (r, _) in cls.items()}
     give, overlap_records = _deductions(elements, recipes, deduct)
-    overlap_records += dup_rooms
+    overlap_records += dup_rooms + dup_models
     n_rooms = sum(1 for e in elements if e["ifc_class"] == "IfcSpace" and recipes.get(e["guid"]))
     finishes_from = settings.get("finishes_from") or "auto"
     has_walls = any(e["ifc_class"] in ("IfcWall", "IfcWallStandardCase", "IfcCurtainWall") for e in elements)
@@ -819,6 +873,12 @@ def estimate(elements, region, lib=None, settings=None):
         assumptions.append(
             f"Prices: {user_share:.0%} confirmed by you, {assumed_share:.0%} assumed indicative market prices "
             f"(late 2026, not quotations), {estimated_share:.0%} estimated from US price levels.")
+    models = sorted({e["model"] for e in elements if e.get("model")})
+    if len(models) > 1:
+        n_two = len(dup_models) + sum(1 for e in elements if len(e.get("in_models") or []) > 1)
+        assumptions.append(f"Combined discipline models: {', '.join(models)}. "
+                           + (f"{n_two} elements drawn in two models are counted once (structure model kept). " if n_two else "")
+                           + "Overlaps are deducted within each model, not between models.")
     n_existing = sum(1 for e in elements if e["ifc_class"] != "IfcSpace" and is_existing(e)
                      and not (mappings and mappings.get(group_key(e))))
     if n_existing:
@@ -868,7 +928,7 @@ def estimate(elements, region, lib=None, settings=None):
                    "unclassified": unclassified, "excluded": excluded,
                    "geometry_flagged": flagged, "rebar": rb,
                    "overlaps": overlap_records, "overlap_m3": round(ov_total, 3),
-                   "duplicates": [r for r in overlap_records if r["kind"] in ("same type", "same room shape")],
+                   "duplicates": [r for r in overlap_records if r["kind"] in ("same type", "same room shape", "in two models")],
                    "generic": generic,
                    "reconciliation": reconciliation},
     }

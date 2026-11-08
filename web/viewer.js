@@ -94,17 +94,25 @@ export class Viewer {
 
   load(g) {
     this.clear();
+    this.add(g, false);
+    // New model: start from a standard 3/4 view from above.
+    this.camera.position.set(1, 0.8, 1);
+    this.controls.target.set(0, 0, 0);
+    this.fit();
+  }
+
+  // Add another model's geometry (a second discipline model) to the scene.
+  add(g, fit = true) {
     for (const [guid, item] of Object.entries(g.index.items)) {
+      if (this.meshes.has(guid)) continue;
       const mat = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.85, side: THREE.DoubleSide,
                                                    polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
       const mesh = this._mesh(guid, g, item, mat);
       this.group.add(mesh);
       this.meshes.set(guid, mesh);
     }
-    // New model: start from a standard 3/4 view from above.
-    this.camera.position.set(1, 0.8, 1);
-    this.controls.target.set(0, 0, 0);
-    this.fit();
+    if (fit) this.fit();
+    this.dirty = true;
   }
 
   addGhosts(g, guids, color = 0xdc2626) {

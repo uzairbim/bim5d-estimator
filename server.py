@@ -58,8 +58,34 @@ def _estimate(p, vid=None, region=None, lib=None):
     if region not in lib.regions:
         # The project's region was removed or renamed: keep working in the global region.
         region = "GLOBAL" if "GLOBAL" in lib.regions else next(iter(lib.regions))
-    els = storage.elements(v["id"])
-    return v, els, estimate(els, region, lib, s)
+    els = combined_elements(p, v)
+    est = estimate(els, region, lib, s)
+    est["models"] = [{k: m.get(k) for k in ("id", "label", "file_name", "discipline")}
+                     for m in storage.combined_versions(p, v)]
+    return v, els, est
+
+
+def combined_elements(p, v):
+    """Elements of the revision `v` plus the latest revision of each other discipline model."""
+    parts = storage.combined_versions(p, v)
+    if len(parts) == 1:
+        return storage.elements(v["id"])
+    out, seen = [], {}
+    for m in parts:
+        disc = storage.discipline_of(m)
+        for e in storage.elements(m["id"]):
+            i = seen.get(e["guid"])
+            if i is None:                       # copies: the cached elements are shared
+                seen[e["guid"]] = len(out)
+                out.append({**e, "model": disc, "in_models": [disc]})
+                continue
+            # The same Revit element exported in two models: count it once, keep the copy with a level.
+            kept = out[i]
+            models = kept["in_models"] + [disc]
+            if kept.get("level") in (None, "", "(no level)") and e.get("level") not in (None, "", "(no level)"):
+                out[i] = {**e, "model": disc}
+            out[i]["in_models"] = models
+    return out
 
 
 def _safe_name(name):
@@ -181,7 +207,8 @@ def projects():
 
 @app.post("/api/projects")
 async def upload(file: UploadFile, project_id: Optional[str] = Form(None),
-                 name: Optional[str] = Form(None), region: Optional[str] = Form(None)):
+                 name: Optional[str] = Form(None), region: Optional[str] = Form(None),
+                 discipline: Optional[str] = Form(None)):
     if not (file.filename or "").lower().endswith(".ifc"):
         raise HTTPException(400, "Please upload an .ifc file (in Revit: File > Export > IFC).")
     with tempfile.NamedTemporaryFile(delete=False, suffix=".ifc") as tmp:
@@ -197,7 +224,7 @@ async def upload(file: UploadFile, project_id: Optional[str] = Form(None),
     else:
         pid = storage.create_project(name or Path(file.filename).stem,
                                      {"region": region} if region else None)
-    vid = storage.add_version(pid, tmp.name, file.filename, move=True)
+    vid = storage.add_version(pid, tmp.name, file.filename, move=True, discipline=discipline)
     return {"project_id": pid, "version_id": vid}
 
 
@@ -300,6 +327,15 @@ def geometry_bin(vid: str):
     if not bin_.is_file():
         raise HTTPException(404, "Geometry not ready")
     return FileResponse(bin_, media_type="application/octet-stream")
+
+
+@app.get("/api/projects/{pid}/models")
+def project_models(pid: str, version: Optional[str] = None):
+    """The revisions combined in the estimate when `version` is open (one per discipline)."""
+    p = _project(pid)
+    v = _ready_version(p, version)
+    return [{k: m.get(k) for k in ("id", "label", "file_name", "discipline")}
+            for m in storage.combined_versions(p, v)]
 
 
 @app.get("/api/versions/{vid}/elements")

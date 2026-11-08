@@ -175,11 +175,12 @@ function showStart() {
 }
 $("#home").addEventListener("click", () => { location.hash = ""; });
 
-async function uploadFile(file, projectId) {
+async function uploadFile(file, projectId, discipline) {
   if (!file.name.toLowerCase().endsWith(".ifc")) return toast("Please choose an .ifc file.");
   const fd = new FormData();
   fd.append("file", file);
   if (projectId) fd.append("project_id", projectId);
+  if (discipline) fd.append("discipline", discipline);
   else fd.append("region", $("#startRegion").value);
   busy(true, `Uploading ${file.name}…`);
   try {
@@ -228,9 +229,15 @@ async function openProject(pid, vid) {
   }
   busy(true, "Loading 3D model…");
   try {
-    const [geo, els] = await Promise.all([Viewer.fetchGeometry(v.id), api(`/api/versions/${v.id}/elements`)]);
-    S.geo = geo; S.els = els;
-    viewer.load(geo);
+    // The estimate combines this revision with the latest revision of each other discipline model.
+    S.models = await api(`/api/projects/${pid}/models?version=${v.id}`);
+    const parts = await Promise.all(S.models.map((m) => Promise.all([Viewer.fetchGeometry(m.id), api(`/api/versions/${m.id}/elements`)])));
+    const els = {};
+    parts.forEach(([, e], i) => { for (const [g, x] of Object.entries(e)) if (!els[g]) els[g] = { ...x, model: S.models[i].discipline || "" }; });
+    S.geo = parts[0][0]; S.els = els;
+    viewer.load(parts[0][0]);
+    parts.slice(1).forEach(([geo]) => viewer.add(geo, false));
+    if (parts.length > 1) viewer.fit();
     p = await api(`/api/projects/${pid}`);
     S.project = p; S.version = p.versions.find((x) => x.id === v.id);
     renderVersions();
@@ -366,7 +373,7 @@ function renderSummary() {
   for (let n = host; n; n = n.parentElement) if (n.scrollTop) scrollers.push([n, n.scrollTop]);
   S._sumPid = S.project.id;
   host.innerHTML = `
-    <div class="muted">${esc(S.project.name)} · ${esc(S.version.label)} · ${esc(e.region_name)}</div>
+    <div class="muted">${esc(S.project.name)} · ${(e.models || []).length > 1 ? e.models.map((m) => esc(m.label)).join(" + ") : esc(S.version.label)} · ${esc(e.region_name)}</div>
     <div class="total">${fmt(s.total)} <small>${e.currency}</small></div>
     <div class="acc acc${a.class}"><b dir="auto">${esc(a.label)}</b> · ${t("likely between")} <b>${fmt(a.low)}</b> ${t("and")} <b>${fmt(a.high)}</b> ${e.currency} (${Math.round(a.low_pct * 100)}% / +${Math.round(a.high_pct * 100)}%)
       ${a.reasons.length ? `<ul>${a.reasons.map((r) => `<li dir="auto">${esc(r)}</li>`).join("")}</ul>` : ""}</div>
@@ -648,7 +655,7 @@ function renderElement(guid) {
   const g = e.groups.find((x) => x.key === el.group);
   const t = e.schedule?.elements?.[guid];
   $("#tab-element").innerHTML = `
-    <div class="muted">${esc(el.kind || el.ifc_class)} · ${esc(el.level)}</div>
+    <div class="muted">${esc(el.kind || el.ifc_class)} · ${esc(el.level)}${el.model ? " · " + esc(el.model) : ""}</div>
     <h2 style="margin:4px 0 2px;font-size:16px">${esc(el.name)}</h2>
     <div class="total">${fmt(pe.total || 0)} <small>${e.currency}</small></div>
     <div class="settings" style="grid-template-columns:1fr">
@@ -776,11 +783,17 @@ function renderCompare() {
       <table><tbody>${c.rows.slice(0, 300).map((r) => `<tr class="click" data-g="${r.guid}"><td>${esc(r.name)}<br><span class="tag ${r.status}">${r.status}</span> <span class="muted small">${esc(r.why)}</span></td><td class="n ${r.delta > 0 ? "pos" : "neg"}">${r.delta > 0 ? "+" : ""}${fmt(r.delta)}</td></tr>`).join("")}</tbody></table>`;
   }
   $("#tab-compare").innerHTML = `
-    <div class="toolbar"><label class="btn primary">Upload new revision<input type="file" id="revFile" accept=".ifc" hidden></label></div>
+    <div class="toolbar"><label class="btn primary">${t("Upload new revision")}<input type="file" id="revFile" accept=".ifc" hidden></label>
+      <span class="muted small">${t("of")} ${esc(S.version.discipline || t("this model"))}</span></div>
+    <div class="callout small">${t("Separate Revit models for structure or MEP? Add each one here: the estimate adds them up (the latest revision of each), shows them together in 3D and counts elements drawn in two models once.")}
+      <div class="toolbar" style="margin-top:6px"><select id="discSel">${["Structure", "MEP", "Electrical", "Plumbing", "Architecture", "Landscape"].map((d) => `<option value="${d}">${t(d)}</option>`).join("")}</select>
+      <label class="btn">${t("Add a discipline model")}<input type="file" id="discFile" accept=".ifc" hidden></label></div>
+      ${(S.models || []).length > 1 ? `<p class="small">${t("Combined now")}: ${S.models.map((m) => esc(m.label)).join(" + ")}</p>` : ""}</div>
     ${ready.length >= 2 ? `<div class="toolbar"><select id="cmpA">${opts(c?.a.id || prev?.id)}</select> → <select id="cmpB">${opts(c?.b.id || S.version.id)}</select><button class="btn" id="cmpRun">Compare</button>${c ? '<button class="btn" id="cmpClear">Clear</button>' : ""}</div>` : ""}
     <div class="toolbar"><label class="muted small">Revision name <input type="text" id="verLabel" value="${esc(S.version.label)}" style="width:140px"></label></div>
     ${body}`;
-  $("#revFile").addEventListener("change", (ev) => { const f = ev.target.files[0]; if (f) uploadFile(f, p.id); });
+  $("#revFile").addEventListener("change", (ev) => { const f = ev.target.files[0]; if (f) uploadFile(f, p.id, S.version.discipline || ""); });
+  $("#discFile").addEventListener("change", (ev) => { const f = ev.target.files[0]; if (f) uploadFile(f, p.id, $("#discSel").value); });
   $("#verLabel").addEventListener("change", async (ev) => { await api(`/api/versions/${S.version.id}`, { method: "PATCH", json: { label: ev.target.value } }); S.project = await api(`/api/projects/${p.id}`); S.version = S.project.versions.find((v) => v.id === S.version.id); renderVersions(); });
   $("#cmpRun")?.addEventListener("click", runCompare);
   $("#cmpClear")?.addEventListener("click", () => { S.compare = null; viewer.clearGhosts(); $("#colorMode [data-mode=changes]").hidden = true; setMode("cost"); renderCompare(); });

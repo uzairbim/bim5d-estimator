@@ -118,6 +118,10 @@ def _db():
             id TEXT PRIMARY KEY, project_id TEXT, label TEXT, file_name TEXT, created REAL,
             status TEXT, progress REAL, error TEXT, elements INTEGER, schema TEXT, model_name TEXT);
     """)
+    try:   # projects made before discipline models existed
+        con.execute("ALTER TABLE versions ADD COLUMN discipline TEXT")
+    except sqlite3.OperationalError:
+        pass
     return con
 
 
@@ -208,18 +212,30 @@ def _set_version(vid, **fields):
         con.execute(f"UPDATE versions SET {keys} WHERE id=?", (*fields.values(), vid))
 
 
-def add_version(pid, src_path, file_name, label=None, move=False):
-    """Store a model file and process it in the background. Returns the version id."""
+def discipline_of(v):
+    return (v.get("discipline") or "").strip() or "Main model"
+
+
+def add_version(pid, src_path, file_name, label=None, move=False, discipline=None):
+    """Store a model file and process it in the background. Returns the version id.
+
+    `discipline` (Architecture, Structure, MEP...) keeps separate Revit models of one project apart:
+    the estimate adds up the latest revision of each discipline.
+    """
     vid = _new_id()
     folder = ROOT / vid
     folder.mkdir(parents=True)
     (shutil.move if move else shutil.copy)(str(src_path), folder / "model.ifc")
     p = get_project(pid)
-    n = len(p["versions"]) + 1 if p else 1
+    disc = str(discipline or "").strip()[:40] or None
+    same = [v for v in (p["versions"] if p else []) if discipline_of(v) == (disc or "Main model")]
+    n = len(same) + 1
+    default = f"{disc} Rev {n}" if disc and disc != "Main model" else f"Rev {n}"
     with _lock, _db() as con:
-        con.execute("INSERT INTO versions VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                    (vid, pid, label or f"Rev {n}", file_name, time.time(),
-                     "processing", 0.0, None, 0, None, None))
+        con.execute("INSERT INTO versions (id, project_id, label, file_name, created, status, progress, error, "
+                    "elements, schema, model_name, discipline) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                    (vid, pid, label or default, file_name, time.time(),
+                     "processing", 0.0, None, 0, None, None, disc))
     log(pid, "model uploaded", file_name)
     threading.Thread(target=_process, args=(vid,), daemon=True).start()
     return vid
@@ -277,7 +293,8 @@ def export_package(pid):
                 continue
             arc = f"models/{i + 1:02d}_{(v.get('file_name') or 'model.ifc').replace('/', '_')}"
             z.write(src, arc)
-            meta["revisions"].append({"label": v["label"], "file": arc, "file_name": v.get("file_name")})
+            meta["revisions"].append({"label": v["label"], "file": arc, "file_name": v.get("file_name"),
+                                      "discipline": v.get("discipline")})
         z.writestr("project.json", json.dumps(meta, indent=1, ensure_ascii=False))
     return p["name"], buf.getvalue()
 
@@ -314,7 +331,8 @@ def import_package(data):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".ifc") as tmp:
             with z.open(name) as src:
                 shutil.copyfileobj(src, tmp, 1 << 20)
-        add_version(pid, tmp.name, rev.get("file_name") or name.split("/")[-1], label=rev.get("label"), move=True)
+        add_version(pid, tmp.name, rev.get("file_name") or name.split("/")[-1], label=rev.get("label"), move=True,
+                    discipline=rev.get("discipline"))
     log(pid, "project imported", meta.get("name", ""))
     return pid
 
@@ -353,6 +371,19 @@ def _load_elements(vid, mtime):
 def elements(vid):
     path = ROOT / vid / "elements.json.gz"
     return _load_elements(vid, path.stat().st_mtime)
+
+
+def combined_versions(p, v):
+    """The revisions that make up the estimate: `v` plus the latest ready revision of every other
+    discipline model in the project (architecture + structure + MEP...)."""
+    out = [v]
+    seen = {discipline_of(v)}
+    for o in sorted(p["versions"], key=lambda x: -x["created"]):
+        d = discipline_of(o)
+        if o["status"] == "ready" and d not in seen:
+            seen.add(d)
+            out.append(o)
+    return out
 
 
 def delete_version(vid):

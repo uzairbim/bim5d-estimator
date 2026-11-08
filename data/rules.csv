@@ -58,10 +58,10 @@ priority,ifc_class,keywords,recipe
 10,IfcController|IfcSensor|IfcActuator|IfcAlarm|IfcFlowInstrument|IfcUnitaryControlElement,,CONTROLS
 10,IfcFlowTerminal,closet|\bwc\b|toilet|lavatory|sink|basin|urinal|shower|bath|faucet|tap\b|hot.?tub|jacuzzi|whirlpool,SANITARY
 10,IfcBuildingElementProxy|IfcFlowTerminal,wshp|heat pump|\bahu\b|\bfcu\b|fan coil|chiller|pump|boiler|split unit|condens|furnace|water.?heater|cooling tower|\bvrf\b|\bvrv\b|\bcrac\b|air handling|air conditioner|outside unit|outdoor unit|\bac unit|package unit|مكيف|سخان,MECH_EQUIP
-4,IfcBuildingElementProxy,sink|basin|lavatory|water closet|\bwc\b|toilet|shower|urinal|bidet|hot.?tub|jacuzzi|whirlpool|\bspa\b,SANITARY
+4,IfcBuildingElementProxy,sink|basin|lavatory|water closet|\bwc\b|toilet|shower|urinal|bidet|hung bowl|\bbowl\b|hot.?tub|jacuzzi|whirlpool|\bspa\b,SANITARY
 33,IfcBuildingElementProxy|IfcSolarDevice|IfcElectricGenerator,photovoltaic|solar|\bpv\b,SOLAR_PV
-35,IfcBuildingElementProxy,tank|generator|inverter,MECH_EQUIP
-5,IfcBuildingElementProxy|IfcFurnishingElement|IfcFurniture|IfcSite|IfcGeographicElement,\btree\b|\bplanting|planter|potted plant|\bplants?\b(?! room)(?!-)|shrub|entourage|\bpeople\b|person|rpc|\bcar\b|vehicle|suv|sedan|truck|bicycle|\bbike|\bbaum\b|water feature|fountain|\bpond\b|vase|flower|porcelain plate|decor,EXCLUDE
+35,IfcBuildingElementProxy|IfcFlowTerminal|IfcFlowStorageDevice,tank|generator|inverter|خزان,MECH_EQUIP
+5,IfcBuildingElementProxy|IfcFurnishingElement|IfcFurniture|IfcSite|IfcGeographicElement,\btree\b|\bplanting|planter|potted plant|\bplants?\b(?! room)(?!-)|shrub|entourage|\bpeople\b|person|rpc|\bcar\b|vehicle|suv|sedan|truck|bicycle|\bbike|\bbaum\b|water feature|fountain|\bpond\b|^water\b|water glass|wine|bottles?\b|\bglasses\b|\bcups?\b|\bbooks?\b|cushion|pillow|towel|vase|flower|porcelain plate|decor,EXCLUDE
 10,IfcGeographicElement,,EXCLUDE
 10,IfcSpace,bath|toilet|\bwc\b|shower|washroom|lavator|ablution|laundry|washing|wash room|restroom|powder|\bbad\b|dusche|حمام|دورة مياه|وضوء,ROOM_WET
 20,IfcSpace,kitchen|pantry|kitchenette|küche|مطبخ,ROOM_KITCHEN
