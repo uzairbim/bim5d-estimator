@@ -175,3 +175,9 @@ unit,nr,عدد
 unit,t,طن
 work_item,ELEC-PNL,لوحة توزيع رئيسية / فرعية رئيسية
 recipe,ELEC_PANEL,لوحة كهرباء رئيسية
+work_item,HORDI,بلوك هوردي للبلاطات المفرغة (المعصبة)
+work_item,FLR-MRB,أرضيات رخام / جرانيت
+work_item,EXT-PAV,بلاط انترلوك للممرات الخارجية شاملاً طبقة الرمل
+recipe,RIBBED_SLAB,بلاطة هوردي (معصبة)
+recipe,PAVING,أرصفة وممرات خارجية
+trade,External works,الأعمال الخارجية

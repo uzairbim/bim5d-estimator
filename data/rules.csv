@@ -4,7 +4,7 @@ priority,ifc_class,keywords,recipe
 3,IfcSlab|IfcCovering,^[^:]*:[^:]*(insulation|dämmung|isolation),INSULATION_LAYER
 3,IfcSlab,\broof\b.*(wood|joist|timber|rafter|truss|shingle|metal deck|sandwich)|(wood|joist|timber|rafter|truss|shingle).*\broof\b,ROOF_LIGHT
 6,IfcSlab,\broof\b|\bROOF\b,ROOF_RC
-7,IfcSlab,finish floor|ceramic|tile|wood - flooring|carpet|vinyl|fliese|parkett|teppich|dielen|\bfb [0-9],FLOOR_FINISH
+7,IfcSlab,finish floor|ceramic|tile|marble|granite|porcelain|wood - flooring|carpet|vinyl|fliese|parkett|teppich|dielen|رخام|جرانيت|بورسلين|سيراميك|\bfb [0-9],FLOOR_FINISH
 8,IfcSlab,wood joist|timber|lumber|joist|holz|\bstud|sheathing|plywood|\bosb\b|\bclt\b,TIMBER_FLOOR
 4,IfcSlab,\bpad\b|footing|pile ?cap|pilecap|\braft\b|raft foundation|mat foundation|fundament,RC_FOOTING
 10,IfcSlab,on grade|grnd|ground|sog|BASESLAB|bodenplatte,SLAB_ON_GRADE
@@ -80,7 +80,7 @@ priority,ifc_class,keywords,recipe
 18,IfcBuildingElementProxy,balcony|balkon|canopy|vordach,STEEL_MEMBER
 2,IfcBuildingElementProxy|IfcAnnotation,model text|\blogo\b|text:|label,EXCLUDE
 2,IfcSlab,^\S*(dekvloer|screed|estrich|chape|solera|massetto|betonilha),SCREED_LAYER
-4,IfcBeam|IfcSlab|IfcWall|IfcWallStandardCase,fund_|fundering|strook|grade beam|ground beam|semelle|zapata|cimentaci|fondazione|sapata|fundament,RC_FOOTING
+4,IfcBeam|IfcSlab|IfcWall|IfcWallStandardCase,fund_|fundering|strook|grade beam|ground beam|tie ?-?beam|plinth beam|ميد|semelle|zapata|cimentaci|fondazione|sapata|fundament,RC_FOOTING
 6,IfcBeam|IfcColumn|IfcMember,staal|\bacier|acero|acciaio|\baço,STEEL_MEMBER
 7,IfcSlab,\bdak|toit|toiture|cubierta|tetto|telhado,ROOF_RC
 25,IfcWall|IfcWallStandardCase,baksteen|gevelsteen|buitenblad|metselwerk|ladrillo|brique|mattone|tijolo,BRICK_WALL
@@ -99,3 +99,5 @@ priority,ifc_class,keywords,recipe
 12,IfcWall|IfcWallStandardCase,stone|marble|granite|limestone|travertine|naturstein|pierre|piedra|حجر|رخام|جرانيت,STONE_WALL
 11,IfcWall|IfcWallStandardCase,thermal ?block|insulated block|thermo ?block|isolated block|بلوك عازل|بلوك حراري|عازل حراري,THERMAL_BLOCK_WALL
 3,IfcBuildingElementProxy|IfcElectricDistributionBoard|IfcElectricDistributionPoint|IfcFlowController,switchboard|switchgear|\bmdb\b|\bsmdb\b|\bmcc\b|main panel|panelboard.*\b([2-9]\d\d|\d{4}) ?a\b|\b([4-9]\d\d|\d{4}) ?a\b,ELEC_PANEL
+3,IfcSlab,hordi|hourdi|hordy|هوردي|هردي|ribbed|waffle|rib slab|hollow block slab,RIBBED_SLAB
+3,IfcSlab|IfcCovering|IfcBuildingElementProxy|IfcPavement|IfcCourse,interlock|paving|pavers?\b|انترلوك|إنترلوك|hardscape|sidewalk|walkway|driveway|pavement|\bkerbs?\b|\bcurbs?\b,PAVING

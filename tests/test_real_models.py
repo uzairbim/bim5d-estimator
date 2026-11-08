@@ -50,6 +50,11 @@ def _like(els, ifc_class, **changes):
     ("IfcBuildingElementProxy", "M_Base Cabinet-Single Door:500mm", ["Handle", "Wood"], "JOINERY"),
     ("IfcBuildingElementProxy", "M_Lighting and Appliance Panelboard - 208V MLO - Surface:400 A", [], "ELEC_PANEL"),
     ("IfcBuildingElementProxy", "M_Lighting and Appliance Panelboard - 480V MCB - Surface:100 A", [], "ELEC_DEVICE"),
+    ("IfcSlab", "Floor:Hordi Slab 32cm", ["Concrete"], "RIBBED_SLAB"),
+    ("IfcSlab", "Floor:بلاطة هوردي 30", [], "RIBBED_SLAB"),
+    ("IfcBeam", "Concrete-Rectangular Beam:Tie Beam 30x60", ["Concrete"], "RC_FOOTING"),
+    ("IfcSlab", "Floor:Interlock paving 80mm", [], "PAVING"),
+    ("IfcSlab", "Floor:Marble flooring 30mm", ["Marble"], "FLOOR_FINISH"),
 ])
 def test_real_names_are_priced_sensibly(lib, cls, name, materials, recipe):
     el = {"ifc_class": cls, "kind": cls, "name": name, "type": name, "predefined": "",
@@ -137,3 +142,23 @@ def test_saudi_excel_boq_is_bilingual(duplex, lib):
     assert "الوصف" in head and all(r[2] for r in sa.iter_rows(min_row=2, values_only=True) if r[0])
     gb = openpyxl.load_workbook(io.BytesIO(to_xlsx("t", estimate(duplex, "GB", lib, {}))))["BOQ"]
     assert "الوصف" not in [c.value for c in gb[1]]
+
+
+def test_hordi_slab_concrete_is_ribs_and_topping_only(duplex, lib):
+    els = copy.deepcopy(duplex)
+    slab = next(e for e in els if e["ifc_class"] == "IfcSlab")
+    slab["name"] = slab["type"] = "Floor:Hordi Slab 32cm"
+    slab["qty"].update({"footprint": 100.0, "height": 0.32, "volume": 32.0})
+    lines = [l for l in estimate(els, "SA", lib, {})["lines"] if l["guid"] == slab["guid"]]
+    conc = sum(l["net_qty"] for l in lines if l["work_item"] == "CON-SLB")
+    blocks = sum(l["net_qty"] for l in lines if l["work_item"] == "HORDI")
+    assert 12 < conc < 14 and blocks == 100
+
+
+def test_marble_floor_priced_as_marble_not_tiles(duplex, lib):
+    els = copy.deepcopy(duplex)
+    slab = next(e for e in els if e["ifc_class"] == "IfcSlab")
+    slab["name"] = slab["type"] = "Floor:Marble flooring 30mm"
+    slab["layers"] = [{"name": "Marble", "t": 0.03}]
+    items = {l["work_item"] for l in estimate(els, "SA", lib, {})["lines"] if l["guid"] == slab["guid"]}
+    assert "FLR-MRB" in items and "FLR-TIL" not in items

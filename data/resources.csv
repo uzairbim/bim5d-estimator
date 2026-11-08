@@ -80,3 +80,6 @@ M-TBLK,Insulated thermal block 400x200x200,nr,material,1.6,1,Polystyrene-filled 
 M-STONE,Natural stone cladding (supply),m2,material,35,0,
 M-RTILE,Roof tiles / pavers (supply),m2,material,12,0,
 M-PNL,Main / sub-main distribution panel (supply),nr,material,3200,0,
+M-HORDI,Hordi (hollow slab) block,nr,material,0.9,1,
+M-MARBLE,Marble / granite tiles (supply),m2,material,40,0,
+M-PAVER,Interlocking concrete pavers (supply),m2,material,9,0,

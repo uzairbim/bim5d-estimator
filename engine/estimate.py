@@ -318,7 +318,7 @@ def check_formula(text):
 
 
 # ---- the estimate --------------------------------------------------------------
-FLOOR_RECIPES = {"RC_SLAB", "SLAB_ON_GRADE", "TIMBER_FLOOR"}
+FLOOR_RECIPES = {"RC_SLAB", "SLAB_ON_GRADE", "TIMBER_FLOOR", "RIBBED_SLAB"}
 
 # Who keeps the shared volume when two elements overlap (lower number keeps it).
 # Follows normal measurement practice: slabs measured through, columns stop at the
@@ -327,7 +327,7 @@ FLOOR_RECIPES = {"RC_SLAB", "SLAB_ON_GRADE", "TIMBER_FLOOR"}
 OVERLAP_PRIORITY = {
     "STEEL_MEMBER": -1, "STEEL_PLATE": -1,
     "RC_PILE": 0, "RC_FOOTING": 0,
-    "SLAB_ON_GRADE": 1, "RC_SLAB": 1, "ROOF_RC": 1, "TIMBER_FLOOR": 1, "ROOF_LIGHT": 1,
+    "SLAB_ON_GRADE": 1, "RC_SLAB": 1, "RIBBED_SLAB": 1, "ROOF_RC": 1, "TIMBER_FLOOR": 1, "ROOF_LIGHT": 1,
     "RC_COLUMN": 2, "RC_BEAM": 3, "RC_WALL": 4, "STAIR_RC": 4,
     "CAVITY_WALL": 5, "BLOCK_WALL": 5, "BRICK_WALL": 5, "DRYWALL": 6,
 }
