@@ -85,3 +85,7 @@ JOIN,Built-in joinery / cabinets (per metre run),m,FF&E,06 41 00
 SOLAR,Solar PV panel installed incl. mounting,nr,Electrical,48 14 00
 MECH-SM,Small mechanical unit (radiator / fan coil / small fan / pump),nr,Plumbing & HVAC,23 82 00
 TMB-STR,Structural timber members (sawn / glulam / LVL) incl. connectors,m3,Wood,06 10 00
+BIT-COAT,Bitumen coating to concrete in contact with soil (2 coats),m2,Concrete,07 11 13
+MAS-TBLK,Insulated thermal block wall 200 mm,m2,Masonry,04 22 00
+STONE-CLAD,Natural stone cladding to walls incl. fixings,m2,Finishes,04 42 00
+ROF-TILE,Roof protection layer (tiles / pavers / gravel ballast),m2,Roofing,07 55 00

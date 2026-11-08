@@ -96,3 +96,5 @@ priority,ifc_class,keywords,recipe
 25,IfcBuildingElementProxy,\bbeds?\b|_bed|bench|sofa|couch|\btables?\b|table\d|chair|\bdesk|stool|ottoman|bookcase|lounger|armchair|möbel|meuble|mueble|كنب|سرير|طاولة|كرسي,LOOSE_FFE
 10,IfcRamp|IfcRampFlight,,STAIR_RC
 4,IfcBeam|IfcColumn|IfcMember,lumber|timber|glulam|\blvl\b|laminated veneer|\bwood|softwood|hardwood|\bclt\b|holz|\bbois|madera|legno|houten|خشب,TIMBER_MEMBER
+12,IfcWall|IfcWallStandardCase,stone|marble|granite|limestone|travertine|naturstein|pierre|piedra|حجر|رخام|جرانيت,STONE_WALL
+11,IfcWall|IfcWallStandardCase,thermal ?block|insulated block|thermo ?block|isolated block|بلوك عازل|بلوك حراري|عازل حراري,THERMAL_BLOCK_WALL

@@ -40,6 +40,10 @@ def _like(els, ifc_class, **changes):
     ("IfcBuildingElementProxy", "Air Conditioner-Outside Unit:33x24", [], "MECH_EQUIP"),
     ("IfcBuildingElementProxy", "A_Revit_Suv_5231", [], None),
     ("IfcBuildingElementProxy", "Serena bench with three drawers", ["Birch"], "LOOSE_FFE"),
+    ("IfcWall", "Basic Wall:Ext - Riyadh stone on block 200", ["Stone", "Concrete Masonry Units"], "STONE_WALL"),
+    ("IfcWall", "Basic Wall:Thermal Block 200", ["Thermal block"], "THERMAL_BLOCK_WALL"),
+    ("IfcWall", "Basic Wall:بلوك عازل 20 سم", [], "THERMAL_BLOCK_WALL"),
+    ("IfcWall", "Basic Wall:Block 200", ["Concrete Masonry Units"], "BLOCK_WALL"),
 ])
 def test_real_names_are_priced_sensibly(lib, cls, name, materials, recipe):
     el = {"ifc_class": cls, "kind": cls, "name": name, "type": name, "predefined": "",

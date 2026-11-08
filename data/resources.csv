@@ -75,3 +75,7 @@ M-TERM,Anti-termite chemical (per m2 treated),m2,material,1.5,0,
 M-JOIN,Built-in cabinet / joinery (supply per metre),m,material,300,0,
 M-PV,Solar PV panel with mounting (supply),nr,material,180,0,
 M-MECH-S,Small mechanical unit (supply),nr,material,350,0,
+M-BIT,Bitumen coating,litre,material,3,0,
+M-TBLK,Insulated thermal block 400x200x200,nr,material,1.6,1,Polystyrene-filled hollow block (energy code walls)
+M-STONE,Natural stone cladding (supply),m2,material,35,0,
+M-RTILE,Roof tiles / pavers (supply),m2,material,12,0,

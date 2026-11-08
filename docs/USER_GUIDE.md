@@ -154,7 +154,7 @@ The tool adds the quantities an estimator derives from the model:
 **Wall and ceiling finishes from** (project settings): *Automatic* uses rooms when the model has them,
 otherwise both faces of walls. Choose *Walls* if your rooms are incomplete.
 
-**Commonly forgotten items** (summary) lists 23 items with their status: priced, allowance, missing or
+**Commonly forgotten items** (summary) lists 28 items (including bitumen coating to foundations, wall insulation for the energy code, water tanks, sewer connection and boundary wall) with their status: priced, allowance, missing or
 "normally in preliminaries". Click **Add x%** to cover a missing one with an allowance.
 
 **Items measured by hand**: add anything not in the model (boundary wall, external works, temporary
