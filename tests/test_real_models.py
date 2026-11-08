@@ -309,3 +309,76 @@ def test_crossing_beams_are_not_called_duplicates(lib):
         e["overlaps"] = found.get(e["guid"], [])
     est = estimate(els["elements"], "SA", lib, {})
     assert est["checks"]["overlaps"] and not est["checks"]["duplicates"]
+
+
+# ---- independent verification against hand calculations (docs/VERIFICATION.md) -------------
+@pytest.fixture(scope="module")
+def villa(lib):
+    from engine import overlaps
+    d = extract(str(SAMPLES / "Saudi_Villa_Example.ifc"))
+    found, _ = overlaps.find(d["elements"], d["meshes"])
+    for e in d["elements"]:
+        e["overlaps"] = found.get(e["guid"], [])
+    return d, estimate(d["elements"], "SA", lib, {})
+
+
+def _net(est, wi):
+    return sum(l["net_qty"] for l in est["lines"] if l["work_item"] == wi)
+
+
+def test_concrete_equals_the_exact_union_of_the_solids(villa):
+    """Every overlap (column in tie beam, beams crossing) is counted once: the priced concrete equals
+    the boolean union of all concrete solids (plus the hordi ribs and 70 mm topping)."""
+    import manifold3d as m3
+    import numpy as np
+    d, est = villa
+    rec = {g: p["recipe"] for g, p in est["per_element"].items()}
+    solids = [m3.Manifold(m3.Mesh(vert_properties=np.asarray(d["meshes"][e["guid"]][0], np.float32),
+                                  tri_verts=np.asarray(d["meshes"][e["guid"]][1], np.uint32).reshape(-1, 3)))
+              for e in d["elements"]
+              if rec.get(e["guid"]) in ("RC_FOOTING", "SLAB_ON_GRADE", "RC_SLAB", "RC_COLUMN", "STAIR_RC")]
+    union = m3.Manifold.batch_boolean(solids, m3.OpType.Add).volume()
+    hordi = 144 * (0.07 + 0.25 * 0.23)          # 12 x 12 m, 320 mm: topping + ribs at 23% of the rest
+    conc = sum(_net(est, w) for w in ("CON-FTG", "CON-SOG", "CON-SLB", "CON-COL", "CON-STR", "CON-BEM"))
+    assert conc == pytest.approx(union + hordi, rel=0.01)
+
+
+def test_hand_calculated_quantities(villa):
+    d, est = villa
+    # 16 windows 1.5 x 1.5 and one door 0.9 x 2.1
+    assert _net(est, "WIN") == pytest.approx(16 * 1.5 * 1.5, rel=0.01)
+    # lintels: opening width + 2 x 150 mm bearing
+    assert _net(est, "LINTEL") == pytest.approx(16 * 1.8 + 1.2, rel=0.01)
+    # marble on half of each floor: 2 x 11.6 x 5.6
+    assert _net(est, "FLR-MRB") == pytest.approx(2 * 11.6 * 5.6, rel=0.01)
+    # slab soffits: first floor + hordi roof (12 x 12 each); stair soffit 3 x 1.2 x 1.2
+    assert _net(est, "FRM-SLB") == pytest.approx(288 + 3 * 1.2 * 1.2, rel=0.01)
+    # thermal block: 8 walls 12 x 3.3 less 2 windows each (and the door), less column zones; parapets 4 x 12 x 1.2
+    walls = 8 * 12 * 3.3 - 16 * 2.25 - 0.9 * 2.1
+    assert _net(est, "MAS-TBLK") == pytest.approx(walls + 4 * 12 * 1.2 - 8 * 3 * 0.3 * 3.3, rel=0.03)
+    # roof waterproofing: roof area + 300 mm upstand on the perimeter
+    assert _net(est, "ROF-WP") == pytest.approx(144 + 48 * 0.3, rel=0.01)
+    # footings 9 x 2 x 2 x 0.6 plus tie beams 6 x 12 x 0.3 x 0.6, junctions counted once
+    assert _net(est, "CON-FTG") == pytest.approx(21.6 + 12.96, rel=0.03)
+    # excavation from ground level to the underside (+50 mm blinding), 300 mm working space each side:
+    # 9 pads 2 x 2 at 2.10 m deep, 6 tie beams 12 x 0.3 at 0.60 m deep
+    pad = (4 + 8 * 0.3 + 0.36) * (2.1 + 0.05)
+    beam = (3.6 + 24.6 * 0.3 + 0.36) * (0.6 + 0.05)
+    assert _net(est, "EARTH-EXC") == pytest.approx(9 * pad + 6 * beam, rel=0.02)
+    # floor area: two floors of 12 x 12, roof not counted
+    assert est["summary"]["gfa"] == pytest.approx(288, abs=0.5)
+
+
+def test_room_finishes_match_hand_calculation(villa):
+    d, est = villa
+    room = {e["name"]: e["guid"] for e in d["elements"] if e["ifc_class"] == "IfcSpace"}
+    q = lambda name, wi: sum(l["net_qty"] for l in est["lines"] if l["guid"] == room[name] and l["work_item"] == wi)
+    # majlis 5.8 x 5.8 x 3.0 with two windows 1.5 x 1.5 and the 0.9 x 2.1 entrance door
+    assert q("1 مجلس رجال", "PNT") == pytest.approx(23.2 * 3.0 - 2 * 2.25 - 0.9 * 2.1, abs=0.05)
+    assert q("1 مجلس رجال", "FLR-SKRT") == pytest.approx(23.2 - 0.9, abs=0.05)
+    assert q("1 مجلس رجال", "CLG-PNT") == pytest.approx(5.8 * 5.8, abs=0.05)
+    # bathroom 2.8 x 2.8: full-height wall tiles less one window, waterproofing with 300 mm upturn
+    assert q("4 حمام", "WAL-TILE") == pytest.approx(11.2 * 3.0 - 2.25, abs=0.05)
+    assert q("4 حمام", "WPF-WET") == pytest.approx(7.84 + 11.2 * 0.3, abs=0.05)
+    # kitchen splashback 600 mm on 40% of the perimeter, taken off the paint
+    assert q("2 مطبخ", "WAL-TILE") == pytest.approx(23.2 * 0.4 * 0.6, abs=0.05)

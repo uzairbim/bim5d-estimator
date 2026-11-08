@@ -290,3 +290,7 @@ EXT-PAV,M-SND,0.05,sand bed and joints
 EXT-PAV,L-SKL,0.2,
 EXT-PAV,L-UNS,0.35,
 EXT-PAV,P-COMP,0.05,
+CLG-PLS,M-CEM,0.1,
+CLG-PLS,M-SND,0.015,
+CLG-PLS,L-SKL,0.55,overhead work is slower
+CLG-PLS,L-UNS,0.45,

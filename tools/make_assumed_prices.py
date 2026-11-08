@@ -15,8 +15,8 @@ SOURCE = f"ASSUMED indicative market price {DATE} - verify"
 SA = {
     "L-SKL": 22, "L-UNS": 14,
     "P-EXC": 220, "P-TRUCK": 150, "P-PUMP": 450, "P-VIB": 15, "P-PILE": 1500, "P-CRANE": 450, "P-COMP": 40,
-    "M-RMC": 270, "M-CEM": 15, "M-SND": 45, "M-AGG": 60, "M-RBR": 2900, "M-WIRE": 6, "M-MESH": 12,
-    "M-PE": 2, "M-PLY": 40, "M-TMB": 1800, "M-BLK": 3.0, "M-BRK": 1.5, "M-INS": 25, "M-GYP": 18,
+    "M-RMC": 230, "M-CEM": 15, "M-SND": 45, "M-AGG": 60, "M-RBR": 3300, "M-WIRE": 6, "M-MESH": 12,
+    "M-PE": 2, "M-PLY": 40, "M-TMB": 1800, "M-BLK": 2.5, "M-BRK": 1.5, "M-INS": 25, "M-GYP": 18,
     "M-STUD": 8, "M-PNT": 14, "M-PRM": 12, "M-EPNT": 22, "M-SPNT": 35, "M-TILE": 55, "M-WTILE": 45,
     "M-ADH": 1.2, "M-GRT": 5, "M-WOOD": 140, "M-CLGSYS": 25, "M-WPM": 35, "M-WPC": 30, "M-STL": 7500,
     "M-RAIL": 350, "M-CLAD": 350, "M-DOOR": 1500, "M-WIN": 750, "M-CWP": 750, "M-CWM": 140,
@@ -26,7 +26,7 @@ SA = {
     "M-APPL": 2500, "M-PNL": 12000, "M-CTRL": 500, "M-GEN": 800, "M-LINT": 45, "M-SILL": 120, "M-SEAL": 18,
     "M-SKRT": 25, "M-HRD": 35, "M-PINS": 20, "M-DINS": 35, "M-TERM": 5,
     "M-JOIN": 1100, "M-PV": 650, "M-MECH-S": 1500,
-    "M-BIT": 6, "M-TBLK": 6.5, "M-STONE": 130, "M-RTILE": 35, "M-HORDI": 3.5, "M-MARBLE": 160, "M-PAVER": 32,
+    "M-BIT": 6, "M-TBLK": 4.5, "M-STONE": 130, "M-RTILE": 35, "M-HORDI": 3.5, "M-MARBLE": 160, "M-PAVER": 32,
 }
 
 # UAE (AED): close to Saudi levels, slightly higher.

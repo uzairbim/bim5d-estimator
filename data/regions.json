@@ -34,9 +34,9 @@
     "profit_pct": 10,
     "contingency_pct": 5,
     "benchmark": {
-      "label": "Standard villa, whole building (2026 press reports)",
-      "low": 4100,
-      "high": 4800,
+      "label": "Mid-range villa, whole building turnkey incl. MEP (Saudi contractor guides 2026)",
+      "low": 2200,
+      "high": 3300,
       "unit": "m2 GFA"
     },
     "prelims_pct": 10,

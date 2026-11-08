@@ -154,6 +154,21 @@ def _roof_twins(elements, recipes):
     return twins
 
 
+def _dig_depth(el, q, ground_tops):
+    """Excavation depth for a footing or ground beam: from ground level (top of the ground slab
+    above it, else level 0.00) down to its underside. A footing 2 m below ground is dug 2 m,
+    not just its own 600 mm. At least the element's own height; at most 6 m (deeper digs are a
+    basement excavation, priced separately)."""
+    h = q.get("height") or 0.0
+    b = el.get("bbox")
+    if not b:
+        return h
+    top, bottom = b[5], b[2]
+    above = [g for g in ground_tops if g >= top - 0.05]
+    ground = min(above) if above else max(0.0, top)
+    return min(max(h, ground - bottom), 6.0)
+
+
 def _under_a_roof(el, roofs):
     """A slab with a modelled roof (pitched roof, roof deck) above it is a ceiling, not the roof."""
     b = el.get("bbox")
@@ -223,7 +238,7 @@ def layers_of(el):
     return el.get("layers") or [{"name": m, "t": 0.0} for m in el.get("materials") or []]
 
 
-EXTERNAL_NAME = re.compile(r"\bext\b|\bext[ .:_-]|exterior|external|outer|fa[cç]ade|aussen|außen|خارجي|خارجية", re.I)
+EXTERNAL_NAME = re.compile(r"\bext\b|\bext[ .:_-]|exterior|external|outer|fa[cç]ade|parapet|aussen|außen|attika|خارجي|خارجية|دروة|حاجز السطح", re.I)
 
 
 def is_external(el):
@@ -626,6 +641,8 @@ def _env(el, give, rule, ctx):
     q["finish2"] = 2 * side + 2 * small_f + mid_f      # both faces (IS 1200: mid openings one face)
     # context flags
     q["ext"] = 1.0 if is_external(el) else 0.0
+    q["is_beam"] = 1.0 if el["ifc_class"] == "IfcBeam" else 0.0
+    q["dig"] = _dig_depth(el, q, ctx.get("ground_tops", ()))
     q["is_roof"] = 1.0 if (el["ifc_class"] == "IfcSlab" and (el.get("predefined") == "ROOF"
                                                               or el.get("level") in ctx.get("roof_levels", ()))
                             and not _under_a_roof(el, ctx.get("roofs", ()))
@@ -695,6 +712,7 @@ def estimate(elements, region, lib=None, settings=None):
                 recipes[e["guid"]] = None
     ctx = {"rooms_on": rooms_on, "recipes": recipes, "by_guid": {e["guid"]: e for e in elements},
            "roof_levels": roof_levels(elements, recipes),
+           "ground_tops": sorted(e["bbox"][5] for e in elements if e.get("bbox") and recipes.get(e["guid"]) == "SLAB_ON_GRADE"),
            "roofs": [e["bbox"] for e in elements if e.get("bbox") and recipes.get(e["guid"]) in ("ROOF_RC", "ROOF_LIGHT")],
            "roof_twins": _roof_twins(elements, recipes),
            "lintels": 1.0 if "LINTEL_ELEMENT" in set(recipes.values()) else 0.0}

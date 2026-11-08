@@ -6,7 +6,7 @@ M-ADH,1.2,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-AGG,60,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-APPL,2500,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-BIT,6,ASSUMED indicative market price 2026-11 - verify,2026-11
-M-BLK,3.0,ASSUMED indicative market price 2026-11 - verify,2026-11
+M-BLK,2.5,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-BRK,1.5,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-CBL,8,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-CEM,15,ASSUMED indicative market price 2026-11 - verify,2026-11
@@ -49,8 +49,8 @@ M-PNT,14,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-PRM,12,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-PV,650,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-RAIL,350,ASSUMED indicative market price 2026-11 - verify,2026-11
-M-RBR,2900,ASSUMED indicative market price 2026-11 - verify,2026-11
-M-RMC,270,ASSUMED indicative market price 2026-11 - verify,2026-11
+M-RBR,3300,ASSUMED indicative market price 2026-11 - verify,2026-11
+M-RMC,230,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-RTILE,35,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-SAN,1500,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-SEAL,18,ASSUMED indicative market price 2026-11 - verify,2026-11
@@ -63,7 +63,7 @@ M-STAIR,7000,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-STL,7500,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-STONE,130,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-STUD,8,ASSUMED indicative market price 2026-11 - verify,2026-11
-M-TBLK,6.5,ASSUMED indicative market price 2026-11 - verify,2026-11
+M-TBLK,4.5,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-TERM,5,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-TFIT,35,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-TILE,55,ASSUMED indicative market price 2026-11 - verify,2026-11
