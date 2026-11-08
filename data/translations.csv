@@ -239,3 +239,87 @@ nrm1,5.6 Space heating and air conditioning,5.6 التدفئة والتكييف
 nrm1,5.7 Ventilation,5.7 التهوية
 nrm1,5.8 Electrical installations,5.8 التمديدات الكهربائية
 nrm1,8 External works,8 الأعمال الخارجية
+resource,L-SKL,عامل فني ماهر (بنّاء / نجار / فني / كهربائي)
+resource,L-UNS,عامل عادي / مساعد
+resource,P-EXC,حفّار مع المشغّل
+resource,P-TRUCK,قلاب مع السائق
+resource,P-PUMP,مضخة خرسانة مع المشغّل
+resource,P-VIB,هزاز خرسانة
+resource,P-PILE,معدة خوازيق مع الطاقم
+resource,P-CRANE,رافعة متحركة / برجية
+resource,P-COMP,دكاكة
+resource,M-RMC,خرسانة جاهزة C25/30 موردة
+resource,M-CEM,إسمنت (كيس 50 كجم)
+resource,M-SND,رمل
+resource,M-AGG,بحص / حصى مكسّر
+resource,M-RBR,حديد تسليح
+resource,M-WIRE,سلك رباط
+resource,M-MESH,شبك حديد ملحوم
+resource,M-PE,نايلون بولي إيثيلين
+resource,M-PLY,خشب أبلكاش للشدات (سعر م² جديد)
+resource,M-TMB,خشب منشور
+resource,M-BLK,بلوك خرساني 40×20×20
+resource,M-BRK,طوب
+resource,M-INS,ألواح عزل
+resource,M-GYP,ألواح جبس
+resource,M-STUD,قطاعات معدنية للجبس
+resource,M-PNT,دهان بلاستيك (إيمولشن)
+resource,M-PRM,برايمر / سيلر
+resource,M-EPNT,دهان خارجي
+resource,M-SPNT,دهان حماية للحديد
+resource,M-TILE,بلاط أرضيات (توريد)
+resource,M-WTILE,بلاط جدران (توريد)
+resource,M-ADH,لاصق بلاط
+resource,M-GRT,روبة بلاط
+resource,M-WOOD,أرضيات خشبية (توريد)
+resource,M-CLGSYS,هيكل وتعليقات السقف المستعار
+resource,M-WPM,ممبرين عزل الأسطح
+resource,M-WPC,عزل مائي للمناطق الرطبة (سائل / أسمنتي)
+resource,M-STL,حديد إنشائي مصنّع
+resource,M-RAIL,درابزين (توريد)
+resource,M-CLAD,ألواح تكسية (توريد)
+resource,M-DOOR,باب كامل بالحلق والإكسسوارات (توريد)
+resource,M-WIN,نافذة (توريد)
+resource,M-CWP,ألواح زجاج الواجهات (توريد)
+resource,M-CWM,قطاعات الواجهات الزجاجية (توريد)
+resource,M-STAIR,سلم جاهز (توريد)
+resource,M-LIFT,مصعد ركاب (توريد)
+resource,M-FFE,قطعة أثاث / تجهيز (توريد)
+resource,M-PIPE-S,مواسير حتى 50 مم شاملة الحوامل
+resource,M-PIPE-M,مواسير 65–150 مم شاملة الحوامل
+resource,M-PIPE-L,مواسير أكبر من 150 مم شاملة الحوامل
+resource,M-PFIT,قطعة وصل مواسير
+resource,M-VALVE,محبس
+resource,M-SAN,أداة صحية مع ملحقاتها
+resource,M-SPRK,رشاش حريق
+resource,M-GALV,صاج مجلفن لمجاري الهواء
+resource,M-DIFF,ناشر / جريل
+resource,M-MECH,معدة ميكانيكية (متوسط)
+resource,M-TRAY,حامل كابلات / ماسورة كهرباء
+resource,M-TFIT,قطعة وصل حامل كابلات
+resource,M-CBL,كابل (متوسط)
+resource,M-LUM,وحدة إنارة
+resource,M-ACC,فيش / مفتاح مع العلبة
+resource,M-DB,لوحة توزيع / جهاز حماية
+resource,M-APPL,جهاز منزلي
+resource,M-CTRL,جهاز تحكم / حساس
+resource,M-GEN,بند منمذج عام
+resource,M-LINT,عتب جاهز
+resource,M-SILL,جلسة نافذة
+resource,M-SEAL,سيليكون (أنبوبة 310 مل)
+resource,M-SKRT,وزرة
+resource,M-HRD,مواد أرضيات مقساة / إيبوكسي
+resource,M-PINS,عزل مواسير
+resource,M-DINS,عزل مجاري هواء
+resource,M-TERM,مبيد نمل أبيض (لكل م² معالج)
+resource,M-JOIN,خزائن / نجارة مثبتة (توريد بالمتر)
+resource,M-PV,لوح طاقة شمسية مع التثبيت (توريد)
+resource,M-MECH-S,وحدة ميكانيكية صغيرة (توريد)
+resource,M-BIT,دهان بيتومين
+resource,M-TBLK,بلوك عازل حراري 40×20×20
+resource,M-STONE,حجر طبيعي للتكسية (توريد)
+resource,M-RTILE,بلاط سطح (توريد)
+resource,M-PNL,لوحة توزيع رئيسية / فرعية (توريد)
+resource,M-HORDI,بلوك هوردي
+resource,M-MARBLE,رخام / جرانيت (توريد)
+resource,M-PAVER,بلاط انترلوك (توريد)

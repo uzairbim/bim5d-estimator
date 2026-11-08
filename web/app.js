@@ -540,7 +540,7 @@ function renderBoq() {
     const kindTag = (k) => k === "yours" ? `<span class="tag added">${t("your price")}</span>` : k === "assumed" ? `<span class="tag changed">${t("assumed")}</span>` : `<span class="tag">${t("estimated")}</span>`;
     $("#tab-boq").innerHTML = seg + `<p class="muted">Total labour, materials and plant behind the rates: for ordering, planning and seeing which prices matter most. "+10%" shows what a 10% price rise of that resource adds.</p>
       <table><thead><tr><th>Resource</th><th class="n">Quantity</th><th class="n">Cost</th><th class="n">Share</th><th class="n">+10%</th></tr></thead><tbody>
-      ${e.resources.map((r) => `<tr><td>${esc(r.name)} ${kindTag(r.kind)}</td><td class="n">${fmt(r.qty, r.qty < 100 ? 1 : 0)} ${esc(r.unit)}</td><td class="n">${fmt(r.cost)}</td><td class="n">${(r.share * 100).toFixed(1)}%</td><td class="n">${fmt(r.cost * 0.1)}</td></tr>`).join("")}
+      ${e.resources.map((r) => `<tr><td><span dir="auto">${esc(tx("resource", r.resource, r.name))}</span> ${kindTag(r.kind)}</td><td class="n">${fmt(r.qty, r.qty < 100 ? 1 : 0)} ${esc(r.unit)}</td><td class="n">${fmt(r.cost)}</td><td class="n">${(r.share * 100).toFixed(1)}%</td><td class="n">${fmt(r.cost * 0.1)}</td></tr>`).join("")}
       </tbody></table>`;
     $$("#boqSeg button").forEach((b) => b.addEventListener("click", () => { S.boqView = b.dataset.v; renderBoq(); }));
     return;
@@ -851,11 +851,11 @@ function drawPrices() {
     (tb.rows.some((x) => x.kind === "assumed") ? ` <span class="tag changed">${t("assumed")}</span> = indicative market level (late 2026), not a quotation. Prices change daily: type over them with today's prices.` : "");
   let group = null, html = `<table><thead><tr><th>${t("Resource")}</th><th>${t("Unit")}</th><th class="n">${t("Estimated")} (${cur})</th><th class="n">${t("Your price")} (${cur})</th><th>${t("Source / supplier")}</th><th>${t("Date")}</th></tr></thead><tbody>`;
   for (const r of tb.rows) {
-    if (q && !(r.resource + " " + r.name).toLowerCase().includes(q)) continue;
+    if (q && !(r.resource + " " + r.name + " " + tx("resource", r.resource, "")).toLowerCase().includes(q)) continue;
     const g = r.key ? t("Key prices (enter these first)") : { labour: t("Labour"), material: t("Materials"), plant: t("Plant / equipment") }[r.type];
     if (g !== group) { group = g; html += `<tr><td colspan="6"><b>${esc(g)}</b></td></tr>`; }
     const kindTag = r.kind === "yours" ? `<span class="tag added">${t("your price")}</span>` : r.kind === "assumed" ? `<span class="tag changed">${t("assumed")}</span>` : `<span class="tag">${t("estimated")}</span>`;
-    html += `<tr data-res="${r.resource}" class="${r.kind === "yours" ? "local" : ""}"><td>${esc(r.name)} ${kindTag}<br><span class="tag">${r.resource}</span></td><td>${esc(r.unit)}</td>
+    html += `<tr data-res="${r.resource}" class="${r.kind === "yours" ? "local" : ""}"><td><span dir="auto">${esc(tx("resource", r.resource, r.name))}</span> ${kindTag}<br><span class="tag">${r.resource}</span></td><td>${esc(r.unit)}</td>
       <td class="n muted">${fmt(r.estimated, 2)}</td>
       <td class="n"><input type="number" step="any" min="0" data-f="price" value="${r.price ?? ""}" placeholder="${fmt(r.estimated, 2)}"></td>
       <td><input type="text" data-f="source" value="${esc(r.source)}" placeholder="${t("e.g. supplier quote")}"></td>
@@ -881,10 +881,10 @@ function drawRates() {
   $("#rdHelp").innerHTML = t("Each rate is built up from resources. Click a row to see how. Type a fixed rate only if you have a quote for the whole item; it replaces the build-up.");
   let trade = null, html = `<table><thead><tr><th>${t("Work item")}</th><th>${t("Unit")}</th><th class="n">${t("Built-up rate")} (${cur})</th><th class="n">${t("Your prices")}</th><th class="n">${t("Fixed rate")} (${cur})</th><th>${t("Source")}</th></tr></thead><tbody>`;
   for (const r of tb.rows) {
-    if (q && !(r.work_item + " " + r.description + " " + r.trade).toLowerCase().includes(q)) continue;
+    if (q && !(r.work_item + " " + r.description + " " + r.trade + " " + tx("work_item", r.work_item, "")).toLowerCase().includes(q)) continue;
     if (r.trade !== trade) { trade = r.trade; html += `<tr><td colspan="6"><b>${esc(trade)}</b></td></tr>`; }
     const fixed = r.local ? r.local[0] + r.local[1] + r.local[2] : "";
-    html += `<tr data-wi="${r.work_item}" class="click ${r.local ? "local" : ""}"><td>${esc(r.description)}<br><span class="tag">${r.work_item}</span></td><td>${r.unit}</td>
+    html += `<tr data-wi="${r.work_item}" class="click ${r.local ? "local" : ""}"><td><span dir="auto">${esc(tx("work_item", r.work_item, r.description))}</span><br><span class="tag">${r.work_item}</span></td><td>${r.unit}</td>
       <td class="n">${fmt(r.base[0] + r.base[1] + r.base[2], 2)}<br><span class="muted small">M ${fmt(r.base[0])} · L ${fmt(r.base[1])} · P ${fmt(r.base[2])}</span></td>
       <td class="n"><span class="tag ${r.local_share > 0.99 ? "added" : r.local_share > 0 ? "changed" : ""}">${Math.round(r.local_share * 100)}%</span></td>
       <td class="n"><input type="number" step="any" min="0" data-f="fixed" value="${fixed}" placeholder="—"></td>
