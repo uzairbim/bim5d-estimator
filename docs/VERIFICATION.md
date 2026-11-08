@@ -33,6 +33,34 @@ was dug 0.75 m), column formwork ran through the slab (now to the soffit), tie b
 footing rebar ratio, parapets were plastered both sides instead of rendered outside, and ceilings had
 no plaster.
 
+## 1b. MEP against hand calculation
+
+`tools/make_mep_check.py` builds pipes and ducts of known size running straight, at 45° in plan, sloped
+(drainage) and vertical (riser):
+
+| Element | Hand | Tool |
+|---|---|---|
+| DN50 pipe 10 m at 45° | 10 m of pipe up to DN50 | 10.0 m, small pipe (was 7.1 m of *large* pipe) |
+| DN100 drain 12 m at 2% fall | 12 m of DN65–150 pipe | 12.0 m, medium pipe (was large pipe) |
+| DN200 chilled water riser 9 m | 9 m large pipe + 9 m insulation | 9.0 m + 9.0 m insulation |
+| Duct 600 × 400, 8 m (straight and diagonal) | 2 × (0.6 + 0.4) × 8 = 16 m² | 16.5 m² (incl. end caps) |
+| Insulation | supply air and chilled water only | supply duct and chilled pipe insulated; exhaust and cold water not |
+
+## 1c. Classification of typical Revit families
+
+Test matrices (`tests/test_real_models.py`) check how typical Revit wall, floor, beam, column and MEP family
+names are priced: 20 wall types (block, Concrete Masonry Units, RC with gypsum plaster, RC or thermal
+block with stone cladding, gypsum partitions, foundation walls, Arabic names), floors with finish layers
+("RC 200 + screed + porcelain" prices the 200 mm concrete and the tiles), timber joist floors, HSS steel,
+and 34 MEP families (split AC, drains, fire extinguisher and hose reel cabinets, fire alarm devices,
+CCTV, data outlets, manholes, generators, transformers by size, water meters). Errors these found and
+fixed are in the change history.
+
+## 1d. Excel workbook
+
+Every workbook of 11 models, in English and Arabic (22 files, 15–16 sheets each), was recalculated in
+LibreOffice and scanned: **0 error cells**. The Priced BOQ grand total equals the estimate total.
+
 ## 2. Real Revit models
 
 Eight public Revit exports (Revit 2010–2021: Autodesk sample projects, an office in architecture,
