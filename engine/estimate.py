@@ -649,6 +649,7 @@ def _env(el, give, rule, ctx):
                             and el["guid"] not in ctx.get("roof_twins", ())) else 0.0
     q["rooms_on"] = ctx["rooms_on"]
     q["lintels_modeled"] = ctx.get("lintels", 0.0)
+    q["plates_modeled"] = ctx.get("plates", 0.0)
     host = ctx["by_guid"].get(el.get("host") or "")
     if host is not None:
         q["host_masonry"] = 1.0 if ctx["recipes"].get(host["guid"]) in MASONRY else 0.0
@@ -715,7 +716,9 @@ def estimate(elements, region, lib=None, settings=None):
            "ground_tops": sorted(e["bbox"][5] for e in elements if e.get("bbox") and recipes.get(e["guid"]) == "SLAB_ON_GRADE"),
            "roofs": [e["bbox"] for e in elements if e.get("bbox") and recipes.get(e["guid"]) in ("ROOF_RC", "ROOF_LIGHT")],
            "roof_twins": _roof_twins(elements, recipes),
-           "lintels": 1.0 if "LINTEL_ELEMENT" in set(recipes.values()) else 0.0}
+           "lintels": 1.0 if "LINTEL_ELEMENT" in set(recipes.values()) else 0.0,
+           # connection plates in the model: no extra allowance on member weight
+           "plates": 1.0 if "STEEL_PLATE" in set(recipes.values()) else 0.0}
 
     lines, per_element, groups = [], {}, {}
     unclassified, flagged, excluded = [], [], []
@@ -1017,6 +1020,10 @@ def estimate(elements, region, lib=None, settings=None):
         assumptions.append(f"Combined discipline models: {', '.join(models)}. "
                            + (f"{n_two} elements drawn in two models are counted once (structure model kept). " if n_two else "")
                            + "Overlaps are deducted within each model, not between models.")
+    if any(r == "STEEL_MEMBER" for r in recipes.values()):
+        assumptions.append("Structural steel weight = member volume x 7,850 kg/m3"
+                           + (" (connection plates as modelled)." if ctx.get("plates") else
+                              " + 10% for connections (plates, bolts, cleats) not in the model."))
     n_existing = sum(1 for e in elements if e["ifc_class"] != "IfcSpace" and is_existing(e)
                      and not (mappings and mappings.get(group_key(e))))
     if n_existing:

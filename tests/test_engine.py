@@ -224,7 +224,7 @@ def test_steel_keeps_weight_concrete_is_reduced(lib):
     slab = _el("s", "IfcSlab", "Slab", {"volume": 10.0, "footprint": 50}, [("b", 0.005)])
     est = estimate([beam, slab], "US", lib)
     q = {l["work_item"]: l["net_qty"] for l in est["lines"]}
-    assert q["STL-STR"] == pytest.approx(78.5)          # full steel weight
+    assert q["STL-STR"] == pytest.approx(78.5 * 1.1)    # full steel weight + 10% connections (no plates modelled)
     assert q["CON-SLB"] == pytest.approx(9.995)
 
 

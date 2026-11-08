@@ -69,7 +69,7 @@ STAIR_RC,FRM-SLB,footprint*1.2,0,
 STAIR_RC,RBR,volume*110,5,rebar_ratio
 STAIR_RC,FLR-TIL,footprint*1.6,7,
 REBAR_MODELED,RBR,volume*7850,3,rebar_modeled
-STEEL_MEMBER,STL-STR,volume*7850,5,
+STEEL_MEMBER,STL-STR,volume*7850*(1+0.1*(1-plates_modeled)),5,
 STEEL_MEMBER,STL-PNT,surface,5,
 STEEL_PLATE,STL-STR,volume*7850,5,
 CEILING,CLG-GYP,footprint,5,
