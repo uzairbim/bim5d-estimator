@@ -1,0 +1,150 @@
+"""Arithmetic and rules checked by hand: openings by measurement standard, rate build-up, mark-ups,
+allowances, manual items, cash flow, revision comparison, rate packs."""
+import copy
+from pathlib import Path
+
+import pytest
+
+from engine.compare import compare
+from engine.estimate import Library, estimate
+from engine.extract import extract
+from engine.schedule import build
+
+SAMPLES = Path(__file__).resolve().parent.parent / "samples"
+
+
+@pytest.fixture(scope="module")
+def lib():
+    return Library()
+
+
+def _wall(openings):
+    """A 10 x 3 m block wall, 200 mm, internal, with the given openings [area, w, h, kind]."""
+    return {"guid": "w", "ifc_class": "IfcWall", "kind": "IfcWall", "name": "Basic Wall:Block 200",
+            "type": "Basic Wall:Block 200", "predefined": "", "materials": ["Concrete Block"], "layers": [],
+            "classification": [], "props": {}, "level": "L1", "level_elev": 0.0, "external": False,
+            "openings": openings, "bbox": [0, 0, 0, 10, 0.2, 3],
+            "qty": {"count": 1, "volume": 6 - 0.2 * sum(o[0] for o in openings), "side": 30 - sum(o[0] for o in openings),
+                    "area": 30, "footprint": 2, "height": 3, "length": 10, "width": 0.2, "perimeter": 20.4,
+                    "surface": 60, "section": 3, "check": 0}}
+
+
+def _q(est, wi):
+    return sum(l["net_qty"] for l in est["lines"] if l["work_item"] == wi)
+
+
+# openings: one of 0.3 m2 (small), one of 1.5 m2 (medium), one of 4 m2 (large)
+OPENINGS = [[0.3, 0.5, 0.6, "void"], [1.5, 1.0, 1.5, "window"], [4.0, 2.0, 2.0, "door"]]
+
+
+@pytest.mark.parametrize("standard,masonry,plaster", [
+    # NRM2 / POMI: openings up to 0.5 m2 not deducted, from masonry or finishes (each face)
+    ("NRM2", 30 - 1.5 - 4.0, 2 * (30 - 1.5 - 4.0)),
+    ("POMI", 30 - 1.5 - 4.0, 2 * (30 - 1.5 - 4.0)),
+    # IS 1200: masonry deducts above 0.1 m2; plaster: up to 0.5 none, 0.5-3 one face, above 3 both faces
+    ("IS1200", 30 - 0.3 - 1.5 - 4.0, 2 * 30 - 1.5 - 2 * 4.0),
+    # exact: everything deducted
+    ("EXACT", 30 - 0.3 - 1.5 - 4.0, 2 * (30 - 0.3 - 1.5 - 4.0)),
+])
+def test_openings_by_measurement_standard(lib, standard, masonry, plaster):
+    est = estimate([_wall(OPENINGS)], "SA", lib, {"standard": standard, "finishes_from": "walls"})
+    assert _q(est, "MAS-BLK") == pytest.approx(masonry, abs=0.01)
+    assert _q(est, "PLS") == pytest.approx(plaster, abs=0.01)
+
+
+def test_rate_is_the_sum_of_norms_times_prices(lib):
+    for wi in ("MAS-BLK", "CON-SLB", "PLS", "RBR", "FLR-TIL", "ROF-WP"):
+        d = lib.rate_detail("SA", wi)
+        total = d["material"] + d["labour"] + d["equipment"]
+        by_hand = sum(float(n["qty"]) * lib.resource_price("SA", n["resource"])[0]
+                      for n in lib.norms[wi])
+        assert total == pytest.approx(by_hand, rel=1e-6), wi
+
+
+def test_your_price_and_fixed_rate_override(lib):
+    l2 = Library()
+    l2.prices.setdefault("SA", {})["M-BLK"] = {"price": 10.0, "source": "my supplier", "date": "2026-11"}
+    l2._cache.clear()
+    d = l2.rate_detail("SA", "MAS-BLK")
+    assert d["material"] == pytest.approx(lib.rate_detail("SA", "MAS-BLK")["material"]
+                                          + 12.5 * (10.0 - lib.resource_price("SA", "M-BLK")[0]), rel=1e-6)
+    l2.local_rates.setdefault("SA", {})["MAS-BLK"] = {"work_item": "MAS-BLK", "material": 50, "labour": 20,
+                                                      "equipment": 0, "source": "quote"}
+    l2._cache.clear()
+    d = l2.rate_detail("SA", "MAS-BLK")
+    assert d["material"] + d["labour"] + d["equipment"] == pytest.approx(70)
+
+
+def test_mark_up_chain_and_allowances_by_hand(lib):
+    settings = {"prelims_pct": 10, "contingency_pct": 5, "overhead_pct": 8, "profit_pct": 7, "escalation_pct": 2,
+                "tax_pct": 15, "gfa_m2": 200,
+                "allowances": [{"name": "MEP", "kind": "pct", "value": 20}, {"name": "Ext", "kind": "lump", "value": 1000},
+                               {"name": "Fit", "kind": "per_m2", "value": 10}],
+                "manual_items": [{"description": "Boundary wall", "work_item": "MAS-BLK", "qty": 100},
+                                 {"description": "Gate", "qty": 1, "unit": "nr", "rate": 5000}]}
+    est = estimate([_wall([])], "SA", lib, settings)
+    s = est["summary"]
+    measured = sum(l["amount"] for l in est["lines"])
+    assert s["direct"] == pytest.approx(measured, abs=0.05)
+    gate = [l for l in est["lines"] if l.get("description") == "Gate"]
+    assert gate and gate[0]["amount"] == pytest.approx(5000)
+    wall = [l for l in est["lines"] if l["work_item"] == "MAS-BLK" and l["recipe"] == "MANUAL"]
+    d = lib.rate_detail("SA", "MAS-BLK")
+    assert wall[0]["qty"] == pytest.approx(100)
+    assert wall[0]["amount"] == pytest.approx(100 * (d["material"] + d["labour"] + d["equipment"]), rel=1e-3)
+    allow = s["direct"] * 0.20 + 1000 + 10 * 200
+    assert s["allowances"] == pytest.approx(allow, abs=0.05)
+    c = s["direct"] + allow
+    p = c * 0.10
+    cg = (c + p) * 0.05
+    oh = (c + p + cg) * 0.08
+    pr = (c + p + cg + oh) * 0.07
+    es = (c + p + cg + oh + pr) * 0.02
+    sub = c + p + cg + oh + pr + es
+    assert s["total"] == pytest.approx(sub * 1.15, abs=0.5)
+    assert s["per_m2"] == pytest.approx(s["total"] / 200, abs=0.01)
+
+
+def test_cash_flow_adds_up_to_the_total(lib):
+    els = extract(str(SAMPLES / "Saudi_Villa_Example.ifc"), with_mesh=False)["elements"]
+    est = estimate(els, "SA", lib, {})
+    sched = build(els, est, 10)
+    rows = sched["cashflow"] if "cashflow" in sched else sched["months"]
+    assert rows[-1]["cumulative"] == pytest.approx(est["summary"]["total"], rel=0.002)
+    assert all(b["cumulative"] >= a["cumulative"] for a, b in zip(rows, rows[1:]))
+    stage = lambda g: est["per_element"][g]["stage"] if "stage" in est["per_element"][g] else None
+    # substructure starts before the roof
+    acts = sched.get("activities") or []
+    if acts:
+        first = {a["stage"]: a["start"] for a in acts}
+        assert first.get("1 Substructure", 0) <= min(v for k, v in first.items() if k != "1 Substructure")
+
+
+def test_revision_comparison_finds_the_known_changes(lib):
+    a = extract(str(SAMPLES / "Ifc2x3_Duplex_Architecture.ifc"), with_mesh=False)["elements"]
+    b = extract(str(SAMPLES / "Ifc2x3_Duplex_Architecture_Rev2.ifc"), with_mesh=False)["elements"]
+    ea, eb = estimate(a, "SA", lib, {}), estimate(b, "SA", lib, {})
+    c = compare(a, b, ea, eb)
+    removed = [r for r in c["rows"] if r["status"] == "removed"]
+    added = [r for r in c["rows"] if r["status"] == "added"]
+    kinds = sorted({next(e["ifc_class"] for e in a if e["guid"] == r["guid"]) for r in removed})
+    # Rev 2: 2 doors and 4 cabinets removed, 1 wall added, ground slab made thicker
+    assert c["counts"]["removed"] == 6 and "IfcDoor" in kinds
+    assert c["counts"]["added"] == 1 and next(e for e in b if e["guid"] == added[0]["guid"])["ifc_class"].startswith("IfcWall")
+    assert c["total_after"] - c["total_before"] == pytest.approx(eb["summary"]["total"] - ea["summary"]["total"], abs=1)
+    assert sum(t["delta"] for t in c["by_trade"]) == pytest.approx(eb["summary"]["direct"] - ea["summary"]["direct"], abs=1)
+
+
+def test_rate_pack_round_trip(tmp_path, monkeypatch):
+    from engine import regions
+    lib = Library()
+    pack = regions.export_pack("SA", "tester")
+    assert {p["resource"] for p in pack["prices"]} == set(lib.prices["SA"])
+    # importing under a new code creates the same prices
+    monkeypatch.setattr(regions, "_prices_path", lambda r: tmp_path / f"{r}.csv")
+    saved = {}
+    monkeypatch.setattr(regions, "create_region", lambda code, values=None: (code, values))
+    n = regions.save_prices("ZZ", pack["prices"], lib)
+    assert n == len(pack["prices"])
+    rows = (tmp_path / "ZZ.csv").read_text(encoding="utf-8").splitlines()
+    assert len(rows) == n + 1
