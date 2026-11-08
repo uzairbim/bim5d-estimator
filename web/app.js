@@ -495,27 +495,27 @@ async function renderChecks() {
   const name = (g) => esc(S.els[g]?.name || g);
   const methods = { 1: "rough estimate from bounding box", 3: "taken from the model's own volume" };
   const est = c.geometry_flagged.map((g) => `<tr class="click" data-g="${g}"><td>${name(g)}<br><span class="muted small">${methods[S.els[g]?.qty.check] || ""}</span></td></tr>`).join("");
-  const overl = [...c.overlaps].sort((x, y) => y.volume - x.volume).slice(0, 150).map((o) => `<tr class="click" data-pair="${o.a},${o.b}"><td>${name(o.a)}<br>${name(o.b)}</td><td class="n">${fmt(o.volume, 3)} m³</td><td class="small">${o.kind === "same type" ? '<span class="tag changed">duplicate?</span>' : ""} from <b>${esc((S.els[o.loser]?.kind || "").replace("Ifc", ""))}</b></td></tr>`).join("");
+  const overl = [...c.overlaps].sort((x, y) => y.volume - x.volume).slice(0, 150).map((o) => `<tr class="click" data-pair="${o.a},${o.b}"><td>${name(o.a)}<br>${name(o.b)}</td><td class="n">${fmt(o.volume, 3)} m³</td><td class="small">${o.kind === "same type" ? `<span class="tag changed">${t("duplicate?")}</span>` : o.kind === "in two models" ? `<span class="tag changed">${t("in two models")}</span>` : o.kind === "same room shape" ? `<span class="tag changed">${t("same room twice")}</span>` : ""} ${t("from")} <b>${esc((S.els[o.loser]?.kind || "").replace("Ifc", ""))}</b></td></tr>`).join("");
   const outl = rec.outliers.map((r) => `<tr class="click" data-g="${r.guid}"><td>${name(r.guid)}</td><td class="n">${fmt(r.measured, 3)}</td><td class="n">${fmt(r.authored, 3)}</td><td class="n ${Math.abs(r.diff_pct) > 20 ? "bad" : ""}">${r.diff_pct > 0 ? "+" : ""}${r.diff_pct}%</td></tr>`).join("");
   $("#tab-checks").innerHTML = `
-    <p class="muted">A senior estimator never trusts model quantities blindly. These checks show where the model needs a look before the estimate is issued.</p>
-    <h3>1 · Quantities vs the model's own values</h3>
-    ${rec.compared ? `<div class="callout ${rec.share >= 0.95 ? "ok" : ""}"><b>${rec.within_5pct} of ${rec.compared}</b> element volumes (${Math.round(rec.share * 100)}%) agree within 5% with the volumes Revit calculated.</div>
-      ${outl ? `<table><thead><tr><th>Element</th><th class="n">Measured m³</th><th class="n">Revit m³</th><th class="n">Diff</th></tr></thead><tbody>${outl}</tbody></table>` : ""}` : '<p class="muted">The model has no volumes of its own to compare with.</p>'}
-    <h3>2 · Overlaps (${c.overlaps.length}, ${fmt(c.overlap_m3, 2)} m³)</h3>
-    <p class="muted small">${e.settings.deduct_overlaps ? "Shared volume is deducted once, from the element that normally stops at the other (column under slab, beam below slab, wall between frame). Steel keeps its weight." : "Overlaps are NOT being deducted (see settings)."} ${c.duplicates.length ? `<b class="bad">${c.duplicates.length} overlaps are between elements of the same type, often a duplicated element.</b>` : ""}</p>
-    ${overl ? `<table><tbody>${overl}</tbody></table>` : '<p class="muted">No overlaps found.</p>'}
-    <h3>3 · Shapes that could not be measured exactly (${c.geometry_flagged.length})</h3>
-    ${est ? `<table><tbody>${est}</tbody></table>` : '<p class="muted">None.</p>'}
-    <h3>4 · Not priced (${c.unclassified.length}) and excluded (${c.excluded.length})</h3>
-    <p class="muted small">Set these in <a href="#" data-goto="mapping">Mapping</a>.</p>
-    <h3>5 · Change history</h3><div id="historyBox" class="muted small">Loading…</div>`;
+    <p class="muted">${t("A senior estimator never trusts model quantities blindly. These checks show where the model needs a look before the estimate is issued.")}</p>
+    <h3>1 · ${t("Quantities vs the model's own values")}</h3>
+    ${rec.compared ? `<div class="callout ${rec.share >= 0.95 ? "ok" : ""}">${t("{a} of {b} element volumes ({p}%) agree within 5% with the volumes Revit calculated.", { a: rec.within_5pct, b: rec.compared, p: Math.round(rec.share * 100) })}</div>
+      ${outl ? `<table><thead><tr><th>${t("Element")}</th><th class="n">${t("Measured m³")}</th><th class="n">${t("Revit m³")}</th><th class="n">${t("Diff")}</th></tr></thead><tbody>${outl}</tbody></table>` : ""}` : `<p class="muted">${t("The model has no volumes of its own to compare with.")}</p>`}
+    <h3>2 · ${t("Overlaps")} (${c.overlaps.length}, ${fmt(c.overlap_m3, 2)} m³)</h3>
+    <p class="muted small">${e.settings.deduct_overlaps ? t("Shared volume is deducted once, from the element that normally stops at the other (column under slab, beam below slab, wall between frame). Steel keeps its weight.") : t("Overlaps are NOT being deducted (see settings).")} ${c.duplicates.length ? `<b class="bad">${t("Possible duplicates: {n}. Same element twice, in one model or in two models.", { n: c.duplicates.length })}</b>` : ""}</p>
+    ${overl ? `<table><tbody>${overl}</tbody></table>` : `<p class="muted">${t("No overlaps found.")}</p>`}
+    <h3>3 · ${t("Shapes that could not be measured exactly")} (${c.geometry_flagged.length})</h3>
+    ${est ? `<table><tbody>${est}</tbody></table>` : `<p class="muted">${t("None.")}</p>`}
+    <h3>4 · ${t("Not priced")} (${c.unclassified.length}) · ${t("excluded")} (${c.excluded.length})</h3>
+    <p class="muted small"><a href="#" data-goto="mapping">${t("Open Mapping")}</a></p>
+    <h3>5 · ${t("Change history")}</h3><div id="historyBox" class="muted small">…</div>`;
   $$("tr[data-g]", $("#tab-checks")).forEach((tr) => tr.addEventListener("click", () => { viewer.fit([tr.dataset.g]); select(tr.dataset.g, false); }));
   $$("tr[data-pair]", $("#tab-checks")).forEach((tr) => tr.addEventListener("click", () => { const g = tr.dataset.pair.split(","); S.highlight = new Set(g); viewer.fit(g); paint(); }));
   $$("[data-goto]", $("#tab-checks")).forEach((x) => x.addEventListener("click", (ev) => { ev.preventDefault(); tab(x.dataset.goto); }));
   try {
     const h = await api(`/api/projects/${S.project.id}/history`);
-    $("#historyBox").innerHTML = h.length ? `<table>${h.slice(0, 60).map((r) => `<tr><td class="small">${new Date(r.time * 1000).toLocaleString(NUM_LOCALE())}</td><td class="small"><b>${esc(r.what)}</b> ${esc(r.detail)}</td></tr>`).join("")}</table>` : "No changes yet.";
+    $("#historyBox").innerHTML = h.length ? `<table>${h.slice(0, 60).map((r) => `<tr><td class="small">${new Date(r.time * 1000).toLocaleString(NUM_LOCALE())}</td><td class="small"><b>${esc(r.what)}</b> ${esc(r.detail)}</td></tr>`).join("")}</table>` : t("No changes yet.");
   } catch { $("#historyBox").textContent = ""; }
 }
 
@@ -654,34 +654,34 @@ function renderElement(guid) {
   const pe = e.per_element[guid] || {};
   const q = el.qty;
   const g = e.groups.find((x) => x.key === el.group);
-  const t = e.schedule?.elements?.[guid];
+  const wk = e.schedule?.elements?.[guid];
   $("#tab-element").innerHTML = `
     <div class="muted">${esc(el.kind || el.ifc_class)} · ${esc(el.level)}${el.model ? " · " + esc(el.model) : ""}</div>
     <h2 style="margin:4px 0 2px;font-size:16px">${esc(el.name)}</h2>
     <div class="total">${fmt(pe.total || 0)} <small>${e.currency}</small></div>
     <div class="settings" style="grid-template-columns:1fr">
-      <label>Priced as (applies to all ${g ? g.count : ""} elements of this type)<select id="elMap">${recipeOptions((S.project.settings.mappings || {})[el.group] || pe.recipe || "")}</select></label>
+      <label>${t("Priced as (applies to all {n} elements of this type)", { n: g ? g.count : "" })}<select id="elMap">${recipeOptions((S.project.settings.mappings || {})[el.group] || pe.recipe || "")}</select></label>
     </div>
     <div class="settings" style="grid-template-columns:110px 1fr">
-      <label>Adjust qty ×<input type="number" step="0.01" min="0" id="adjF" value="${(S.project.settings.adjustments || {})[el.group]?.factor ?? 1}"></label>
-      <label>Reason (required for an adjustment)<input type="text" id="adjR" value="${esc((S.project.settings.adjustments || {})[el.group]?.reason || "")}" placeholder="e.g. slab thickened per structural drawing S-201"></label>
+      <label>${t("Adjust qty ×")}<input type="number" step="0.01" min="0" id="adjF" value="${(S.project.settings.adjustments || {})[el.group]?.factor ?? 1}"></label>
+      <label>${t("Reason (required for an adjustment)")}<input type="text" id="adjR" value="${esc((S.project.settings.adjustments || {})[el.group]?.reason || "")}" placeholder="${t("e.g. slab thickened per structural drawing S-201")}"></label>
     </div>
-    <h3>Cost breakdown</h3>
-    <table><thead><tr><th>Work item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead><tbody>
-    ${lines.map((l) => `<tr><td><span dir="auto">${esc(tx("work_item", l.work_item, l.description))}</span><br><span class="muted small" title="Quantity formula">= ${esc(l.formula)}${l.waste_pct ? ` + ${l.waste_pct}% waste` : ""}</span></td><td class="n">${fmt(uq(l.qty, l.unit)[0], 2)} ${uq(l.qty, l.unit)[1]}</td><td class="n">${fmt(ur(l.rate, l.unit), 2)}</td><td class="n">${fmt(l.amount)}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">${pe.source === "excluded" ? "Excluded from the estimate." : "Not priced. Choose what it is above."}</td></tr>`}
+    <h3>${t("Cost breakdown")}</h3>
+    <table><thead><tr><th>${t("Work item")}</th><th class="n">${t("Qty")}</th><th class="n">${t("Rate")}</th><th class="n">${t("Amount")}</th></tr></thead><tbody>
+    ${lines.map((l) => `<tr><td><span dir="auto">${esc(tx("work_item", l.work_item, l.description))}</span><br><span class="muted small" title="Quantity formula">= ${esc(l.formula)}${l.waste_pct ? ` + ${l.waste_pct}% ${t("waste")}` : ""}</span></td><td class="n">${fmt(uq(l.qty, l.unit)[0], 2)} ${uq(l.qty, l.unit)[1]}</td><td class="n">${fmt(ur(l.rate, l.unit), 2)}</td><td class="n">${fmt(l.amount)}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">${pe.source === "excluded" ? t("Excluded from the estimate.") : t("Not priced. Choose what it is above.")}</td></tr>`}
     </tbody></table>
-    <h3>Measured from the 3D shape</h3>
-    <table>${[["Volume", q.volume, "m³", "volume"], ["Wall face (one side)", q.side, "m²", "side"], ["Plan area", q.footprint, "m²", "footprint"], ["Length", q.length, "m", "length"], ["Height", q.height, "m", "height"], ["Section size", q.section, "m", "section"]]
+    <h3>${t("Measured from the 3D shape")}</h3>
+    <table>${[[t("Volume"), q.volume, "m³", "volume"], [t("Wall face (one side)"), q.side, "m²", "side"], [t("Plan area"), q.footprint, "m²", "footprint"], [t("Length"), q.length, "m", "length"], [t("Height"), q.height, "m", "height"], [t("Section size"), q.section, "m", "section"]]
       .map(([k, v, u, n]) => `<tr><td>${k} <span class="muted small">${n}</span></td><td class="n">${fmt(v, 3)} ${u}</td></tr>`).join("")}</table>
     ${el.authored?.volume ? `<p class="muted small">Revit's own volume: <b>${fmt(el.authored.volume, 3)} m³</b> (${q.volume ? (q.volume / el.authored.volume - 1 > 0 ? "+" : "") + fmt((q.volume / el.authored.volume - 1) * 100, 1) + "% difference" : ""}).</p>` : ""}
-    ${pe.overlap_m3 ? `<p class="callout">${fmt(pe.overlap_m3, 3)} m³ deducted because it overlaps other elements that keep that volume.</p>` : ""}
+    ${pe.overlap_m3 ? `<p class="callout" dir="auto">${t("{v} m³ deducted because it overlaps other elements that keep that volume.", { v: fmt(pe.overlap_m3, 3) })}</p>` : ""}
     ${pe.openings_kept_m2 ? `<p class="muted small">${fmt(pe.openings_kept_m2, 2)} m² of small openings not deducted (measurement rule).</p>` : ""}
     ${q.check === 2 ? '<p class="note">Exported as a surface, not a solid: volume = face × material layer thickness.</p>' : q.check === 3 ? "<p class=\"note\">Shape could not be measured; Revit's own volume is used.</p>" : q.check === 1 ? '<p class="note">Shape could not be measured; volume is a rough estimate. Check this element in Revit.</p>' : ""}
-    ${t ? `<p class="muted">Built in weeks ${fmt(t[0], 1)}–${fmt(t[1], 1)} of the 4D sequence.</p>` : ""}
-    <h3>Materials</h3><p>${el.materials.map((m) => `<span class="tag">${esc(m)}</span>`).join(" ") || '<span class="muted">none in model</span>'}</p>
+    ${wk ? `<p class="muted">${t("Built in weeks {a}–{b} of the 4D sequence.", { a: fmt(wk[0], 1), b: fmt(wk[1], 1) })}</p>` : ""}
+    <h3>${t("Materials")}</h3><p>${el.materials.map((m) => `<span class="tag">${esc(m)}</span>`).join(" ") || `<span class="muted">${t("none in model")}</span>`}</p>
     ${(el.layers || []).length ? `<table>${el.layers.map((l) => `<tr><td>${esc(l.name)}</td><td class="n">${fmt(l.t * 1000)} mm</td></tr>`).join("")}</table>` : ""}
-    ${el.classification?.length ? `<h3>Classification</h3><p>${el.classification.map((c) => `<span class="tag">${esc(c)}</span>`).join(" ")}</p>` : ""}
-    ${Object.keys(el.props || {}).length ? `<h3>Properties</h3><table>${Object.entries(el.props).map(([k, v]) => `<tr><td>${esc(k.replaceAll("_", " "))}</td><td>${esc(v)}</td></tr>`).join("")}</table>` : ""}`;
+    ${el.classification?.length ? `<h3>${t("Classification")}</h3><p>${el.classification.map((c) => `<span class="tag">${esc(c)}</span>`).join(" ")}</p>` : ""}
+    ${Object.keys(el.props || {}).length ? `<h3>${t("Properties")}</h3><table>${Object.entries(el.props).map(([k, v]) => `<tr><td>${esc(k.replaceAll("_", " "))}</td><td>${esc(v)}</td></tr>`).join("")}</table>` : ""}`;
   $("#elMap").addEventListener("change", (ev) => saveSettings({ mappings: { [el.group]: ev.target.value || null } }));
   const saveAdj = () => {
     const f = Number($("#adjF").value) || 1, r = $("#adjR").value.trim();
