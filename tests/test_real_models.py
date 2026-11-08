@@ -527,3 +527,17 @@ def test_rooms_exported_as_2d_outline_keep_their_finishes(tmp_path, lib):
     q = lambda r, wi: sum(l["net_qty"] for l in est["lines"] if l["guid"] == rooms[r]["guid"] and l["work_item"] == wi)
     assert q("Bedroom", "PNT") == pytest.approx(18 * 3.0) and q("Bathroom", "WAL-TILE") == pytest.approx(10 * 3.0)
     assert any("2D outline" in a for a in est["assumptions"])
+
+
+def test_modelled_rebar_weight_equals_diameter_times_length(lib):
+    import math
+    import ifcopenshell
+    import ifcopenshell.util.unit as uu
+    f = SAMPLES / "Ifc4_Revit_STR.ifc"
+    m = ifcopenshell.open(str(f))
+    sc = uu.calculate_unit_scale(m)
+    by_hand = sum(math.pi * (b.NominalDiameter * sc / 2) ** 2 * b.BarLength * sc * 7850
+                  for b in m.by_type("IfcReinforcingBar") if b.NominalDiameter and b.BarLength)
+    est = estimate(extract(str(f), with_mesh=False)["elements"], "SA", lib, {"rebar_mode": "modeled"})
+    tool = sum(l["net_qty"] for l in est["lines"] if l["recipe"] == "REBAR_MODELED")
+    assert tool == pytest.approx(by_hand, rel=0.03)
