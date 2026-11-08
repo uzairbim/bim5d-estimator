@@ -4,6 +4,7 @@ Run:  uvicorn server:app --port 8000   then open http://localhost:8000
 """
 import json
 import re
+import shutil
 import tempfile
 from pathlib import Path
 from typing import Optional
@@ -210,7 +211,8 @@ def projects():
 async def upload(file: UploadFile, project_id: Optional[str] = Form(None),
                  name: Optional[str] = Form(None), region: Optional[str] = Form(None),
                  discipline: Optional[str] = Form(None)):
-    if not (file.filename or "").lower().endswith(".ifc"):
+    fname = (file.filename or "").lower()
+    if not fname.endswith((".ifc", ".ifczip", ".zip")):
         raise HTTPException(400, "Please upload an .ifc file (in Revit: File > Export > IFC).")
     with tempfile.NamedTemporaryFile(delete=False, suffix=".ifc") as tmp:
         size = 0
@@ -219,6 +221,20 @@ async def upload(file: UploadFile, project_id: Optional[str] = Form(None),
             if size > MAX_UPLOAD_MB << 20:
                 raise HTTPException(413, f"File is larger than {MAX_UPLOAD_MB} MB.")
             tmp.write(chunk)
+    if fname.endswith((".ifczip", ".zip")):
+        # .ifcZIP from Revit, or an IFC zipped to send it by e-mail; a project file opens as a project.
+        try:
+            kind, payload = _unzip_upload(tmp.name)
+        finally:
+            Path(tmp.name).unlink(missing_ok=True)
+        if kind == "project":
+            if project_id:
+                raise HTTPException(400, "This is a project file. Open it from the start page (Open a project file).")
+            try:
+                return {"project_id": storage.import_package(payload), "version_id": None}
+            except ValueError as e:
+                raise HTTPException(400, str(e))
+        tmp = type("T", (), {"name": payload})
     if project_id:
         _project(project_id)
         pid = project_id
@@ -227,6 +243,28 @@ async def upload(file: UploadFile, project_id: Optional[str] = Form(None),
                                      {"region": region} if region else None)
     vid = storage.add_version(pid, tmp.name, file.filename, move=True, discipline=discipline)
     return {"project_id": pid, "version_id": vid}
+
+
+def _unzip_upload(path):
+    """('project', bytes) for a project file, else ('ifc', path of the largest .ifc inside)."""
+    import zipfile
+    try:
+        z = zipfile.ZipFile(path)
+    except zipfile.BadZipFile:
+        raise HTTPException(400, "This zip file could not be opened. Export the model again as .ifc or .ifcZIP.")
+    with z:
+        names = z.namelist()
+        if "project.json" in names:
+            return "project", Path(path).read_bytes()
+        ifcs = [i for i in z.infolist() if i.filename.lower().endswith(".ifc") and not i.is_dir()]
+        if not ifcs:
+            raise HTTPException(400, "There is no .ifc file inside this zip.")
+        best = max(ifcs, key=lambda i: i.file_size)
+        if best.file_size > storage.MAX_PACKAGE_BYTES:
+            raise HTTPException(413, "The model inside this zip is too large.")
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".ifc") as out, z.open(best) as src:
+            shutil.copyfileobj(src, out, 1 << 20)
+        return "ifc", out.name
 
 
 @app.post("/api/projects/sample/{name}")

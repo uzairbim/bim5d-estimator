@@ -176,7 +176,7 @@ function showStart() {
 $("#home").addEventListener("click", () => { location.hash = ""; });
 
 async function uploadFile(file, projectId, discipline) {
-  if (!file.name.toLowerCase().endsWith(".ifc")) return toast("Please choose an .ifc file.");
+  if (!/\.(ifc|ifczip|zip)$/i.test(file.name)) return toast(t("Please choose an .ifc file."));
   const fd = new FormData();
   fd.append("file", file);
   if (projectId) fd.append("project_id", projectId);
@@ -186,7 +186,7 @@ async function uploadFile(file, projectId, discipline) {
   try {
     const r = await api("/api/projects", { method: "POST", body: fd });
     await loadProjects();
-    go(r.project_id, r.version_id);
+    go(r.project_id, r.version_id || undefined);
   } catch (err) { busy(false); toast(err.message); }
 }
 $("#file").addEventListener("change", (e) => { const f = e.target.files[0]; if (f) uploadFile(f); e.target.value = ""; });
@@ -785,11 +785,11 @@ function renderCompare() {
       <table><tbody>${c.rows.slice(0, 300).map((r) => `<tr class="click" data-g="${r.guid}"><td>${esc(r.name)}<br><span class="tag ${r.status}">${r.status}</span> <span class="muted small">${esc(r.why)}</span></td><td class="n ${r.delta > 0 ? "pos" : "neg"}">${r.delta > 0 ? "+" : ""}${fmt(r.delta)}</td></tr>`).join("")}</tbody></table>`;
   }
   $("#tab-compare").innerHTML = `
-    <div class="toolbar"><label class="btn primary">${t("Upload new revision")}<input type="file" id="revFile" accept=".ifc" hidden></label>
+    <div class="toolbar"><label class="btn primary">${t("Upload new revision")}<input type="file" id="revFile" accept=".ifc,.ifczip,.zip" hidden></label>
       <span class="muted small">${t("of")} ${esc(S.version.discipline || t("this model"))}</span></div>
     <div class="callout small">${t("Separate Revit models for structure or MEP? Add each one here: the estimate adds them up (the latest revision of each), shows them together in 3D and counts elements drawn in two models once.")}
       <div class="toolbar" style="margin-top:6px"><select id="discSel">${["Structure", "MEP", "Electrical", "Plumbing", "Architecture", "Landscape"].map((d) => `<option value="${d}">${t(d)}</option>`).join("")}</select>
-      <label class="btn">${t("Add a discipline model")}<input type="file" id="discFile" accept=".ifc" hidden></label></div>
+      <label class="btn">${t("Add a discipline model")}<input type="file" id="discFile" accept=".ifc,.ifczip,.zip" hidden></label></div>
       ${(S.models || []).length > 1 ? `<p class="small">${t("Combined now")}: ${S.models.map((m) => esc(m.label)).join(" + ")}</p>` : ""}</div>
     ${ready.length >= 2 ? `<div class="toolbar"><select id="cmpA">${opts(c?.a.id || prev?.id)}</select> → <select id="cmpB">${opts(c?.b.id || S.version.id)}</select><button class="btn" id="cmpRun">Compare</button>${c ? '<button class="btn" id="cmpClear">Clear</button>' : ""}</div>` : ""}
     <div class="toolbar"><label class="muted small">Revision name <input type="text" id="verLabel" value="${esc(S.version.label)}" style="width:140px"></label></div>

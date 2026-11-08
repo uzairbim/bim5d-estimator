@@ -192,3 +192,35 @@ def test_discipline_models_are_combined(client):
     pkg = client.get(f"/api/projects/{pid}/package.zip").content
     new = client.post("/api/projects/import", files={"file": ("p.zip", pkg)}).json()["project_id"]
     assert {v.get("discipline") for v in client.get(f"/api/projects/{new}").json()["versions"]} == {None, "Structure"}
+
+
+def _wait(client, pid):
+    for _ in range(900):
+        st = [v["status"] for v in client.get(f"/api/projects/{pid}").json()["versions"]]
+        if st and all(x not in ("queued", "processing") for x in st):
+            return st
+        time.sleep(0.2)
+
+
+def test_ifczip_and_zipped_ifc_are_accepted(client):
+    import pathlib
+    villa = (pathlib.Path(__file__).resolve().parent.parent / "samples" / "Saudi_Villa_Example.ifc").read_bytes()
+    for fname in ("villa.ifczip", "sent_by_email.zip"):
+        data = _zip({"folder/Saudi_Villa_Example.ifc": villa, "readme.txt": "x"})
+        r = client.post("/api/projects", files={"file": (fname, data)}, data={"region": "SA"})
+        assert r.status_code == 200, r.text
+        pid = r.json()["project_id"]
+        assert _wait(client, pid) == ["ready"]
+        assert client.get(f"/api/projects/{pid}/estimate").json()["summary"]["gfa"] > 280
+
+
+def test_project_file_dropped_on_the_upload_opens_as_a_project(client):
+    meta = {"format": "bim5d-project", "name": "Dropped", "settings": {}, "revisions": []}
+    r = client.post("/api/projects", files={"file": ("p.zip", _zip({"project.json": json.dumps(meta)}))})
+    assert r.status_code == 200 and r.json()["project_id"]
+
+
+@pytest.mark.parametrize("data", [b"not a zip", _zip({"readme.txt": "no model here"})])
+def test_bad_zip_uploads_give_a_clear_message(client, data):
+    r = client.post("/api/projects", files={"file": ("m.ifczip", data)})
+    assert r.status_code == 400 and r.json()["detail"]

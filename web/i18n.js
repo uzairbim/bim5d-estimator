@@ -342,6 +342,7 @@ const D = {
   "of measured work": { ar: "من الأعمال المقاسة", ur: "پیمائش شدہ کام کا", es: "de la obra medida", fr: "des ouvrages mesurés" },
   "ratio allowance": { ar: "نسبة تقديرية", ur: "تناسب کا الاؤنس", es: "ratio estimado", fr: "ratio forfaitaire" },
   "yours": { ar: "أسعارك", ur: "آپ کی", es: "suyo", fr: "le vôtre" },
+  "Please choose an .ifc file.": { ar: "اختر ملف ‎.ifc (أو ‎.ifcZIP).", ur: "‎.ifc فائل منتخب کریں (یا ‎.ifcZIP)۔", es: "Elija un archivo .ifc (o .ifcZIP).", fr: "Choisissez un fichier .ifc (ou .ifcZIP)." },
 };
 
 let lang = "en";

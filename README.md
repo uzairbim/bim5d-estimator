@@ -21,7 +21,7 @@ The first start installs what it needs (2–5 minutes, internet needed once); la
 **Docker:** `docker compose up --build`.
 
 The browser opens by itself when the app is ready (http://localhost:8000, or 8001… if 8000 is busy).
-Pick your region, click **Try the demo** or drop an IFC file. Keep the black window open while you work.
+Pick your region, click **Try the demo** or drop an IFC file (.ifc, .ifcZIP or a zipped .ifc). Keep the black window open while you work.
 
 **If something goes wrong**
 
