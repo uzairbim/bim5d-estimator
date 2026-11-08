@@ -178,6 +178,18 @@ clause of your contract.
   estimate stays Class 4 until you choose what they are in Mapping.
 - **Duplicates**: elements or rooms modelled twice in the same place are counted once and listed in Checks.
 
+## Separate models for structure and MEP
+
+Many projects have one Revit model per discipline. Open the architecture project, go to **Compare**, choose the
+discipline (Structure, MEP, Electrical, Plumbing…) and click **Add a discipline model**. The estimate then adds up
+the latest revision of each discipline, the 3D view shows them together and the summary lists the combined
+revisions (for example *Rev 2 + Structure Rev 1 + MEP Rev 1*).
+
+- An element drawn in two models (structural columns kept in the architect's model, or the same Revit element
+  exported twice) is counted once; the structure model's copy is kept. They are listed under Checks.
+- Floor area matches the structure model's levels to the architect's levels by height.
+- To update one discipline, select one of its revisions and use **Upload new revision**.
+
 ## Arabic BOQ
 
 Choose العربية (top right): the BOQ, element costs and mapping show Arabic names with English below. The Excel
