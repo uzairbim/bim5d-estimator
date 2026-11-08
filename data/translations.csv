@@ -217,3 +217,25 @@ check,Testing and commissioning of services,اختبار وتشغيل الأنظ
 check,Fire stopping of service penetrations,سد فتحات الخدمات ضد الحريق
 check,"Scaffolding, temporary works, site facilities",السقالات والأعمال المؤقتة ومرافق الموقع
 check,Final cleaning and handover,التنظيف النهائي والتسليم
+nrm1,1 Substructure,1 الأعمال تحت الأرض
+nrm1,2.1 Frame,2.1 الهيكل الإنشائي
+nrm1,2.2 Upper floors,2.2 الأسقف والبلاطات العلوية
+nrm1,2.3 Roof,2.3 السطح
+nrm1,2.4 Stairs and ramps,2.4 السلالم والمنحدرات
+nrm1,2.5 External walls,2.5 الجدران الخارجية
+nrm1,2.6 Windows and external doors,2.6 النوافذ والأبواب الخارجية
+nrm1,2.7 Internal walls and partitions,2.7 الجدران والقواطع الداخلية
+nrm1,2.8 Internal doors,2.8 الأبواب الداخلية
+nrm1,3.1 Wall finishes,3.1 تشطيبات الجدران
+nrm1,3.2 Floor finishes,3.2 تشطيبات الأرضيات
+nrm1,3.3 Ceiling finishes,3.3 تشطيبات الأسقف
+nrm1,4 Fittings furnishings and equipment,4 التجهيزات والأثاث والمعدات
+nrm1,5.1 Sanitary installations,5.1 التركيبات الصحية
+nrm1,5.10 Lift and conveyor installations,5.10 المصاعد والسلالم المتحركة
+nrm1,5.11 Fire and lightning protection,5.11 الحماية من الحريق والصواعق
+nrm1,5.12 Communication and control,5.12 الاتصالات والتحكم
+nrm1,5.4 Water installations,5.4 تمديدات المياه
+nrm1,5.6 Space heating and air conditioning,5.6 التدفئة والتكييف
+nrm1,5.7 Ventilation,5.7 التهوية
+nrm1,5.8 Electrical installations,5.8 التمديدات الكهربائية
+nrm1,8 External works,8 الأعمال الخارجية

@@ -22,14 +22,14 @@
   .box .v { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
   .box .s { color: var(--muted); font-size: 12px; }
   table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  th, td { padding: 5px 6px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th, td { padding: 5px 6px; border-bottom: 1px solid var(--line); text-align: start; vertical-align: top; }
   th { background: var(--soft); font-weight: 600; }
-  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.n, th.n { text-align: end; font-variant-numeric: tabular-nums; white-space: nowrap; }
   tr.tot td { font-weight: 700; border-top: 2px solid var(--ink); }
   tr.sub td { font-weight: 600; background: var(--soft); }
   .snap { width: 100%; max-height: 90mm; object-fit: contain; border: 1px solid var(--line); border-radius: 6px; background: #eef1f5; }
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  ul { margin: 4px 0; padding-left: 18px; }
+  ul { margin: 4px 0; padding-inline-start: 18px; }
   li { margin: 2px 0; }
   .warn { color: #b45309; }
   .foot { color: var(--muted); font-size: 11px; margin-top: 20px; border-top: 1px solid var(--line); padding-top: 8px; }
@@ -48,9 +48,13 @@
 </style>
 </head>
 <body>
-<div class="bar"><span>Cost estimate report · click the dashed fields to edit them</span><button onclick="window.print()">Print / Save as PDF</button></div>
+<div class="bar"><span id="barText">Cost estimate report · click the dashed fields to edit them</span><button id="printBtn">Print / Save as PDF</button></div>
 <div class="page" id="page">Loading…</div>
-<script>
+<script type="module">
+import { t, getLang } from "./i18n.js";
+document.getElementById("barText").textContent = t("Cost estimate report · click the dashed fields to edit them");
+document.getElementById("printBtn").textContent = t("Print / Save as PDF");
+document.getElementById("printBtn").addEventListener("click", () => window.print());
 const fmt = (n, d = 0) => (n === null || n === undefined) ? "–" : Number(n).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const h = new URLSearchParams(location.hash.slice(1));
@@ -65,95 +69,101 @@ const pid = h.get("p"), vid = h.get("v");
   const s = e.summary, a = e.accuracy, c = e.checks, cur = e.currency, rec = c.reconciliation;
   let snap = null;
   try { snap = localStorage.getItem("bim5d.snapshot"); } catch { /* ignore */ }
-  document.title = `${p.name} - Cost Estimate`;
+  const lang = getLang();
+  document.documentElement.lang = lang;
+  document.documentElement.dir = ["ar", "ur"].includes(lang) ? "rtl" : "ltr";
+  let tr = {};
+  try { tr = ((await fetch("/api/library").then((r) => r.json())).translations || {})[lang] || {}; } catch { /* English names */ }
+  const tx = (kind, code, english) => tr[`${kind}:${code}`] || english;
+  document.title = `${p.name} - ${t("Cost Estimate Report")}`;
   const pct = (x, tot) => tot ? (x / tot * 100).toFixed(1) + "%" : "";
   const perm2 = (x) => s.gfa ? fmt(x / s.gfa) : "–";
   const nrm = Object.entries(e.by_nrm1);
   const arab = /^(SA|AE|KW|QA|BH|OM|YE|IQ|JO|LB|SY|PS|EG|LY|TN|DZ|MA|SD)/.test(e.region || "");
   const build = [
-    ["Measured work (quantified from the BIM model)", s.direct],
-    ["Allowances for work not in the model", s.allowances],
-    [`Preliminaries (${s.prelims_pct}%)`, s.prelims],
-    [`Contingency (${s.contingency_pct}%)`, s.contingency],
-    [`Contractor's overhead (${s.overhead_pct}%)`, s.overhead],
-    [`Contractor's profit (${s.profit_pct}%)`, s.profit],
-    [`Escalation (${s.escalation_pct}%)`, s.escalation],
+    [t("Measured work (quantified from the BIM model)"), s.direct],
+    [t("Allowances for work not in the model"), s.allowances],
+    [`${t("Preliminaries")} (${s.prelims_pct}%)`, s.prelims],
+    [`${t("Contingency")} (${s.contingency_pct}%)`, s.contingency],
+    [`${t("Contractor's overhead")} (${s.overhead_pct}%)`, s.overhead],
+    [`${t("Contractor's profit")} (${s.profit_pct}%)`, s.profit],
+    [`${t("Escalation")} (${s.escalation_pct}%)`, s.escalation],
     [`${s.tax_name} (${s.tax_pct}%)`, s.tax],
   ].filter((r) => r[1]);
   document.getElementById("page").innerHTML = `
-    <h1>Cost Estimate Report</h1>
+    <h1>${t("Cost Estimate Report")}</h1>
     <div class="meta">
-      <div>Project<br><b contenteditable>${esc(p.name)}</b></div>
-      <div>Client<br><b contenteditable>Client name</b></div>
-      <div>Prepared by<br><b contenteditable>Estimator name</b></div>
-      <div>Date<br><b contenteditable>${new Date().toLocaleDateString("en-GB")}</b></div>
-      <div>Model revision<br><b>${esc(v.label)} · ${esc(v.file_name || "")}</b></div>
-      <div>Region / currency<br><b>${esc(e.region_name)} · ${cur}</b></div>
+      <div>${t("Project")}<br><b contenteditable>${esc(p.name)}</b></div>
+      <div>${t("Client")}<br><b contenteditable>${t("Client name")}</b></div>
+      <div>${t("Prepared by")}<br><b contenteditable>${t("Estimator name")}</b></div>
+      <div>${t("Date")}<br><b contenteditable>${new Date().toLocaleDateString("en-GB")}</b></div>
+      <div>${t("Model revision")}<br><b>${(e.models || []).length > 1 ? e.models.map((m) => esc(m.label)).join(" + ") : esc(v.label)} · ${esc(v.file_name || "")}</b></div>
+      <div>${t("Region / currency")}<br><b>${esc(e.region_name)} · ${cur}</b></div>
     </div>
 
-    <h2>1. Summary</h2>
+    <h2>1. ${t("Summary")}</h2>
     <div class="headline">
-      <div class="box"><div class="k">Estimated total cost</div><div class="v">${fmt(s.total)} ${cur}</div><div class="s">including ${esc(s.tax_name)} ${s.tax_pct}%</div></div>
-      <div class="box"><div class="k">Expected range</div><div class="v" style="font-size:15px">${fmt(a.low)} – ${fmt(a.high)}</div><div class="s">${esc(a.label)} (${Math.round(a.low_pct * 100)}% / +${Math.round(a.high_pct * 100)}%)</div></div>
-      <div class="box"><div class="k">Cost per m² GFA</div><div class="v">${s.per_m2 ? fmt(s.per_m2) : "–"}</div><div class="s">${fmt(s.gfa)} m² gross floor area</div></div>
+      <div class="box"><div class="k">${t("Estimated total cost")}</div><div class="v">${fmt(s.total)} ${cur}</div><div class="s">${t("including")} ${esc(s.tax_name)} ${s.tax_pct}%</div></div>
+      <div class="box"><div class="k">${t("Expected range")}</div><div class="v" style="font-size:15px">${fmt(a.low)} – ${fmt(a.high)}</div><div class="s">${esc(t(a.label))} (${Math.round(a.low_pct * 100)}% / +${Math.round(a.high_pct * 100)}%)</div></div>
+      <div class="box"><div class="k">${t("Cost per m²")}</div><div class="v">${s.per_m2 ? fmt(s.per_m2) : "–"}</div><div class="s">${t("on {a} m² floor area.", { a: fmt(s.gfa) })}</div></div>
     </div>
     ${snap ? `<img class="snap" src="${snap}" alt="3D model coloured by cost">` : ""}
-    ${a.reasons.length ? `<p><b>To narrow the range:</b></p><ul>${a.reasons.map((r) => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}
+    ${a.reasons.length ? `<p><b>${t("To narrow the range:")}</b></p><ul>${(a.reasons_t || a.reasons.map((r) => [r, {}])).map(([tpl, vals]) => `<li>${esc(t(tpl, vals.items ? { ...vals, items: vals.items.split(", ").map((x) => tx("scope", x, x)).join("، ") } : vals))}</li>`).join("")}</ul>` : ""}
 
-    <h2>2. Cost build-up</h2>
-    <table><thead><tr><th>Item</th><th class="n">${cur}</th><th class="n">% of total</th></tr></thead><tbody>
+    <h2>2. ${t("Cost build-up")}</h2>
+    <table><thead><tr><th>${t("Item")}</th><th class="n">${cur}</th><th class="n">${t("% of total")}</th></tr></thead><tbody>
       ${build.map(([k, x]) => `<tr><td>${esc(k)}</td><td class="n">${fmt(x)}</td><td class="n">${pct(x, s.total)}</td></tr>`).join("")}
-      <tr class="tot"><td>Total</td><td class="n">${fmt(s.total)}</td><td class="n">100%</td></tr>
+      <tr class="tot"><td>${t("Total")}</td><td class="n">${fmt(s.total)}</td><td class="n">100%</td></tr>
     </tbody></table>
 
-    <h2>3. Elemental summary (RICS NRM1)</h2>
-    <table><thead><tr><th>Element</th><th class="n">${cur}</th><th class="n">% of measured</th><th class="n">${cur}/m² GFA</th></tr></thead><tbody>
-      ${nrm.map(([k, x]) => `<tr><td>${esc(k)}</td><td class="n">${fmt(x)}</td><td class="n">${pct(x, s.direct)}</td><td class="n">${perm2(x)}</td></tr>`).join("")}
-      <tr class="sub"><td>Measured work</td><td class="n">${fmt(s.direct)}</td><td class="n">100%</td><td class="n">${perm2(s.direct)}</td></tr>
+    <h2>3. ${t("Elemental summary (RICS NRM1)")}</h2>
+    <table><thead><tr><th>${t("Element")}</th><th class="n">${cur}</th><th class="n">${t("% of measured")}</th><th class="n">${cur}/m² GFA</th></tr></thead><tbody>
+      ${nrm.map(([k, x]) => `<tr><td>${esc(tx("nrm1", k, k))}</td><td class="n">${fmt(x)}</td><td class="n">${pct(x, s.direct)}</td><td class="n">${perm2(x)}</td></tr>`).join("")}
+      <tr class="sub"><td>${t("Measured work")}</td><td class="n">${fmt(s.direct)}</td><td class="n">100%</td><td class="n">${perm2(s.direct)}</td></tr>
     </tbody></table>
 
-    <h2>4. Main cost drivers</h2>
-    <p class="note">The items and prices that move the total most. Confirm these first.</p>
-    <table><thead><tr><th>Work item</th><th class="n">Quantity</th><th class="n">Rate</th><th class="n">${cur}</th><th class="n">% of measured</th></tr></thead><tbody>
-      ${[...e.boq].sort((x, y) => y.amount - x.amount).slice(0, 10).map((b) => `<tr><td>${esc(b.description)}${arab && b.description_ar ? `<br><span class="muted" dir="rtl">${esc(b.description_ar)}</span>` : ""}</td><td class="n">${fmt(b.qty, 1)} ${esc(b.unit)}</td><td class="n">${fmt(b.rate, 2)}</td><td class="n">${fmt(b.amount)}</td><td class="n">${pct(b.amount, s.direct)}</td></tr>`).join("")}
+    <h2>4. ${t("Main cost drivers")}</h2>
+    <p class="note">${t("The items and prices that move the total most. Confirm these first.")}</p>
+    <table><thead><tr><th>${t("Work item")}</th><th class="n">${t("Quantity")}</th><th class="n">${t("Rate")}</th><th class="n">${cur}</th><th class="n">${t("% of measured")}</th></tr></thead><tbody>
+      ${[...e.boq].sort((x, y) => y.amount - x.amount).slice(0, 10).map((b) => `<tr><td>${lang === "ar" && b.description_ar ? `${esc(b.description_ar)}<br><span class="muted" dir="ltr">${esc(b.description)}</span>` : `${esc(tx("work_item", b.work_item, b.description))}${arab && b.description_ar && lang !== "ar" ? `<br><span class="muted" dir="rtl">${esc(b.description_ar)}</span>` : ""}`}</td><td class="n">${fmt(b.qty, 1)} ${esc(b.unit)}</td><td class="n">${fmt(b.rate, 2)}</td><td class="n">${fmt(b.amount)}</td><td class="n">${pct(b.amount, s.direct)}</td></tr>`).join("")}
     </tbody></table>
-    ${(e.resources || []).length ? `<table><thead><tr><th>Resource</th><th class="n">Quantity</th><th class="n">Price used</th><th class="n">% of measured</th><th class="n">+10% price adds (incl. mark-ups)</th></tr></thead><tbody>
-      ${[...e.resources].sort((x, y) => y.cost - x.cost).slice(0, 6).map((r) => `<tr><td>${esc(r.name)}${r.kind === "user" ? "" : ` <span class="muted">(${esc(r.kind)})</span>`}</td><td class="n">${fmt(r.qty, 1)} ${esc(r.unit)}</td><td class="n">${fmt(r.price, 2)}</td><td class="n">${pct(r.cost, s.direct)}</td><td class="n">${fmt(r.cost * 0.1 * (s.total / (s.direct || 1)))}</td></tr>`).join("")}
+    ${(e.resources || []).length ? `<table><thead><tr><th>${t("Resource")}</th><th class="n">${t("Quantity")}</th><th class="n">${t("Price used")}</th><th class="n">${t("% of measured")}</th><th class="n">${t("+10% price adds (incl. mark-ups)")}</th></tr></thead><tbody>
+      ${[...e.resources].sort((x, y) => y.cost - x.cost).slice(0, 6).map((r) => `<tr><td>${esc(r.name)}${r.kind === "user" ? "" : ` <span class="muted">(${esc(t(r.kind))})</span>`}</td><td class="n">${fmt(r.qty, 1)} ${esc(r.unit)}</td><td class="n">${fmt(r.price, 2)}</td><td class="n">${pct(r.cost, s.direct)}</td><td class="n">${fmt(r.cost * 0.1 * (s.total / (s.direct || 1)))}</td></tr>`).join("")}
     </tbody></table>` : ""}
 
     <div class="two">
-      <div><h2>5. By trade</h2><table><tbody>${Object.entries(e.by_trade).map(([k, x]) => `<tr><td>${esc(k)}</td><td class="n">${fmt(x)}</td></tr>`).join("")}</tbody></table></div>
-      <div><h2>6. By level</h2><table><tbody>${Object.entries(e.by_level).map(([k, x]) => `<tr><td>${esc(k)}</td><td class="n">${fmt(x)}</td></tr>`).join("")}</tbody></table></div>
+      <div><h2>5. ${t("By trade")}</h2><table><tbody>${Object.entries(e.by_trade).map(([k, x]) => `<tr><td>${esc(tx("trade", k, k))}</td><td class="n">${fmt(x)}</td></tr>`).join("")}</tbody></table></div>
+      <div><h2>6. ${t("By level")}</h2><table><tbody>${Object.entries(e.by_level).map(([k, x]) => `<tr><td>${esc(k)}</td><td class="n">${fmt(x)}</td></tr>`).join("")}</tbody></table></div>
     </div>
 
-    <h2>7. Scope and allowances</h2>
-    <table><thead><tr><th>Part of the building</th><th>In the model</th><th class="n">${cur}</th></tr></thead><tbody>
-      ${e.scope.map((x) => `<tr><td>${esc(x.name)}</td><td>${x.present ? "Yes" : '<span class="warn">No</span>'}</td><td class="n">${x.present ? fmt(x.cost) : ""}</td></tr>`).join("")}
+    <h2>7. ${t("Scope and allowances")}</h2>
+    <table><thead><tr><th>${t("Part of the building")}</th><th>${t("In the model")}</th><th class="n">${cur}</th></tr></thead><tbody>
+      ${e.scope.map((x) => `<tr><td>${esc(tx("scope", x.name, x.name))}</td><td>${x.present ? t("Yes") : `<span class="warn">${t("No")}</span>`}</td><td class="n">${x.present ? fmt(x.cost) : ""}</td></tr>`).join("")}
     </tbody></table>
-    ${e.allowances.length ? `<p><b>Allowances included</b></p><table><tbody>${e.allowances.map((x) => `<tr><td>${esc(x.name)}</td><td>${x.kind === "pct" ? x.value + "% of measured work" : x.kind === "per_m2" ? fmt(x.value) + " " + cur + "/m²" : "lump sum"}</td><td class="n">${fmt(x.amount)}</td></tr>`).join("")}</tbody></table>` : ""}
+    ${e.allowances.length ? `<p><b>${t("Allowances included")}</b></p><table><tbody>${e.allowances.map((x) => `<tr><td>${esc(x.name)}</td><td>${x.kind === "pct" ? x.value + "% " + t("of measured work") : x.kind === "per_m2" ? fmt(x.value) + " " + cur + "/m²" : t("lump sum")}</td><td class="n">${fmt(x.amount)}</td></tr>`).join("")}</tbody></table>` : ""}
 
-    <p><b>Commonly forgotten items</b></p>
-    <table><tbody>${(e.checklist || []).map((x) => `<tr><td>${esc(x.name)}</td><td>${x.status === "priced" ? "Priced" : x.status === "allowance" ? "Allowance" : x.status === "note" ? esc(x.note) : '<span class="warn">Not included</span>'}</td><td class="n">${x.cost ? fmt(x.cost) : ""}</td></tr>`).join("")}</tbody></table>
+    <p><b>${t("Commonly forgotten items")}</b></p>
+    <table><tbody>${(e.checklist || []).map((x) => `<tr><td>${esc(tx("check", x.name, x.name))}</td><td>${x.status === "priced" ? t("Priced") : x.status === "allowance" ? t("Allowance") : x.status === "note" ? esc(t(x.note)) : `<span class="warn">${t("Not included")}</span>`}</td><td class="n">${x.cost ? fmt(x.cost) : ""}</td></tr>`).join("")}</tbody></table>
 
-    <h2>8. Basis of estimate and assumptions</h2>
+    <h2>8. ${t("Basis of estimate and assumptions")}</h2>
     <ul>${e.assumptions.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
 
-    <h2>9. Exclusions</h2>
+    <h2>9. ${t("Exclusions")}</h2>
     <ul>${e.exclusions.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
 
-    <h2>10. Quality checks on the model</h2>
+    <h2>10. ${t("Quality checks on the model")}</h2>
     <table><tbody>
-      <tr><td>Elements in the model / priced</td><td class="n">${fmt(c.elements)} / ${fmt(c.priced)}</td></tr>
-      <tr><td>Not priced (needs mapping)</td><td class="n">${fmt(c.unclassified.length)}</td></tr>
-      <tr><td>Excluded (site context, decor)</td><td class="n">${fmt(c.excluded.length)}</td></tr>
-      <tr><td>Volumes agreeing within 5% with Revit's own values</td><td class="n">${rec.compared ? `${rec.within_5pct} of ${rec.compared} (${Math.round(rec.share * 100)}%)` : "n/a"}</td></tr>
-      <tr><td>Overlaps found and deducted once</td><td class="n">${c.overlaps.length} (${fmt(c.overlap_m3, 2)} m³)</td></tr>
-      <tr><td>Possible duplicate elements</td><td class="n">${c.duplicates.length}</td></tr>
-      <tr><td>Shapes not measured exactly</td><td class="n">${c.geometry_flagged.length}</td></tr>
-      <tr><td>Reinforcement basis</td><td class="n">${c.rebar.mode === "modeled" ? "modelled bars" : "ratio allowance"}</td></tr>
+      <tr><td>${t("Elements in the model / priced")}</td><td class="n">${fmt(c.elements)} / ${fmt(c.priced)}</td></tr>
+      <tr><td>${t("Not priced (needs mapping)")}</td><td class="n">${fmt(c.unclassified.length)}</td></tr>
+      <tr><td>${t("Excluded (site context, decor)")}</td><td class="n">${fmt(c.excluded.length)}</td></tr>
+      <tr><td>${t("Volumes agreeing within 5% with Revit's own values")}</td><td class="n">${rec.compared ? `${rec.within_5pct} of ${rec.compared} (${Math.round(rec.share * 100)}%)` : "n/a"}</td></tr>
+      <tr><td>${t("Overlaps found and deducted once")}</td><td class="n">${c.overlaps.length} (${fmt(c.overlap_m3, 2)} m³)</td></tr>
+      <tr><td>${t("Possible duplicate elements")}</td><td class="n">${c.duplicates.length}</td></tr>
+      <tr><td>${t("Shapes not measured exactly")}</td><td class="n">${c.geometry_flagged.length}</td></tr>
+      <tr><td>${t("Reinforcement basis")}</td><td class="n">${c.rebar.mode === "modeled" ? t("modelled bars") : t("ratio allowance")}</td></tr>
     </tbody></table>
-    <p class="foot">Quantities measured automatically from the IFC model (each element's 3D shape, in metres) and priced with the rate library shown in the detailed workbook. The accuracy range follows the AACE 18R-97 estimate classes as guidance. Full detail per element, with quantity formulas and rate sources, is in the Excel workbook.</p>`;
-})().catch((err) => { document.getElementById("page").textContent = "Could not load the report: " + err.message; });
+    <p class="foot">${t("Quantities measured automatically from the IFC model (each element's 3D shape, in metres) and priced with the rate library shown in the detailed workbook. The accuracy range follows the AACE 18R-97 estimate classes as guidance. Full detail per element, with quantity formulas and rate sources, is in the Excel workbook.")}</p>`;
+})().catch((err) => { document.getElementById("page").textContent = t("Could not load the report:") + " " + err.message; });
 </script>
 </body>
 </html>

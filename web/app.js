@@ -418,7 +418,7 @@ function renderSummary() {
     <h3>${t("By trade")} (${e.currency})</h3>${bars(Object.fromEntries(Object.entries(e.by_trade).map(([k, v]) => [tx("trade", k, k), v])))}
     <h3>${t("Elemental cost plan")}</h3>
     <div class="seg" id="planSeg" style="display:inline-flex;margin-bottom:6px"><button data-plan="by_nrm1" class="on">NRM1</button><button data-plan="by_uniformat">Uniformat</button><button data-plan="by_level">Level</button></div>
-    <div id="planBars">${bars(e.by_nrm1)}</div>
+    <div id="planBars">${bars(Object.fromEntries(Object.entries(e.by_nrm1).map(([k, v]) => [tx("nrm1", k, k), v])))}</div>
     </details>
     <details class="sec"><summary>${t("Project settings")} <span class="muted small">mark-ups, measurement rules, rebar, furniture</span></summary>
     <div class="settings">
@@ -457,7 +457,8 @@ function renderSummary() {
   }));
   $$("#planSeg button").forEach((b) => b.addEventListener("click", () => {
     $$("#planSeg button").forEach((x) => x.classList.toggle("on", x === b));
-    $("#planBars").innerHTML = bars(S.est[b.dataset.plan]);
+    const plan = S.est[b.dataset.plan];
+    $("#planBars").innerHTML = bars(b.dataset.plan === "by_nrm1" ? Object.fromEntries(Object.entries(plan).map(([k, v]) => [tx("nrm1", k, k), v])) : plan);
   }));
   $$("[data-goto]", $("#tab-summary")).forEach((x) => x.addEventListener("click", (ev) => { ev.preventDefault(); tab(x.dataset.goto); }));
   $$("[data-next]", $("#tab-summary")).forEach((b) => b.addEventListener("click", () => {

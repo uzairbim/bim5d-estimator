@@ -138,6 +138,7 @@ def test_every_name_has_an_arabic_translation(lib):
     from engine.estimate import CHECKLIST, SCOPE
     assert not [x[0] for x in SCOPE if f"scope:{x[0]}" not in ar]
     assert not [x[0] for x in CHECKLIST if f"check:{x[0]}" not in ar]
+    assert not [g["nrm1"] for g in lib.groups.values() if f'nrm1:{g["nrm1"]}' not in ar]
 
 
 def test_saudi_excel_boq_is_bilingual(duplex, lib):
