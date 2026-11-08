@@ -343,6 +343,7 @@ const D = {
   "ratio allowance": { ar: "نسبة تقديرية", ur: "تناسب کا الاؤنس", es: "ratio estimado", fr: "ratio forfaitaire" },
   "yours": { ar: "أسعارك", ur: "آپ کی", es: "suyo", fr: "le vôtre" },
   "Please choose an .ifc file.": { ar: "اختر ملف ‎.ifc (أو ‎.ifcZIP).", ur: "‎.ifc فائل منتخب کریں (یا ‎.ifcZIP)۔", es: "Elija un archivo .ifc (o .ifcZIP).", fr: "Choisissez un fichier .ifc (ou .ifcZIP)." },
+  "New item": { ar: "بند جديد", ur: "نئی مد", es: "Nueva partida", fr: "Nouveau poste" },
 };
 
 let lang = "en";

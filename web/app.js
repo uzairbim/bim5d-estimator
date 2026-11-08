@@ -480,7 +480,7 @@ function renderSummary() {
   }));
   $("#exclusions").addEventListener("change", (ev) => saveSettings({ exclusions: ev.target.value.split("\n").map((x) => x.trim()).filter(Boolean) }));
   const manual = () => JSON.parse(JSON.stringify(S.project.settings.manual_items || []));
-  $("#addManual").addEventListener("click", () => { const l = manual(); l.push({ description: "New item", qty: 1, unit: "item", rate: 0, work_item: "" }); saveSettings({ manual_items: l }); });
+  $("#addManual").addEventListener("click", () => { const l = manual(); l.push({ description: t("New item"), qty: 1, unit: "item", rate: null, work_item: "" }); saveSettings({ manual_items: l }); });
   $$("[data-mirm]", $("#tab-summary")).forEach((b) => b.addEventListener("click", () => { const l = manual(); l.splice(Number(b.dataset.mirm), 1); saveSettings({ manual_items: l }); }));
   $$("[data-mi]", $("#tab-summary")).forEach((inp) => inp.addEventListener("change", () => {
     const l = manual(), i = Number(inp.dataset.mi), f = inp.dataset.f;
