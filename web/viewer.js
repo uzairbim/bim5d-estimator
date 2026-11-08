@@ -96,10 +96,8 @@ export class Viewer {
     this.clear();
     this.origin = g.index.origin || [0, 0, 0];
     this.add(g, false);
-    // New model: start from a standard 3/4 view from above.
-    this.camera.position.set(1, 0.8, 1);
-    this.controls.target.set(0, 0, 0);
-    this.fit();
+    // New model: start from a standard 3/4 view from above, wherever the model sits.
+    this.fit(null, true);
   }
 
   // Add another model's geometry (a second discipline model) to the scene.
@@ -152,7 +150,7 @@ export class Viewer {
     this.dirty = true;
   }
 
-  fit(guids) {
+  fit(guids, fromAbove = false) {
     const box = new THREE.Box3();
     if (guids && guids.length) guids.forEach((g) => { const m = this.meshes.get(g) || this.ghosts.get(g); if (m) box.expandByObject(m); });
     else box.setFromObject(this.group);
@@ -161,7 +159,7 @@ export class Viewer {
     const r = Math.max(box.getSize(new THREE.Vector3()).length(), 2);
     this.controls.target.copy(c);
     const dir = this.camera.position.clone().sub(c).normalize();
-    if (!isFinite(dir.x) || dir.length() < 0.5) dir.set(0.7, 0.55, 0.7).normalize();
+    if (fromAbove || !isFinite(dir.x) || dir.length() < 0.5) dir.set(0.7, 0.55, 0.7).normalize();
     this.camera.position.copy(c.clone().add(dir.multiplyScalar(r * 1.1)));
     this.camera.near = r / 2000; this.camera.far = r * 40;
     this.camera.updateProjectionMatrix();

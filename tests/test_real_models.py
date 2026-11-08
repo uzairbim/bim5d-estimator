@@ -298,3 +298,14 @@ def test_saudi_villa_example_is_priced_like_a_saudi_estimator_would(lib):
     assert est["summary"]["gfa"] == pytest.approx(288, abs=1)
     assert not est["checks"]["unclassified"]
     assert 1200 < est["summary"]["per_m2"] < 2600          # shell and finishes, no MEP, SAR/m2
+
+
+def test_crossing_beams_are_not_called_duplicates(lib):
+    """Tie beams of one type crossing at columns overlap a little: a junction, not a duplicate."""
+    els = extract(str(SAMPLES / "Saudi_Villa_Example.ifc"))
+    from engine import overlaps
+    found, _ = overlaps.find(els["elements"], els["meshes"])
+    for e in els["elements"]:
+        e["overlaps"] = found.get(e["guid"], [])
+    est = estimate(els["elements"], "SA", lib, {})
+    assert est["checks"]["overlaps"] and not est["checks"]["duplicates"]

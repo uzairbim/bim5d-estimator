@@ -415,8 +415,9 @@ def extract(path, with_mesh=True, progress=None):
                 if with_mesh and len(w):
                     # Survey (UTM) coordinates lose precision in float32: shift near the origin first,
                     # by whole kilometres so separate discipline models keep lining up.
-                    if origin is None:
-                        origin = np.floor(w[0] / 1000.0) * 1000.0
+                    if origin is None:      # horizontal only, and only for far-away survey points
+                        far = np.abs(w[0, :2]) > 5000.0
+                        origin = np.array([*(np.floor(w[0, :2] / 1000.0) * 1000.0 * far), 0.0])
                     wl = w - origin
                     wy = np.stack([wl[:, 0], wl[:, 2], -wl[:, 1]], axis=1)  # Z-up -> Y-up
                     meshes[el.GlobalId] = (wy.astype(np.float32),

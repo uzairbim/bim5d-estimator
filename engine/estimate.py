@@ -555,6 +555,7 @@ def _deductions(elements, recipes, deduct):
     records, seen = [], set()
     if not deduct:
         return give, records
+    vol_of = {e["guid"]: (e.get("qty") or {}).get("volume") or 0.0 for e in elements}
     for e in elements:
         for other, vol in e.get("overlaps") or []:
             pair = tuple(sorted((e["guid"], other)))
@@ -566,7 +567,11 @@ def _deductions(elements, recipes, deduct):
             if pa is None or pb is None:
                 continue
             if pa == pb:
-                loser, kind = pair[1], "same type" if ra == rb else "overlap"
+                # Same kind crossing at a junction (tie beams, walls at a corner) is normal; it is a
+                # likely duplicate only when one element sits almost entirely inside the other.
+                small = min(vol_of.get(pair[0]) or 0, vol_of.get(pair[1]) or 0)
+                dup = ra == rb and small > 0 and vol >= 0.6 * small
+                loser, kind = pair[1], "same type" if dup else "overlap"
             else:
                 loser, kind = (pair[1] if pa < pb else pair[0]), "overlap"
             give[loser] += vol
