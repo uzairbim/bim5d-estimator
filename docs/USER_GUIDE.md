@@ -222,7 +222,7 @@ and estimator names, then **Print / Save as PDF**.
 
 ## 10. Export
 
-**Export Excel** downloads the full estimate: summary, NRM1 and Uniformat cost plans, BOQ, every
+**Export Excel** downloads the full estimate. The **Priced BOQ** sheet is in tender format: numbered bills by trade, item numbers, live formulas (change a rate and every total updates), bill subtotals, and a bill summary with mark-ups, VAT and the grand total. The other sheets: summary, NRM1 and Uniformat cost plans, BOQ, every
 element's cost lines with formulas, mapping, programme, cash flow with an S-curve chart, and model checks.
 
 ## Adapting it to your company

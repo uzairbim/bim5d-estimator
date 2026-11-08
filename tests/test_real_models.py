@@ -192,3 +192,34 @@ def test_levels_of_two_models_are_matched_by_height(duplex, lib):
     extra["bbox"] = [x + 50 for x in extra["bbox"]]
     gfa = estimate(arch + [extra], "SA", lib, {})["summary"]["gfa_by_level"]
     assert "L-top SSL" not in gfa
+
+
+def _excel_value(ws, ref, cache):
+    """Evaluate the simple formulas of the priced BOQ (=A1*B1, =SUM(A1:A9), =ROUND(x,2), +)."""
+    import re
+    if ref in cache:
+        return cache[ref]
+    v = ws[ref].value
+    if isinstance(v, str) and v.startswith("="):
+        f = re.sub(r"SUM\(([A-Z]+)(\d+):([A-Z]+)(\d+)\)", lambda m: "(" + "+".join(
+            f"{m.group(1)}{r}" for r in range(int(m.group(2)), int(m.group(4)) + 1)) + ")", v[1:])
+        f = re.sub(r"\b([A-Z]{1,2})(\d+)\b", lambda m: repr(float(_excel_value(ws, m.group(0), cache))), f.replace("ROUND(", "round("))
+        v = eval(f)  # only our own generated formulas
+    elif not isinstance(v, (int, float)):
+        v = 0.0
+    cache[ref] = v
+    return v
+
+
+@pytest.mark.parametrize("region", ["SA", "GB"])
+def test_priced_boq_formulas_add_up_to_the_estimate(duplex, lib, region):
+    import io
+    import openpyxl
+    from engine.export import to_xlsx
+    est = estimate(duplex, region, lib, {"allowances": [{"name": "MEP", "kind": "pct", "value": 25}]})
+    ws = openpyxl.load_workbook(io.BytesIO(to_xlsx("t", est)))["Priced BOQ"]
+    row = next(r for r in range(1, ws.max_row + 1) if ws.cell(r, 2).value == "GRAND TOTAL")
+    col = max(c for c in range(1, ws.max_column + 1) if ws.cell(row, c).value)
+    from openpyxl.utils import get_column_letter
+    total = _excel_value(ws, f"{get_column_letter(col)}{row}", {})
+    assert abs(total - est["summary"]["total"]) < 1.0
