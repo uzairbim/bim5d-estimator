@@ -19,7 +19,7 @@ SA = {
     "M-PE": 2, "M-PLY": 40, "M-TMB": 1800, "M-BLK": 3.0, "M-BRK": 1.5, "M-INS": 25, "M-GYP": 18,
     "M-STUD": 8, "M-PNT": 14, "M-PRM": 12, "M-EPNT": 22, "M-SPNT": 35, "M-TILE": 55, "M-WTILE": 45,
     "M-ADH": 1.2, "M-GRT": 5, "M-WOOD": 140, "M-CLGSYS": 25, "M-WPM": 35, "M-WPC": 30, "M-STL": 7500,
-    "M-RAIL": 350, "M-CLAD": 350, "M-DOOR": 1500, "M-WIN": 750, "M-CWP": 1100, "M-CWM": 180,
+    "M-RAIL": 350, "M-CLAD": 350, "M-DOOR": 1500, "M-WIN": 750, "M-CWP": 750, "M-CWM": 140,
     "M-STAIR": 7000, "M-LIFT": 120000, "M-FFE": 1200, "M-PIPE-S": 25, "M-PIPE-M": 120, "M-PIPE-L": 350,
     "M-PFIT": 30, "M-VALVE": 250, "M-SAN": 1500, "M-SPRK": 70, "M-GALV": 9, "M-DIFF": 220,
     "M-MECH": 12000, "M-TRAY": 45, "M-TFIT": 35, "M-CBL": 8, "M-LUM": 250, "M-ACC": 35, "M-DB": 2500,
@@ -52,7 +52,7 @@ GB = {  # United Kingdom (GBP)
     "M-RMC": 140, "M-CEM": 12, "M-SND": 48, "M-AGG": 45, "M-RBR": 900, "M-BLK": 2.2, "M-BRK": 0.75,
     "M-PLY": 22, "M-TMB": 650, "M-PNT": 7, "M-PRM": 6, "M-TILE": 30, "M-WTILE": 28, "M-GYP": 4,
     "M-STL": 2800, "M-DOOR": 450, "M-WIN": 450, "M-WPM": 18, "M-SAN": 350, "M-LUM": 70, "M-ACC": 10,
-    "M-CBL": 2,
+    "M-CBL": 2, "M-CWP": 420, "M-CWM": 60,
 }
 
 DE = {  # Germany (EUR)
@@ -60,7 +60,7 @@ DE = {  # Germany (EUR)
     "M-RMC": 150, "M-CEM": 9, "M-SND": 35, "M-AGG": 30, "M-RBR": 950, "M-BLK": 2.5, "M-BRK": 0.9,
     "M-PLY": 25, "M-TMB": 600, "M-PNT": 8, "M-PRM": 7, "M-TILE": 30, "M-WTILE": 28, "M-GYP": 5,
     "M-STL": 3000, "M-DOOR": 550, "M-WIN": 500, "M-WPM": 20, "M-SAN": 450, "M-LUM": 80, "M-ACC": 12,
-    "M-CBL": 2.5,
+    "M-CBL": 2.5, "M-CWP": 450, "M-CWM": 65,
 }
 
 US = {  # United States (USD)
@@ -68,7 +68,7 @@ US = {  # United States (USD)
     "M-RMC": 165, "M-CEM": 15, "M-SND": 35, "M-AGG": 40, "M-RBR": 1100, "M-BLK": 2.2, "M-BRK": 0.7,
     "M-PLY": 32, "M-TMB": 700, "M-PNT": 10, "M-PRM": 8, "M-TILE": 25, "M-WTILE": 25, "M-GYP": 6,
     "M-STL": 3200, "M-DOOR": 500, "M-WIN": 450, "M-WPM": 15, "M-SAN": 500, "M-LUM": 90, "M-ACC": 12,
-    "M-CBL": 2.5,
+    "M-CBL": 2.5, "M-CWP": 600, "M-CWM": 85,
 }
 
 PACKS = {"SA": SA, "AE": AE, "PK": PK, "IN": IN, "GB": GB, "DE": DE, "US": US}

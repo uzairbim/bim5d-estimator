@@ -285,6 +285,8 @@ function bars(obj) {
 function nextSteps(e) {
   const c = e.checks, a = e.accuracy, items = [];
   const unpricedTypes = e.groups.filter((g) => g.recipe === null && g.source === "none").length;
+  const gen = c.generic;
+  if (gen && gen.share > 0.15) items.push([t("{p}% of the cost is on generic placeholder types ({types}). Choose what they are built of.", { p: Math.round(gen.share * 100), types: gen.types.slice(0, 2).join(", ") }), t("Open Mapping"), "goto:mapping"]);
   if (unpricedTypes) items.push([t("Element types not priced yet: {n}. Tell the tool what they are.", { n: unpricedTypes }), t("Open Mapping"), "goto:mapping"]);
   if ((a.user_price_share || 0) < 0.5) items.push([t("Prices: {a}% assumed, {e}% estimated. Confirm today's prices for labour, ready-mix, rebar, blocks and cement.", { a: Math.round((a.assumed_price_share || 0) * 100), e: Math.round((a.estimated_price_share || 0) * 100) }), t("Enter prices"), "rates"]);
   const gap = e.scope.find((x) => !x.present && x.suggest && !e.allowances.some((al) => al.name === x.suggest.name));
@@ -336,6 +338,10 @@ function renderSummary() {
     const b = s.benchmark, inside = s.per_m2 >= b.low && s.per_m2 <= b.high;
     bench = `<div class="callout ${inside ? "ok" : ""}">${t("Cost per m²")}: <b>${fmt(s.per_m2)} ${e.currency}</b> on ${fmt(s.gfa)} m² floor area. Typical for <i>${esc(b.label)}</i>: ${fmt(b.low)}–${fmt(b.high)}. ${inside ? t("Inside the usual range.") : s.per_m2 < b.low ? t("Lower than usual: check the scope list below for parts not in the model.") : t("Higher than usual: check rates and quantities.")}</div>`;
   }
+  const lv = Object.entries(s.gfa_by_level || {});
+  if (lv.length > 1 || s.gfa_warning) bench += `<details class="small gfa-lv"><summary>${t("Floor area by level")}: ${fmt(s.gfa)} m²${s.gfa_warning ? ' <span class="bad">⚠</span>' : ""}</summary>
+    ${s.gfa_warning ? `<p class="bad" dir="auto">${esc(s.gfa_warning)}</p>` : ""}<table>${lv.map(([k, v]) => `<tr><td>${esc(k)}</td><td class="n">${fmt(v)} m²</td></tr>`).join("")}</table>
+    <p class="muted">${t("Each level counts once: the larger of its floor slabs, floor build-ups or rooms. Levels with nothing built on them (roof) are not counted. Type your own total in Project settings.")}</p></details>`;
   const rb = c.rebar;
   const rebarNote = (rb.modeled_kg > 0) ? `<div class="callout">Rebar: modelled bars <b>${fmt(rb.modeled_kg)} kg</b>, ratios give <b>${fmt(rb.ratio_kg)} kg</b>. Using <b>${rb.mode === "modeled" ? "modelled bars" : "ratios"}</b>.${rb.modeled_kg < rb.ratio_kg * 0.5 ? " The modelled rebar looks incomplete." : ""}</div>` : "";
   const scopeRows = e.scope.map((x) => {

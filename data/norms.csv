@@ -251,3 +251,8 @@ SOLAR,L-SKL,1.2,
 SOLAR,P-CRANE,0.02,
 MECH-SM,M-MECH-S,1,
 MECH-SM,L-SKL,4,
+TMB-STR,M-TMB,1.0,sawn or engineered timber
+TMB-STR,M-STL,0.012,steel connectors and fixings (t)
+TMB-STR,L-SKL,10,carpenter
+TMB-STR,L-UNS,5,
+TMB-STR,P-CRANE,0.3,

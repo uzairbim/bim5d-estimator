@@ -37,11 +37,80 @@ def group_key(el):
     return f"{el.get('kind') or el['ifc_class']}|{name}"
 
 
+NOT_MATCHED_PROPS = {"phase", "demolished"}
+EXISTING_PHASE = re.compile(r"exist|bestand|existant|existente|bestaand|موجود|قائم", re.I)
+EXISTING_NAME = re.compile(r"\bexisting\b|\(existing\)|\bbestand\b|\bexistant", re.I)
+NO_DEMOLITION = re.compile(r"^\s*(none|keine|aucune|ninguna|geen|nessuna|لا يوجد|-)?\s*$", re.I)
+
+
+def is_existing(el):
+    """Built already or demolished, per the Revit phase (or 'Existing' in the type name)."""
+    p = el.get("props", {})
+    if not NO_DEMOLITION.match(p.get("demolished", "")):
+        return True
+    if p.get("phase"):
+        return bool(EXISTING_PHASE.search(p["phase"]))
+    return bool(EXISTING_NAME.search(f'{el.get("name", "")} {el.get("type", "")}'))
+
+
+FINISH_FLOOR_RECIPES = {"FLOOR_FINISH", "SCREED_LAYER"}
+GENERIC_TYPE = re.compile(r"\bgeneric\b|\bdefault\b|placeholder|allgemein|g[ée]n[ée]rique|gen[ée]rico|"
+                          r"\bstandaard\b|عام", re.I)
+
+
+def gross_floor_area(elements, per_element):
+    """Gross floor area, level by level, like an estimator measures it.
+
+    Each level counts once, using the most complete of: structural floor slabs, floor build-ups
+    (architect's model without structure) and room areas. A level counts only when something
+    stands on it (rooms, doors or full-height walls), so the roof slab is not taken as a floor.
+    """
+    lv = {}
+    for e in elements:
+        L = e.get("level") or "(no level)"
+        d = lv.setdefault(L, {"slab": 0.0, "finish": 0.0, "rooms": 0.0, "used": False})
+        recipe = per_element.get(e["guid"], {}).get("recipe")
+        q = e["qty"]
+        if e["ifc_class"] == "IfcSpace":
+            if e.get("is_room", True):
+                d["rooms"] += q.get("floor_area") or q.get("footprint") or 0
+                d["used"] = True
+        elif recipe in FLOOR_RECIPES:
+            d["slab"] += q.get("footprint") or 0
+        elif recipe in FINISH_FLOOR_RECIPES:
+            d["finish"] += q.get("footprint") or 0
+        elif e["ifc_class"] in ("IfcDoor", "IfcStair", "IfcStairFlight") or (
+                e["ifc_class"] in ("IfcWall", "IfcWallStandardCase", "IfcColumn") and (q.get("height") or 0) > 2.0):
+            d["used"] = True
+    any_used = any(d["used"] for d in lv.values())
+    out = {}
+    for L, d in lv.items():
+        area = max(d["slab"], d["finish"], d["rooms"])
+        if area and (d["used"] or not any_used):
+            out[L] = round(area, 1)
+    if len(out) > 1:
+        out.pop("(no level)", None)   # unplaced items would count a floor twice
+    return round(sum(out.values()), 1), out
+
+
+def gfa_warning(levels):
+    """A level much larger than the others usually includes paving, podium or site slabs."""
+    if len(levels) < 3:
+        return None
+    vals = sorted(levels.values())
+    median = vals[len(vals) // 2]
+    big = [L for L, a in levels.items() if a > 2.5 * median]
+    if big:
+        return (f"{', '.join(big)} is much larger than the other floors: it may include external paving, "
+                "podium or site slabs. Check the floor area by level and type the correct total if needed.")
+    return None
+
+
 def match_text(el):
     p = el.get("props", {})
     return " ".join([el.get("name", ""), el.get("type", ""), el.get("predefined", ""),
                      *el.get("materials", []), *el.get("classification", []),
-                     *(str(v) for v in p.values())])
+                     *(str(v) for k, v in p.items() if k not in NOT_MATCHED_PROPS)])
 
 
 class Library:
@@ -82,6 +151,14 @@ class Library:
         self._cache = {}
 
     # -- classification -------------------------------------------------
+    @property
+    def volume_recipes(self):
+        """Recipes whose quantities depend on the element's volume."""
+        if "_volr" not in self._cache:
+            self._cache["_volr"] = {r for r, items in self.recipes.items()
+                                    if any(re.search(r"\bvolume\b", i["qty"]) for i in items)}
+        return self._cache["_volr"]
+
     def rule_for(self, el):
         text = match_text(el)
         classes = {el["ifc_class"], el.get("kind") or el["ifc_class"]}
@@ -96,6 +173,8 @@ class Library:
             m = mappings.get(group_key(el))
             if m:
                 return (None, "excluded") if m == "EXCLUDE" else (m, "mapping")
+        if el["ifc_class"] != "IfcSpace" and is_existing(el):
+            return None, "excluded"    # existing / demolished: not new work
         r = self.rule_for(el)
         if r is None:
             return None, "none"
@@ -416,8 +495,20 @@ def estimate(elements, region, lib=None, settings=None):
 
     # classify first (overlap rules depend on how each element is priced)
     cls = {e["guid"]: lib.classify(e, mappings) for e in elements}
+    # Rooms with exactly the same shape (badly bounded rooms in Revit) would count finishes twice.
+    seen_rooms, dup_rooms = {}, []
+    for e in elements:
+        if e["ifc_class"] == "IfcSpace" and cls[e["guid"]][0] and e.get("bbox"):
+            k = tuple(round(x, 2) for x in e["bbox"])
+            if k in seen_rooms:
+                dup_rooms.append({"a": seen_rooms[k], "b": e["guid"], "volume": 0, "loser": e["guid"],
+                                  "kind": "same room shape"})
+                cls[e["guid"]] = (None, "excluded")
+            else:
+                seen_rooms[k] = e["guid"]
     recipes = {g: r for g, (r, _) in cls.items()}
     give, overlap_records = _deductions(elements, recipes, deduct)
+    overlap_records += dup_rooms
     n_rooms = sum(1 for e in elements if e["ifc_class"] == "IfcSpace" and recipes.get(e["guid"]))
     finishes_from = settings.get("finishes_from") or "auto"
     has_walls = any(e["ifc_class"] in ("IfcWall", "IfcWallStandardCase", "IfcCurtainWall") for e in elements)
@@ -439,7 +530,9 @@ def estimate(elements, region, lib=None, settings=None):
     for el in elements:
         recipe, source = cls[el["guid"]]
         q0 = el["qty"]
-        if q0.get("check") in (1.0, 3.0):
+        # Flag only rough box estimates that the price depends on. A volume taken from the
+        # authoring tool (check 3) is reliable; doors priced by count do not need a volume.
+        if q0.get("check") == 1.0 and recipe in lib.volume_recipes:
             flagged.append(el["guid"])
         key = group_key(el)
         g = groups.setdefault(key, {"key": key, "kind": el.get("kind") or el["ifc_class"],
@@ -583,8 +676,7 @@ def estimate(elements, region, lib=None, settings=None):
     direct = round(sum(l["amount"] for l in lines), 2)
 
     # Gross floor area from floor slabs (not roofs), for cost per m2 and allowances.
-    gfa = sum(e["qty"]["footprint"] for e in elements
-              if per_element.get(e["guid"], {}).get("recipe") in FLOOR_RECIPES)
+    gfa, gfa_levels = gross_floor_area(elements, per_element)
     if settings.get("gfa_m2"):
         gfa = float(settings["gfa_m2"])
 
@@ -648,12 +740,23 @@ def estimate(elements, region, lib=None, settings=None):
     covered = {a.get("name", "").split(" ")[0] for a in allowances}
     missing_uncovered = [m for m in missing if m.split(" ")[0] not in covered and
                          not any(m.split(" ")[0].lower() in a.get("name", "").lower() for a in allowances)]
+    # Placeholder types ("Generic - 200mm", "Default Floor"): the specification is not decided yet.
+    gen = [g for g in groups.values() if g["recipe"] and GENERIC_TYPE.search(g["type"] or "")]
+    generic_cost = sum(g["total"] for g in gen)
+    generic = {"cost": round(generic_cost, 2), "share": round(generic_cost / direct, 3) if direct else 0,
+               "count": sum(g["count"] for g in gen),
+               "types": [g["type"] for g in sorted(gen, key=lambda g: -g["total"])[:6]]}
+    generic_high = generic["share"] > 0.15
+
     reasons = []
     if estimated_share > 0.5:
         cls_ = 5
         reasons.append(f"{estimated_share:.0%} of the cost uses prices converted from US levels. Open Prices & rates and enter local prices (start with the key ones).")
-    elif user_share < 0.5 or missing_uncovered or unpriced_share > 0.1:
+    elif user_share < 0.5 or missing_uncovered or unpriced_share > 0.1 or generic_high:
         cls_ = 4
+        if generic_high:
+            reasons.append(f"{generic['share']:.0%} of the cost is on generic placeholder types "
+                           f"({', '.join(generic['types'][:3])}). Confirm what they are built of in Mapping.")
         if user_share < 0.5:
             reasons.append(f"{assumed_share:.0%} of the cost uses assumed indicative prices (prices change daily). "
                            "Confirm the key prices in Prices & rates to reach Class 3.")
@@ -702,6 +805,12 @@ def estimate(elements, region, lib=None, settings=None):
         assumptions.append(
             f"Prices: {user_share:.0%} confirmed by you, {assumed_share:.0%} assumed indicative market prices "
             f"(late 2026, not quotations), {estimated_share:.0%} estimated from US price levels.")
+    n_existing = sum(1 for e in elements if e["ifc_class"] != "IfcSpace" and is_existing(e)
+                     and not (mappings and mappings.get(group_key(e))))
+    if n_existing:
+        assumptions.append(f"{n_existing} elements are marked as existing or demolished in the model (Revit phase "
+                           "or 'Existing' in the type name) and are not priced as new work. Map them in Mapping "
+                           "if they are new.")
     if ffe_count:
         assumptions.append(f"Loose furniture ({ffe_count} items, about {ffe_outside:,.0f} {reg['currency']}) is "
                            "excluded: it is normally the client's separate FF&E budget. Built-in joinery is included.")
@@ -726,7 +835,8 @@ def estimate(elements, region, lib=None, settings=None):
                     "prelims_pct": reg["prelims_pct"], "escalation_pct": reg["escalation_pct"],
                     "contingency_pct": reg.get("contingency_pct", 0),
                     "overhead_pct": reg["overhead_pct"], "profit_pct": reg["profit_pct"],
-                    "tax_pct": reg["tax_pct"], "gfa": round(gfa, 1),
+                    "tax_pct": reg["tax_pct"], "gfa": round(gfa, 1), "gfa_by_level": gfa_levels,
+                    "gfa_warning": None if settings.get("gfa_m2") else gfa_warning(gfa_levels),
                     "per_m2": round(total / gfa, 2) if gfa > 1 else None,
                     "benchmark": reg.get("benchmark")},
         "accuracy": accuracy, "scope": scope, "allowances": allowances, "checklist": checklist,
@@ -743,6 +853,7 @@ def estimate(elements, region, lib=None, settings=None):
                    "unclassified": unclassified, "excluded": excluded,
                    "geometry_flagged": flagged, "rebar": rb,
                    "overlaps": overlap_records, "overlap_m3": round(ov_total, 3),
-                   "duplicates": [r for r in overlap_records if r["kind"] == "same type"],
+                   "duplicates": [r for r in overlap_records if r["kind"] in ("same type", "same room shape")],
+                   "generic": generic,
                    "reconciliation": reconciliation},
     }

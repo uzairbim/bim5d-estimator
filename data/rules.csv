@@ -2,11 +2,11 @@ priority,ifc_class,keywords,recipe
 10,IfcFooting,,RC_FOOTING
 10,IfcPile,,RC_PILE
 3,IfcSlab|IfcCovering,^[^:]*:[^:]*(insulation|dämmung|isolation),INSULATION_LAYER
-5,IfcSlab,\broof\b.*(wood|joist|timber)|(wood|joist|timber).*\broof\b,ROOF_LIGHT
+3,IfcSlab,\broof\b.*(wood|joist|timber|rafter|truss|shingle|metal deck|sandwich)|(wood|joist|timber|rafter|truss|shingle).*\broof\b,ROOF_LIGHT
 6,IfcSlab,\broof\b|\bROOF\b,ROOF_RC
 7,IfcSlab,finish floor|ceramic|tile|wood - flooring|carpet|vinyl|fliese|parkett|teppich|dielen|\bfb [0-9],FLOOR_FINISH
-8,IfcSlab,wood joist|timber|lumber|joist|holz,TIMBER_FLOOR
-4,IfcSlab,\bpad\b|footing|pile ?cap|pilecap|raft|mat foundation|fundament,RC_FOOTING
+8,IfcSlab,wood joist|timber|lumber|joist|holz|\bstud|sheathing|plywood|\bosb\b|\bclt\b,TIMBER_FLOOR
+4,IfcSlab,\bpad\b|footing|pile ?cap|pilecap|\braft\b|raft foundation|mat foundation|fundament,RC_FOOTING
 10,IfcSlab,on grade|grnd|ground|sog|BASESLAB|bodenplatte,SLAB_ON_GRADE
 20,IfcSlab,,RC_SLAB
 10,IfcRoof,concrete|\bconc|\brc\b|\bstb\b|beton|خرسان,ROOF_RC
@@ -56,12 +56,12 @@ priority,ifc_class,keywords,recipe
 10,IfcElectricAppliance,,APPLIANCE
 10,IfcPump|IfcFan|IfcBoiler|IfcChiller|IfcHeatExchanger|IfcUnitaryEquipment|IfcAirToAirHeatRecovery|IfcCoolingTower|IfcCoil|IfcTank|IfcCompressor|IfcHumidifier|IfcEvaporativeCooler|IfcCondenser|IfcSpaceHeater,,MECH_EQUIP
 10,IfcController|IfcSensor|IfcActuator|IfcAlarm|IfcFlowInstrument|IfcUnitaryControlElement,,CONTROLS
-10,IfcFlowTerminal,closet|\bwc\b|toilet|lavatory|sink|basin|urinal|shower|bath|faucet|tap\b,SANITARY
-10,IfcBuildingElementProxy,wshp|heat pump|\bahu\b|\bfcu\b|fan coil|chiller|pump|boiler|split unit|condens,MECH_EQUIP
-30,IfcBuildingElementProxy,sink|basin|\bwc\b|toilet|shower|bowl|urinal|bidet,SANITARY
+10,IfcFlowTerminal,closet|\bwc\b|toilet|lavatory|sink|basin|urinal|shower|bath|faucet|tap\b|hot.?tub|jacuzzi|whirlpool,SANITARY
+10,IfcBuildingElementProxy|IfcFlowTerminal,wshp|heat pump|\bahu\b|\bfcu\b|fan coil|chiller|pump|boiler|split unit|condens|furnace|water.?heater|air conditioner|outside unit|outdoor unit|\bac unit|package unit|مكيف|سخان,MECH_EQUIP
+30,IfcBuildingElementProxy,sink|basin|\bwc\b|toilet|shower|bowl|urinal|bidet|hot.?tub|jacuzzi|whirlpool|\bspa\b,SANITARY
 33,IfcBuildingElementProxy|IfcSolarDevice|IfcElectricGenerator,photovoltaic|solar|\bpv\b,SOLAR_PV
 35,IfcBuildingElementProxy,tank|generator|inverter,MECH_EQUIP
-5,IfcBuildingElementProxy|IfcFurnishingElement|IfcFurniture|IfcSite|IfcGeographicElement,\btree\b|\bplant|shrub|entourage|\bpeople\b|person|rpc|\bcar\b|vehicle|\bbaum\b|\bwater\b|vase|flower|porcelain plate|decor|accessor,EXCLUDE
+5,IfcBuildingElementProxy|IfcFurnishingElement|IfcFurniture|IfcSite|IfcGeographicElement,\btree\b|\bplant|shrub|entourage|\bpeople\b|person|rpc|\bcar\b|vehicle|suv|sedan|truck|bicycle|\bbike|\bbaum\b|\bwater\b|vase|flower|porcelain plate|decor|accessor,EXCLUDE
 10,IfcGeographicElement,,EXCLUDE
 10,IfcSpace,bath|toilet|\bwc\b|shower|washroom|lavator|ablution|laundry|washing|wash room|restroom|powder|\bbad\b|dusche|حمام|دورة مياه|وضوء,ROOM_WET
 20,IfcSpace,kitchen|pantry|kitchenette|küche|مطبخ,ROOM_KITCHEN
@@ -69,7 +69,7 @@ priority,ifc_class,keywords,recipe
 40,IfcSpace,balcony|terrace|veranda|loggia|patio|balkon|terrasse|شرفة|تراس,ROOM_EXTERNAL
 50,IfcSpace,stair|treppe|درج,ROOM_STAIR
 90,IfcSpace,,ROOM_DRY
-15,IfcBuildingElementProxy,oven|fridge|refrigerator|freezer|washing machine|washer|dryer|dishwasher|cooktop|hob\b|range ?hood|microwave|kühlschrank|appliance,APPLIANCE
+15,IfcBuildingElementProxy|IfcFlowTerminal,oven|fridge|refrigerator|freezer|washing machine|washer|dryer|dishwasher|cook ?top|hob\b|range ?hood|\brange:|stove|cooker|microwave|kühlschrank|geschirrsp|waschmasch|\bkyl|frys|diskmaskin|tvättmaskin|réfrigérateur|lave-|frigor|lavadora|ثلاجة|غسالة|فرن|appliance,APPLIANCE
 1,IfcFlowTerminal|IfcSanitaryTerminal|IfcBuildingElementProxy|IfcValve,faucet|\btap\b|mixer|armatur,EXCLUDE
 10,IfcSolarDevice,,SOLAR_PV
 12,IfcBuildingElementProxy,receptacle|socket|switch|outlet|steckdose|schalter|data point,OUTLET
@@ -90,3 +90,9 @@ priority,ifc_class,keywords,recipe
 15,IfcSlab,beton|béton|hormig|calcestruzzo|betão|vloer|plancher|forjado|solaio|laje,RC_SLAB
 10,IfcStair|IfcStairFlight,trap\b|escalier|escalera|scala|escada,STAIR
 3,IfcBeam|IfcMember,latei|lintel|linteau|dintel|architrave|sturz,LINTEL_ELEMENT
+2,IfcSlab|IfcCovering,\brugs?\b|area rug|\bcarpet rug|teppich lose|loose mat,LOOSE_FFE
+2,IfcBuildingElementProxy|IfcFurnishingElement|IfcFurniture|IfcFlowTerminal,handtag|\bhandles?\b|\bknobs?\b|\bgriff|poign[eé]e|tirador|maniglia|مقبض,EXCLUDE
+20,IfcBuildingElementProxy,display|\blcd\b|\bled tv|\btv\b|television|monitor|projector screen,LOOSE_FFE
+25,IfcBuildingElementProxy,\bbeds?\b|_bed|bench|sofa|couch|\btables?\b|table\d|chair|\bdesk|stool|ottoman|bookcase|lounger|armchair|möbel|meuble|mueble|كنب|سرير|طاولة|كرسي,LOOSE_FFE
+10,IfcRamp|IfcRampFlight,,STAIR_RC
+4,IfcBeam|IfcColumn|IfcMember,lumber|timber|glulam|\blvl\b|laminated veneer|\bwood|softwood|hardwood|\bclt\b|holz|\bbois|madera|legno|houten|خشب,TIMBER_MEMBER

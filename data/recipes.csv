@@ -52,6 +52,8 @@ RC_WALL,CON-WAL,volume,2.5,
 RC_WALL,FRM-WAL,side*2,0,
 RC_WALL,RBR,volume*90,5,rebar_ratio
 RC_WALL,EXT-PNT,side*ext,5,
+RC_WALL,PLS,finish2*(1-ext)+finish1*ext,5,
+RC_WALL,PNT,(finish2*(1-ext)+finish1*ext)*(1-rooms_on),5,
 RC_COLUMN,CON-COL,volume,2.5,
 RC_COLUMN,FRM-COL,perimeter*length,0,
 RC_COLUMN,RBR,volume*160,5,rebar_ratio
@@ -135,3 +137,4 @@ ROOM_STAIR,PNT,wall_area,5,
 ROOM_STAIR,CLG-PNT,floor_area,5,
 SCREED_LAYER,SCR,footprint,5,
 LINTEL_ELEMENT,LINTEL,length,5,
+TIMBER_MEMBER,TMB-STR,volume,10,

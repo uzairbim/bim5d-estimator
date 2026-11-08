@@ -52,8 +52,10 @@ def _materials(el, scale):
 def _storey(el, scale):
     """(level name, level elevation in m)."""
     c = uel.get_container(el)
-    if c is None and uel.get_aggregate(el) is not None:
-        c = uel.get_container(uel.get_aggregate(el))
+    if c is None:
+        a = uel.get_aggregate(el)   # rooms are parts of a level; wall parts are parts of a wall
+        if a is not None:
+            c = a if a.is_a("IfcSpatialStructureElement") else uel.get_container(a)
     while c is not None and not c.is_a("IfcBuildingStorey"):
         c = uel.get_aggregate(c)
     if c is None:
@@ -204,7 +206,8 @@ GENERIC = {"IfcFlowSegment", "IfcFlowFitting", "IfcFlowTerminal", "IfcFlowContro
 KEEP_PROPS = {"Assembly Code": "assembly_code", "Keynote": "keynote", "System Type": "system",
               "System Classification": "system", "System Name": "system_name",
               "OmniClass Number": "omniclass", "Description": "description",
-              "Type Comments": "type_comments", "Structural Material": "structural_material"}
+              "Type Comments": "type_comments", "Structural Material": "structural_material",
+              "Phase Created": "phase", "Phase Demolished": "demolished"}
 
 
 def _kind(el, typ):
