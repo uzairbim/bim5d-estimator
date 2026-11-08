@@ -21,8 +21,8 @@ priority,ifc_class,keywords,recipe
 20,IfcColumn,,RC_COLUMN
 10,IfcBeam,steel|metal|\b(ipe|hea|heb|ub|uc|pfc|shs|rhs|chs|hss|w[0-9])|hollow structural|stahl(?!beton)|universal beam,STEEL_MEMBER
 20,IfcBeam,,RC_BEAM
-10,IfcCovering,ceiling|clg|decke|CEILING,CEILING
-20,IfcCovering,floor|tile|flr|FLOORING,FLOOR_FINISH
+10,IfcCovering,ceiling|clg|decke|CEILING|سقف|جبس|اسقف|أسقف,CEILING
+20,IfcCovering,floor|tile|flr|FLOORING|أرضي|ارضي|بلاط|سيراميك|بورسلين|رخام|جرانيت|باركيه,FLOOR_FINISH
 90,IfcCovering,,FINISH_GENERIC
 10,IfcDoor,,DOOR
 10,IfcWindow,,WINDOW
@@ -32,7 +32,7 @@ priority,ifc_class,keywords,recipe
 10,IfcCurtainWall,,CW_PANEL
 10,IfcMember,curtain|mullion|transom|pfosten|riegel|MULLION|PLATE,CW_MULLION
 90,IfcMember,,MISC_METAL
-5,IfcStair|IfcStairFlight,concrete|\bstb\b|beton|massiv|cast|in.?situ|precast,STAIR_RC
+5,IfcStair|IfcStairFlight,concrete|\bstb\b|beton|massiv|cast|in.?situ|precast|خرسان,STAIR_RC
 10,IfcStair|IfcStairFlight,,STAIR
 10,IfcRailing,,RAILING
 5,IfcFurnishingElement|IfcFurniture|IfcSystemFurnitureElement|IfcBuildingElementProxy,cabinet|casework|\bcounter\b|countertop|counter top|vanity|wardrobe|kitchen|shelv|enclosure|worktop|joinery|cupboard|(?<!water )closet|schrank|خزانة,JOINERY
@@ -70,7 +70,7 @@ priority,ifc_class,keywords,recipe
 40,IfcSpace,balcony|terrace|veranda|loggia|patio|balkon|terrasse|شرفة|تراس|بلكونة|حوش|فناء|سطح,ROOM_EXTERNAL
 50,IfcSpace,stair|treppe|درج|سلم|بيت الدرج,ROOM_STAIR
 90,IfcSpace,,ROOM_DRY
-15,IfcBuildingElementProxy|IfcFlowTerminal,oven|fridge|refrigerator|freezer|washing machine|washer|dryer|dishwasher|cook ?top|hob\b|range ?hood|\brange:|stove|cooker|microwave|kühlschrank|geschirrsp|waschmasch|\bkyl|frys|diskmaskin|tvättmaskin|réfrigérateur|lave-|frigor|lavadora|ثلاجة|غسالة|فرن|appliance,APPLIANCE
+15,IfcBuildingElementProxy|IfcFlowTerminal,oven|fridge|refrigerator|freezer|washing machine|washer|dryer|dishwasher|cook ?top|hob\b|range ?hood|\brange:|stove|cooker|microwave|kühlschrank|geschirrsp|waschmasch|\bkyl|frys|diskmaskin|tvättmaskin|réfrigérateur|lave-|frigor|lavadora|ثلاجة|غسالة|\bفرن\b|appliance,APPLIANCE
 1,IfcFlowTerminal|IfcSanitaryTerminal|IfcBuildingElementProxy|IfcValve,faucet|\btap\b|mixer|armatur,EXCLUDE
 10,IfcSolarDevice,,SOLAR_PV
 12,IfcBuildingElementProxy,receptacle|socket|switch|outlet|steckdose|schalter|data point,OUTLET
@@ -98,7 +98,7 @@ priority,ifc_class,keywords,recipe
 10,IfcRamp|IfcRampFlight,,STAIR_RC
 4,IfcBeam|IfcColumn|IfcMember,lumber|timber|glulam|\blvl\b|laminated veneer|\bwood|softwood|hardwood|\bclt\b|holz|\bbois|madera|legno|houten|خشب,TIMBER_MEMBER
 16,IfcWall|IfcWallStandardCase,stone|marble|granite|limestone|travertine|naturstein|pierre|piedra|حجر|رخام|جرانيت,STONE_WALL
-11,IfcWall|IfcWallStandardCase,thermal ?block|insulated block|thermo ?block|isolated block|بلوك عازل|بلوك حراري|عازل حراري,THERMAL_BLOCK_WALL
+11,IfcWall|IfcWallStandardCase,thermal ?block|insulated block|thermo ?block|isolated block|بلوك عازل|بلوك حراري|عازل حراري|بلوك معزول|معزول|حراري,THERMAL_BLOCK_WALL
 3,IfcBuildingElementProxy|IfcElectricDistributionBoard|IfcElectricDistributionPoint|IfcFlowController,switchboard|switchgear|\bmdb\b|\bsmdb\b|\bmcc\b|main panel|panelboard.*\b([2-9]\d\d|\d{4}) ?a\b|\b([4-9]\d\d|\d{4}) ?a\b,ELEC_PANEL
 3,IfcSlab,hordi|hourdi|hordy|هوردي|هردي|ribbed|waffle|rib slab|hollow block slab,RIBBED_SLAB
 3,IfcSlab|IfcCovering|IfcBuildingElementProxy|IfcPavement|IfcCourse,interlock|paving|pavers?\b|انترلوك|إنترلوك|hardscape|sidewalk|walkway|driveway|pavement|\bkerbs?\b|\bcurbs?\b,PAVING
@@ -114,3 +114,16 @@ priority,ifc_class,keywords,recipe
 10,IfcCommunicationsAppliance,data|telephone|\btv\b|socket|outlet,OUTLET
 20,IfcCommunicationsAppliance,,CONTROLS
 10,IfcDistributionChamberElement,,MANHOLE
+19,IfcWall|IfcWallStandardCase,طوب أحمر|طوب احمر|طوب طيني|آجر|اجر,BRICK_WALL
+4,IfcSlab,لبشة|لبشه|حصيرة,RC_FOOTING
+9,IfcSlab,بلاطة أرضية|بلاطة ارضية|على التربة|أرضية خرسانية|ارضية خرسانية,SLAB_ON_GRADE
+1,IfcFlowTerminal|IfcSanitaryTerminal|IfcBuildingElementProxy,شطاف|خلاط|حنفية|بزبوز,EXCLUDE
+3,IfcBuildingElementProxy|IfcFlowTerminal,مغسلة|مغاسل|حوض غسيل|كرسي افرنجي|كرسي إفرنجي|كرسي عربي|مرحاض|دش|بانيو|مبولة|حوض استحمام|مرحاض,SANITARY
+5,IfcBuildingElementProxy|IfcFurnishingElement|IfcFurniture,خزائن|خزانة|دولاب|دواليب|كبت|وحدات مطبخ,JOINERY
+5,IfcBuildingElementProxy|IfcFurnishingElement|IfcSite|IfcGeographicElement,شجرة|أشجار|اشجار|نخلة|نخيل|نبات|زرع|سيارة|سيارات|شخص|أشخاص|اشخاص,EXCLUDE
+35,IfcBuildingElementProxy,بيارة|خزان تحليل|سبتك|septic,MECH_EQUIP
+17,IfcBuildingElementProxy,مصعد|اسانسير,LIFT
+12,IfcBuildingElementProxy,فيش|بريزة|مفتاح كهرباء|مخرج كهرباء,OUTLET
+3,IfcBuildingElementProxy|IfcElectricDistributionBoard,لوحة رئيسية|لوحة كهرباء رئيسية|لوحة توزيع رئيسية,ELEC_PANEL
+14,IfcBuildingElementProxy,لوحة كهرباء|لوحة توزيع,ELEC_DEVICE
+15,IfcBuildingElementProxy,إنارة|انارة|كشاف|سبوت|ثريا|نجفة,LIGHT

@@ -541,3 +541,32 @@ def test_modelled_rebar_weight_equals_diameter_times_length(lib):
     est = estimate(extract(str(f), with_mesh=False)["elements"], "SA", lib, {"rebar_mode": "modeled"})
     tool = sum(l["net_qty"] for l in est["lines"] if l["recipe"] == "REBAR_MODELED")
     assert tool == pytest.approx(by_hand, rel=0.03)
+
+
+@pytest.mark.parametrize("cls,name,recipe", [
+    ("IfcColumn", "رقبة عمود 30×50", "RC_COLUMN"), ("IfcBeam", "ميدة 30×60", "RC_FOOTING"),
+    ("IfcSlab", "بلاطة هوردي 32 سم", "RIBBED_SLAB"), ("IfcSlab", "بلاطة أرضية 15 سم", "SLAB_ON_GRADE"),
+    ("IfcSlab", "لبشة 80 سم", "RC_FOOTING"), ("IfcWall", "جدار بلوك معزول 20 سم", "THERMAL_BLOCK_WALL"),
+    ("IfcWall", "جدار طوب أحمر 20 سم", "BRICK_WALL"), ("IfcWall", "قاطع جبس بورد 10 سم", "DRYWALL"),
+    ("IfcWall", "جدار حجر رياض 30 سم", "STONE_WALL"), ("IfcStair", "درج خرساني", "STAIR_RC"),
+    ("IfcCovering", "سقف مستعار جبس", "CEILING"), ("IfcCovering", "أرضية سيراميك 60×60", "FLOOR_FINISH"),
+    ("IfcBuildingElementProxy", "كرسي افرنجي", "SANITARY"), ("IfcBuildingElementProxy", "كرسي عربي", "SANITARY"),
+    ("IfcBuildingElementProxy", "مغسلة", "SANITARY"), ("IfcBuildingElementProxy", "خزائن مطبخ", "JOINERY"),
+    ("IfcBuildingElementProxy", "ثلاجة مطبخ", "APPLIANCE"), ("IfcBuildingElementProxy", "مصعد", "LIFT"),
+    ("IfcBuildingElementProxy", "فيش كهرباء", "OUTLET"), ("IfcBuildingElementProxy", "لوحة كهرباء رئيسية", "ELEC_PANEL"),
+    ("IfcBuildingElementProxy", "مكيف سبليت 24000", "MECH_EQUIP"), ("IfcBuildingElementProxy", "طفاية حريق", "FIRE_EQUIP"),
+    ("IfcBuildingElementProxy", "سرير", "LOOSE_FFE"), ("IfcBuildingElementProxy", "شجرة", None),
+    ("IfcBuildingElementProxy", "شطاف", None),
+])
+def test_arabic_type_names(lib, cls, name, recipe):
+    el = {"ifc_class": cls, "kind": cls, "name": name, "type": name, "predefined": "", "materials": [],
+          "classification": [], "props": {}, "layers": [], "qty": {"height": 0.2, "volume": 0.1}}
+    assert lib.classify(el)[0] == recipe
+
+
+def test_neck_columns_below_ground_get_bitumen(villa):
+    d, est = villa
+    cols = {e["guid"] for e in d["elements"] if e["ifc_class"] == "IfcColumn" and e["level"] == "Foundation"}
+    upper = {e["guid"] for e in d["elements"] if e["ifc_class"] == "IfcColumn" and e["level"] != "Foundation"}
+    bit = lambda gs: sum(l["net_qty"] for l in est["lines"] if l["guid"] in gs and l["work_item"] == "BIT-COAT")
+    assert bit(cols) == pytest.approx(9 * 1.6 * 1.5, rel=0.01) and bit(upper) == 0

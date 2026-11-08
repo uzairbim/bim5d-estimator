@@ -174,6 +174,16 @@ def _dig_depth(el, q, ground_tops):
     return min(max(h, ground - bottom), 6.0)
 
 
+def _below_ground(el, q, ground_tops):
+    """Height of a column or wall below the ground slab (neck columns, walls on tie beams): the part
+    in contact with soil, which gets bitumen coating. Ground = top of the lowest ground slab."""
+    b = el.get("bbox")
+    if not b or not ground_tops:
+        return 0.0
+    ground = min(ground_tops)
+    return max(0.0, min(q.get("height") or 0.0, ground - b[2]))
+
+
 def _under_a_roof(el, roofs):
     """A slab with a modelled roof (pitched roof, roof deck) above it is a ceiling, not the roof."""
     b = el.get("bbox")
@@ -662,6 +672,7 @@ def _env(el, give, rule, ctx):
         q["fire"] = 1.0 if FIRE_DOOR.search(text) else 0.0
         q["glass_door"] = 1.0 if GLASS_DOOR.search(text) else 0.0
     q["dig"] = _dig_depth(el, q, ctx.get("ground_tops", ()))
+    q["below_ground"] = _below_ground(el, q, ctx.get("ground_tops", ()))
     q["is_roof"] = 1.0 if (el["ifc_class"] == "IfcSlab" and (el.get("predefined") == "ROOF"
                                                               or el.get("level") in ctx.get("roof_levels", ()))
                             and not _under_a_roof(el, ctx.get("roofs", ()))
