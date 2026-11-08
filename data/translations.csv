@@ -181,3 +181,39 @@ work_item,EXT-PAV,بلاط انترلوك للممرات الخارجية شام
 recipe,RIBBED_SLAB,بلاطة هوردي (معصبة)
 recipe,PAVING,أرصفة وممرات خارجية
 trade,External works,الأعمال الخارجية
+scope,Substructure,الأعمال تحت الأرض (الأساسات)
+scope,Frame and upper floors,الهيكل الخرساني والأسقف
+scope,Roof,السطح
+scope,External walls / envelope,الجدران الخارجية والواجهات
+scope,Internal walls and doors,الجدران الداخلية والأبواب
+scope,Internal finishes,التشطيبات الداخلية
+scope,MEP services,الأعمال الكهروميكانيكية
+scope,External works,الأعمال الخارجية
+check,Excavation and backfill,الحفر والردم
+check,Blinding under foundations,خرسانة النظافة تحت الأساسات
+check,Anti-termite treatment,مكافحة النمل الأبيض
+check,Hardcore / sub-base and DPM,طبقة الإحلال والعازل تحت البلاطات
+check,Reinforcement,حديد التسليح
+check,Formwork (incl. slab edges),الشدات (شاملة حواف البلاطات)
+check,Lintels over openings,الأعتاب فوق الفتحات
+check,Wall plaster,لياسة الجدران
+check,Paint to walls,دهان الجدران
+check,Paint to ceilings,دهان الأسقف
+check,Floor finishes,تشطيب الأرضيات
+check,Skirting,الوزرات
+check,Wall tiling in wet areas,تكسية الجدران في المناطق الرطبة
+check,Waterproofing (roofs and wet areas),العزل المائي (الأسطح والمناطق الرطبة)
+check,Window sills and sealant,جلسات النوافذ ومانع التسرب
+check,Doors with frames and ironmongery,الأبواب بالحلوق والإكسسوارات
+check,Handrails and balustrades,الدرابزين والحواجز
+check,Protective paint to steelwork,دهان حماية الحديد
+check,Pipe and duct insulation,عزل المواسير ومجاري الهواء
+check,Bitumen coating to foundations,دهان البيتومين للأساسات
+check,Thermal insulation of external walls (energy code),العزل الحراري للجدران الخارجية (كود الطاقة)
+check,Water tanks (ground and roof),خزانات المياه (الأرضي والعلوي)
+check,Sewer connection or septic tank,توصيلة الصرف الصحي أو البيارة
+check,"Boundary wall, gates and fencing",السور الخارجي والبوابات
+check,Testing and commissioning of services,اختبار وتشغيل الأنظمة
+check,Fire stopping of service penetrations,سد فتحات الخدمات ضد الحريق
+check,"Scaffolding, temporary works, site facilities",السقالات والأعمال المؤقتة ومرافق الموقع
+check,Final cleaning and handover,التنظيف النهائي والتسليم

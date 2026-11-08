@@ -77,11 +77,11 @@ function paint() {
   const cmp = S.mode === "changes" && S.compare ? S.compare.status : null;
   let legend = "";
   if (S.time !== null) {
-    legend = `<b>Week ${fmt(S.time, 1)}</b><div class="key"><span class="sw" style="background:#f59e0b"></span>Being built</div><div class="key"><span class="sw" style="background:#9aa4b2"></span>Done</div>`;
-  } else if (S.mode === "cost") legend = `<div class="ramp"></div><div class="ramp-l"><span>low</span><span>${fmt(p95)}+ ${cur()}</span></div>`;
-  else if (S.mode === "trade") legend = trades.map((t, i) => `<div class="key"><span class="sw" style="background:${TRADE_COLORS[i % TRADE_COLORS.length]}"></span>${esc(t)}</div>`).join("");
-  else if (S.mode === "check") legend = `<div class="key"><span class="sw" style="background:#15803d"></span>Priced</div><div class="key"><span class="sw" style="background:#f59e0b"></span>Shape needs review</div><div class="key"><span class="sw" style="background:#dc2626"></span>Not priced</div><div class="key"><span class="sw" style="background:#9aa4b2"></span>Excluded</div>`;
-  else if (cmp) legend = `<div class="key"><span class="sw" style="background:#16a34a"></span>Added</div><div class="key"><span class="sw" style="background:#f59e0b"></span>Changed</div><div class="key"><span class="sw" style="background:#dc2626"></span>Removed</div>`;
+    legend = `<b>${t("Week")} ${fmt(S.time, 1)}</b><div class="key"><span class="sw" style="background:#f59e0b"></span>${t("Being built")}</div><div class="key"><span class="sw" style="background:#9aa4b2"></span>${t("Done")}</div>`;
+  } else if (S.mode === "cost") legend = `<div class="ramp"></div><div class="ramp-l"><span>${t("low")}</span><span>${fmt(p95)}+ ${cur()}</span></div>`;
+  else if (S.mode === "trade") legend = trades.map((tr, i) => `<div class="key"><span class="sw" style="background:${TRADE_COLORS[i % TRADE_COLORS.length]}"></span>${esc(tx("trade", tr, tr))}</div>`).join("");
+  else if (S.mode === "check") legend = `<div class="key"><span class="sw" style="background:#15803d"></span>${t("Priced")}</div><div class="key"><span class="sw" style="background:#f59e0b"></span>${t("Shape needs review")}</div><div class="key"><span class="sw" style="background:#dc2626"></span>${t("Not priced")}</div><div class="key"><span class="sw" style="background:#9aa4b2"></span>${t("Excluded")}</div>`;
+  else if (cmp) legend = `<div class="key"><span class="sw" style="background:#16a34a"></span>${t("Added")}</div><div class="key"><span class="sw" style="background:#f59e0b"></span>${t("Changed")}</div><div class="key"><span class="sw" style="background:#dc2626"></span>${t("Removed")}</div>`;
   $("#legend").innerHTML = legend;
   $("#showAll").hidden = !S.highlight;
 
@@ -297,7 +297,7 @@ function nextSteps(e) {
   if (unpricedTypes) items.push([t("Element types not priced yet: {n}. Tell the tool what they are.", { n: unpricedTypes }), t("Open Mapping"), "goto:mapping"]);
   if ((a.user_price_share || 0) < 0.5) items.push([t("Prices: {a}% assumed, {e}% estimated. Confirm today's prices for labour, ready-mix, rebar, blocks and cement.", { a: Math.round((a.assumed_price_share || 0) * 100), e: Math.round((a.estimated_price_share || 0) * 100) }), t("Enter prices"), "rates"]);
   const gap = e.scope.find((x) => !x.present && x.suggest && !e.allowances.some((al) => al.name === x.suggest.name));
-  if (gap) items.push([t("Not in the model: {name}. Add an allowance so the total is complete.", { name: gap.name }), t("Add {v}% allowance", { v: gap.suggest.value }), "allow:" + JSON.stringify(gap.suggest)]);
+  if (gap) items.push([t("Not in the model: {name}. Add an allowance so the total is complete.", { name: tx("scope", gap.name, gap.name) }), t("Add {v}% allowance", { v: gap.suggest.value }), "allow:" + JSON.stringify(gap.suggest)]);
   if (c.duplicates.length) items.push([t("Elements that look duplicated: {n}. Check them before issuing.", { n: c.duplicates.length }), t("Open Checks"), "goto:checks"]);
   else if (c.overlaps.length) items.push([t("Overlaps found and counted once: {n}. Have a quick look.", { n: c.overlaps.length }), t("Open Checks"), "goto:checks"]);
   const missing = e.checklist.filter((x) => x.status === "missing").length;
@@ -343,7 +343,7 @@ function renderSummary() {
   let bench = "";
   if (s.per_m2 && s.benchmark) {
     const b = s.benchmark, inside = s.per_m2 >= b.low && s.per_m2 <= b.high;
-    bench = `<div class="callout ${inside ? "ok" : ""}">${t("Cost per m²")}: <b>${fmt(s.per_m2)} ${e.currency}</b> on ${fmt(s.gfa)} m² floor area. Typical for <i>${esc(b.label)}</i>: ${fmt(b.low)}–${fmt(b.high)}. ${inside ? t("Inside the usual range.") : s.per_m2 < b.low ? t("Lower than usual: check the scope list below for parts not in the model.") : t("Higher than usual: check rates and quantities.")}</div>`;
+    bench = `<div class="callout ${inside ? "ok" : ""}">${t("Cost per m²")}: <b>${fmt(s.per_m2)} ${e.currency}</b> ${t("on {a} m² floor area.", { a: fmt(s.gfa) })} ${t("Typical for")} <i dir="auto">${esc(b.label)}</i>: ${fmt(b.low)}–${fmt(b.high)}. ${inside ? t("Inside the usual range.") : s.per_m2 < b.low ? t("Lower than usual: check the scope list below for parts not in the model.") : t("Higher than usual: check rates and quantities.")}</div>`;
   }
   const lv = Object.entries(s.gfa_by_level || {});
   if (lv.length > 1 || s.gfa_warning) bench += `<details class="small gfa-lv"><summary>${t("Floor area by level")}: ${fmt(s.gfa)} m²${s.gfa_warning ? ' <span class="bad">⚠</span>' : ""}</summary>
@@ -353,7 +353,7 @@ function renderSummary() {
   const rebarNote = (rb.modeled_kg > 0) ? `<div class="callout">Rebar: modelled bars <b>${fmt(rb.modeled_kg)} kg</b>, ratios give <b>${fmt(rb.ratio_kg)} kg</b>. Using <b>${rb.mode === "modeled" ? "modelled bars" : "ratios"}</b>.${rb.modeled_kg < rb.ratio_kg * 0.5 ? " The modelled rebar looks incomplete." : ""}</div>` : "";
   const scopeRows = e.scope.map((x) => {
     const added = x.suggest && e.allowances.some((al) => al.name === x.suggest.name);
-    return `<tr><td>${x.present ? '<span class="ok">✓</span>' : '<span class="bad">✗</span>'} ${esc(x.name)}</td><td class="n">${x.present ? fmt(x.cost) : ""}</td>
+    return `<tr><td>${x.present ? '<span class="ok">✓</span>' : '<span class="bad">✗</span>'} ${esc(tx("scope", x.name, x.name))}</td><td class="n">${x.present ? fmt(x.cost) : ""}</td>
       <td>${!x.present && x.suggest ? (added ? '<span class="tag">allowance added</span>' : `<button class="btn sm" data-allow='${esc(JSON.stringify(x.suggest))}'>${t("Add {v}% allowance", { v: x.suggest.value })}</button>`) : (x.present ? "" : '<span class="muted small">not in model</span>')}</td></tr>`;
   }).join("");
   const allowRows = (st.allowances || []).map((al, i) => {
@@ -375,8 +375,8 @@ function renderSummary() {
   host.innerHTML = `
     <div class="muted">${esc(S.project.name)} · ${(e.models || []).length > 1 ? e.models.map((m) => esc(m.label)).join(" + ") : esc(S.version.label)} · ${esc(e.region_name)}</div>
     <div class="total">${fmt(s.total)} <small>${e.currency}</small></div>
-    <div class="acc acc${a.class}"><b dir="auto">${esc(a.label)}</b> · ${t("likely between")} <b>${fmt(a.low)}</b> ${t("and")} <b>${fmt(a.high)}</b> ${e.currency} (${Math.round(a.low_pct * 100)}% / +${Math.round(a.high_pct * 100)}%)
-      ${a.reasons.length ? `<ul>${a.reasons.map((r) => `<li dir="auto">${esc(r)}</li>`).join("")}</ul>` : ""}</div>
+    <div class="acc acc${a.class}"><b dir="auto">${esc(t(a.label))}</b> · ${t("likely between")} <b>${fmt(a.low)}</b> ${t("and")} <b>${fmt(a.high)}</b> ${e.currency} (${Math.round(a.low_pct * 100)}% / +${Math.round(a.high_pct * 100)}%)
+      ${a.reasons.length ? `<ul>${(a.reasons_t || a.reasons.map((r) => [r, {}])).map(([tpl, v]) => `<li dir="auto">${esc(t(tpl, v.items ? { ...v, items: v.items.split(", ").map((x) => tx("scope", x, x)).join("، ") } : v))}</li>`).join("")}</ul>` : ""}</div>
     ${nextSteps(e)}
     <h3>${t("Cost build-up")} (${e.currency})</h3>
     <table class="build">
@@ -392,12 +392,12 @@ function renderSummary() {
     </table>
     ${c.unclassified.length ? `<div class="callout">${fmt(c.unclassified.length)} elements have no price yet. <a href="#" data-goto="mapping">Open Mapping</a>.</div>` : ""}
     ${bench}${rebarNote}
-    <details class="sec" id="scope" ${gapsOpen ? "open" : ""}><summary>${t("Scope check: is the whole building in the model?")} <span class="muted small">${missingCount ? missingCount + " to look at" : "all covered"}</span></summary>
+    <details class="sec" id="scope" ${gapsOpen ? "open" : ""}><summary>${t("Scope check: is the whole building in the model?")} <span class="muted small">${missingCount ? t("{n} to look at", { n: missingCount }) : t("all covered")}</span></summary>
     <table>${scopeRows}</table>
     <h3>${t("Commonly forgotten items")}</h3>
-    <table class="check">${e.checklist.map((c) => `<tr><td>${c.status === "priced" ? '<span class="ok">✓</span>' : c.status === "allowance" ? '<span class="ok">≈</span>' : c.status === "note" ? '<span class="muted">i</span>' : '<span class="bad">✗</span>'} ${esc(c.name)}</td>
+    <table class="check">${e.checklist.map((c) => `<tr><td>${c.status === "priced" ? '<span class="ok">✓</span>' : c.status === "allowance" ? '<span class="ok">≈</span>' : c.status === "note" ? '<span class="muted">i</span>' : '<span class="bad">✗</span>'} ${esc(tx("check", c.name, c.name))}</td>
       <td class="n">${c.cost ? fmt(c.cost) : ""}</td>
-      <td>${c.status === "missing" && c.suggest ? `<button class="btn sm" data-allow='${esc(JSON.stringify(c.suggest))}'>${t("Add")} ${c.suggest.value}%</button>` : c.note ? `<span class="muted small">${esc(c.note)}</span>` : c.status === "missing" ? `<span class="muted small">${t("missing")}</span>` : `<span class="muted small">${t(c.status)}</span>`}</td></tr>`).join("")}</table>
+      <td>${c.status === "missing" && c.suggest ? `<button class="btn sm" data-allow='${esc(JSON.stringify(c.suggest))}'>${t("Add")} ${c.suggest.value}%</button>` : c.note ? `<span class="muted small">${esc(t(c.note))}</span>` : c.status === "missing" ? `<span class="muted small">${t("missing")}</span>` : `<span class="muted small">${t(c.status)}</span>`}</td></tr>`).join("")}</table>
     </details>
     <details class="sec" ${(st.manual_items || []).length || (st.allowances || []).length ? "open" : ""}><summary>${t("Items measured by hand (not in the model)")} &amp; ${t("Allowances for work not in the model").toLowerCase()} <span class="muted small">${fmt(s.allowances + e.lines.filter((l) => l.recipe === "MANUAL").reduce((x, l) => x + l.amount, 0))} ${e.currency}</span></summary>
     <h3>${t("Items measured by hand (not in the model)")}</h3>
@@ -415,13 +415,14 @@ function renderSummary() {
     <button class="btn sm" id="addAllow">+ Add allowance</button>
     </details>
     <details class="sec" open><summary>${t("By trade")} &amp; ${t("Elemental cost plan").toLowerCase()}</summary>
-    <h3>${t("By trade")} (${e.currency})</h3>${bars(e.by_trade)}
+    <h3>${t("By trade")} (${e.currency})</h3>${bars(Object.fromEntries(Object.entries(e.by_trade).map(([k, v]) => [tx("trade", k, k), v])))}
     <h3>${t("Elemental cost plan")}</h3>
     <div class="seg" id="planSeg" style="display:inline-flex;margin-bottom:6px"><button data-plan="by_nrm1" class="on">NRM1</button><button data-plan="by_uniformat">Uniformat</button><button data-plan="by_level">Level</button></div>
     <div id="planBars">${bars(e.by_nrm1)}</div>
     </details>
     <details class="sec"><summary>${t("Project settings")} <span class="muted small">mark-ups, measurement rules, rebar, furniture</span></summary>
     <div class="settings">
+      <label>${t("Building type")}<select data-set="building_type">${Object.entries(S.lib.building_types || {}).map(([k, v]) => `<option value="${k}" ${k === (st.building_type || "residential") ? "selected" : ""}>${esc(t(v))}</option>`).join("")}</select></label>
       <label>Preliminaries %<input type="number" step="0.5" min="0" data-set="prelims_pct" value="${st.prelims_pct ?? reg.prelims_pct ?? 10}"></label>
       <label>Contingency %<input type="number" step="0.5" min="0" data-set="contingency_pct" value="${st.contingency_pct ?? reg.contingency_pct}"></label>
       <label>Overhead %<input type="number" step="0.5" min="0" data-set="overhead_pct" value="${st.overhead_pct ?? reg.overhead_pct}"></label>

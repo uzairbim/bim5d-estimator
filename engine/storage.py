@@ -32,12 +32,14 @@ DEFAULT_SETTINGS = {"region": "SA", "rebar_mode": "ratio", "mappings": {},
                     "duration_months": 12, "start": None,
                     "deduct_overlaps": True, "min_deduct_m2": 0.5, "rates_verified": False,
                     "allowances": [], "adjustments": {}, "assumptions": [], "exclusions": None,
-                    "gfa_m2": None, "standard": None, "finishes_from": "auto", "manual_items": [],
+                    "gfa_m2": None, "standard": None, "building_type": "residential", "finishes_from": "auto", "manual_items": [],
                     "include_loose_ffe": False}
 
 
 _PCT = ("overhead_pct", "profit_pct", "contingency_pct", "tax_pct", "prelims_pct", "escalation_pct")
 _CHOICES = {"rebar_mode": ("ratio", "modeled"), "finishes_from": ("auto", "rooms", "walls"),
+            "building_type": ("residential", "apartments", "office", "retail", "school", "mosque", "hotel",
+                              "hospital", "warehouse"),
             "standard": (None, "NRM2", "POMI", "IS1200", "EXACT")}
 _TYPES = {"mappings": dict, "adjustments": dict, "allowances": list, "assumptions": list,
           "manual_items": list, "deduct_overlaps": bool, "rates_verified": bool, "include_loose_ffe": bool}

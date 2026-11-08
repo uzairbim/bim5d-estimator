@@ -16,7 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from engine import ai, rates, storage
 from engine import regions as regions_mod
 from engine.compare import compare
-from engine.estimate import STANDARDS, Library, check_formula, estimate, group_key
+from engine.estimate import BUILDING_TYPES, STANDARDS, Library, check_formula, estimate, group_key
 from engine.export import to_xlsx
 from engine.schedule import build as build_schedule
 
@@ -117,6 +117,7 @@ def library():
                             "prices": len(lib.prices.get(k, {}))}
                         for k, v in lib.regions.items()},
             "standards": {k: v["label"] for k, v in STANDARDS.items()},
+            "building_types": {k: v[0] for k, v in BUILDING_TYPES.items()},
             "recipes": recipes, "work_items": lib.work_items,
             "translations": lib.translations,
             "ai": ai.available()}
@@ -253,7 +254,7 @@ def update_project(pid: str, changes: dict = Body(...)):
     allowed = {"name", "region", "rebar_mode", "mappings", "overhead_pct", "profit_pct",
                "contingency_pct", "tax_pct", "prelims_pct", "escalation_pct", "duration_months",
                "start", "deduct_overlaps", "min_deduct_m2", "rates_verified", "allowances",
-               "adjustments", "assumptions", "exclusions", "gfa_m2", "standard", "finishes_from",
+               "adjustments", "assumptions", "exclusions", "gfa_m2", "standard", "finishes_from", "building_type",
                "manual_items", "include_loose_ffe"}
     bad = set(changes) - allowed
     if bad:

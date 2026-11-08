@@ -54,6 +54,25 @@ def is_existing(el):
 
 
 FINISH_FLOOR_RECIPES = {"FLOOR_FINISH", "SCREED_LAYER"}
+
+# Typical whole-building cost per m2 relative to a mid-range house (indicative ratios from
+# international cost guides). The region's benchmark is for a house; other types are scaled.
+BUILDING_TYPES = {
+    "residential": ("Villa / house", 1.0), "apartments": ("Apartment building", 0.95),
+    "office": ("Office", 1.15), "retail": ("Retail / shops", 1.0), "school": ("School", 1.0),
+    "mosque": ("Mosque", 1.2), "hotel": ("Hotel (4 star)", 1.7), "hospital": ("Hospital", 2.2),
+    "warehouse": ("Warehouse / light industrial", 0.5),
+}
+
+
+def _benchmark(base, building_type):
+    if not base:
+        return None
+    label, f = BUILDING_TYPES.get(building_type or "residential", BUILDING_TYPES["residential"])
+    if f == 1.0:
+        return {**base, "type_label": label}
+    return {**base, "low": round(base["low"] * f, -1), "high": round(base["high"] * f, -1), "type_label": label,
+            "label": f"{label}: {f:g} x {base['label']} (assumed ratio)"}
 GENERIC_TYPE = re.compile(r"\bgeneric\b|\bdefault\b|placeholder|allgemein|g[ée]n[ée]rique|gen[ée]rico|"
                           r"\bstandaard\b|عام", re.I)
 
@@ -816,38 +835,46 @@ def estimate(elements, region, lib=None, settings=None):
                "types": [g["type"] for g in sorted(gen, key=lambda g: -g["total"])[:6]]}
     generic_high = generic["share"] > 0.15
 
-    reasons = []
+    reasons, reasons_t = [], []
+
+    def why(template, **vals):
+        """English text for Excel / report, plus the template so the app can translate it."""
+        reasons.append(template.format(**vals))
+        reasons_t.append([template, {k: str(v) for k, v in vals.items()}])
+
+    pct = lambda x: f"{x:.0%}"
     if estimated_share > 0.5:
         cls_ = 5
-        reasons.append(f"{estimated_share:.0%} of the cost uses prices converted from US levels. Open Prices & rates and enter local prices (start with the key ones).")
+        why("{p} of the cost uses prices converted from US levels. Open Prices & rates and enter local prices "
+            "(start with the key ones).", p=pct(estimated_share))
     elif user_share < 0.5 or missing_uncovered or unpriced_share > 0.1 or generic_high:
         cls_ = 4
         if generic_high:
-            reasons.append(f"{generic['share']:.0%} of the cost is on generic placeholder types "
-                           f"({', '.join(generic['types'][:3])}). Confirm what they are built of in Mapping.")
+            why("{p} of the cost is on generic placeholder types ({types}). Confirm what they are built of in Mapping.",
+                p=pct(generic["share"]), types=", ".join(generic["types"][:3]))
         if user_share < 0.5:
-            reasons.append(f"{assumed_share:.0%} of the cost uses assumed indicative prices (prices change daily). "
-                           "Confirm the key prices in Prices & rates to reach Class 3.")
+            why("{p} of the cost uses assumed indicative prices (prices change daily). "
+                "Confirm the key prices in Prices & rates to reach Class 3.", p=pct(assumed_share))
         if missing_uncovered:
-            reasons.append("Not in the model and no allowance yet: " + ", ".join(missing_uncovered) + ".")
+            why("Not in the model and no allowance yet: {items}.", items=", ".join(missing_uncovered))
         if unpriced_share > 0.1:
-            reasons.append(f"{unpriced_share:.0%} of elements are not priced. Use Mapping.")
+            why("{p} of elements are not priced. Use Mapping.", p=pct(unpriced_share))
     else:
         cls_ = 3
         if sample_share > 0:
-            reasons.append(f"{sample_share:.0%} of the cost still uses estimated prices.")
+            why("{p} of the cost still uses estimated prices.", p=pct(sample_share))
         if direct and flagged_cost / direct > 0.05:
-            reasons.append("More than 5% of the cost is on shapes that could not be measured exactly.")
+            why("More than 5% of the cost is on shapes that could not be measured exactly.")
         if reconciliation["share"] is not None and reconciliation["share"] < 0.9:
-            reasons.append("Less than 90% of quantities agree with the model's own values. Check the outliers.")
+            why("Less than 90% of quantities agree with the model's own values. Check the outliers.")
         if not reasons and settings.get("rates_verified"):
             cls_ = 2
     if cls_ > 2 and not reasons:
-        reasons.append("Confirm your rates are current market prices (tick 'Rates checked') to reach Class 2.")
+        why("Confirm your rates are current market prices (tick 'Rates checked') to reach Class 2.")
     label, lo_pct, hi_pct = ACCURACY[cls_]
     accuracy = {"class": cls_, "label": label, "low_pct": lo_pct, "high_pct": hi_pct,
                 "low": round(total * (1 + lo_pct), -2), "high": round(total * (1 + hi_pct), -2),
-                "reasons": reasons, "sample_rate_share": round(sample_share, 3),
+                "reasons": reasons, "reasons_t": reasons_t, "sample_rate_share": round(sample_share, 3),
                 "user_price_share": round(user_share, 3), "assumed_price_share": round(assumed_share, 3),
                 "estimated_price_share": round(estimated_share, 3)}
 
@@ -912,7 +939,8 @@ def estimate(elements, region, lib=None, settings=None):
                     "tax_pct": reg["tax_pct"], "gfa": round(gfa, 1), "gfa_by_level": gfa_levels,
                     "gfa_warning": None if settings.get("gfa_m2") else gfa_warning(gfa_levels),
                     "per_m2": round(total / gfa, 2) if gfa > 1 else None,
-                    "benchmark": reg.get("benchmark")},
+                    "benchmark": _benchmark(reg.get("benchmark"), settings.get("building_type")),
+                    "building_type": settings.get("building_type") or "residential"},
         "accuracy": accuracy, "scope": scope, "allowances": allowances, "checklist": checklist,
         "standard": {"code": std_code, **rule}, "rooms_on": bool(rooms_on), "rooms": n_rooms,
         "assumptions": assumptions, "exclusions": exclusions,
