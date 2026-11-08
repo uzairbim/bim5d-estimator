@@ -150,6 +150,8 @@ Run the tests: `python -m pytest -q`. Optional AI suggestions: set `ANTHROPIC_AP
 4. Translated work-item descriptions and BOQ in each language.
 5. Users, roles and approvals for teams.
 
+**How we know the numbers are right:** [docs/VERIFICATION.md](docs/VERIFICATION.md) compares the tool with hand calculations, real Revit models and 2026 Saudi market prices.
+
 See [docs/USER_GUIDE.md](docs/USER_GUIDE.md), [docs/RESEARCH.md](docs/RESEARCH.md) and
 [docs/SHARE_FOR_FREE.md](docs/SHARE_FOR_FREE.md).
 
