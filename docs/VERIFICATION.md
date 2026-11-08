@@ -78,6 +78,14 @@ LibreOffice and scanned: **0 error cells**. The Priced BOQ grand total equals th
 - Rooms exported as a 2D outline (no 3D body) keep their finishes: 5 × 4 m room → 20 m², perimeter
   18 m, paint 54 m² at 3.0 m.
 
+## 1f. Arabic type names and Saudi substructure
+
+- 44 Arabic family names (عمود، رقبة، ميدة، بلاطة هوردي، لبشة، بلوك معزول، طوب أحمر، جبس بورد، حجر رياض،
+  كرسي افرنجي، كرسي عربي، مغسلة، خزائن مطبخ، ثلاجة، مصعد، لوحة رئيسية، مكيف سبليت، طفاية حريق، شجرة…) are priced
+  as the right item (test matrix in `tests/test_real_models.py`).
+- Neck columns and walls below the ground slab get bitumen coating on the part in contact with soil:
+  villa 9 neck columns × 1.6 m × 1.5 m = 21.6 m², exactly.
+
 ## 2. Real Revit models
 
 Eight public Revit exports (Revit 2010–2021: Autodesk sample projects, an office in architecture,
