@@ -92,6 +92,7 @@ def library():
                         for k, v in lib.regions.items()},
             "standards": {k: v["label"] for k, v in STANDARDS.items()},
             "recipes": recipes, "work_items": lib.work_items,
+            "translations": lib.translations,
             "ai": ai.available()}
 
 
@@ -340,11 +341,11 @@ def get_compare(pid: str, a: str, b: str, region: Optional[str] = None):
 
 
 @app.get("/api/projects/{pid}/export.xlsx")
-def export(pid: str, version: Optional[str] = None, region: Optional[str] = None):
+def export(pid: str, version: Optional[str] = None, region: Optional[str] = None, lang: Optional[str] = None):
     p = _project(pid)
     v, els, est = _estimate(p, version, region)
     sched = build_schedule(els, est, p["settings"].get("duration_months") or 12)
-    data = to_xlsx(f"{p['name']} ({v['label']})", est, sched)
+    data = to_xlsx(f"{p['name']} ({v['label']})", est, sched, lang=lang)
     return Response(data, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     headers={"Content-Disposition":
                              f'attachment; filename="{_safe_name(p["name"])}_{est["region"]}_5D.xlsx"'})

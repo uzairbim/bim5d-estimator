@@ -113,3 +113,21 @@ def test_doors_priced_by_count_are_not_flagged(duplex, lib):
         if e["ifc_class"] == "IfcDoor":
             e["qty"]["check"] = 3.0      # volume taken from Revit: fine for a door priced by count
     assert estimate(els, "SA", lib, {})["checks"]["geometry_flagged"] == []
+
+
+def test_every_name_has_an_arabic_translation(lib):
+    ar = lib.translations["ar"]
+    assert not [c for c in lib.work_items if f"work_item:{c}" not in ar]
+    assert not [r for r in lib.groups if f"recipe:{r}" not in ar]
+    assert not [w["trade"] for w in lib.work_items.values() if f'trade:{w["trade"]}' not in ar]
+
+
+def test_saudi_excel_boq_is_bilingual(duplex, lib):
+    import io
+    import openpyxl
+    from engine.export import to_xlsx
+    sa = openpyxl.load_workbook(io.BytesIO(to_xlsx("t", estimate(duplex, "SA", lib, {}))))["BOQ"]
+    head = [c.value for c in sa[1]]
+    assert "الوصف" in head and all(r[2] for r in sa.iter_rows(min_row=2, values_only=True) if r[0])
+    gb = openpyxl.load_workbook(io.BytesIO(to_xlsx("t", estimate(duplex, "GB", lib, {}))))["BOQ"]
+    assert "الوصف" not in [c.value for c in gb[1]]

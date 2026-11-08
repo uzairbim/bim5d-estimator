@@ -48,7 +48,11 @@ def _plan(wb, title, groups, cur, direct, gfa):
         c.font = BOLD
 
 
-def to_xlsx(title, est, sched=None):
+ARAB_COUNTRIES = {"SA", "AE", "KW", "QA", "BH", "OM", "YE", "IQ", "JO", "LB", "SY", "PS", "EG", "LY", "TN",
+                  "DZ", "MA", "SD", "MR", "SO", "DJ", "KM"}
+
+
+def to_xlsx(title, est, sched=None, lang=None):
     cur = est["currency"]
     s = est["summary"]
     wb = Workbook()
@@ -112,12 +116,23 @@ def to_xlsx(title, est, sched=None):
     _plan(wb, "Elemental NRM1", est["by_nrm1"], cur, s["direct"], s.get("gfa"))
     _plan(wb, "Elemental Uniformat", est["by_uniformat"], cur, s["direct"], s.get("gfa"))
 
-    _sheet(wb, "BOQ",
-           ["Code", "Description", "Trade", "Unit", "Quantity", f"Rate ({cur})", f"Amount ({cur})",
-            "Elements", "Rate source"],
-           [[b["work_item"], b["description"], b["trade"], b["unit"], b["qty"], b["rate"],
-             b["amount"], b["elements"], b["rate_source"]] for b in est["boq"]],
-           money_cols=(f"Rate ({cur})", f"Amount ({cur})"))
+    # Bilingual BOQ (English + Arabic) when the interface is Arabic or the region is an Arab country.
+    tr = est.get("translations_ar") or {}
+    if lang == "ar" or str(est.get("region", ""))[:2] in ARAB_COUNTRIES:
+        _sheet(wb, "BOQ",
+               ["Code", "Description", "الوصف", "Trade", "القسم", "Unit", "الوحدة", "Quantity",
+                f"Rate ({cur})", f"Amount ({cur})", "Elements", "Rate source"],
+               [[b["work_item"], b["description"], b.get("description_ar", ""), b["trade"],
+                 tr.get(f'trade:{b["trade"]}', ""), b["unit"], tr.get(f'unit:{b["unit"]}', ""), b["qty"],
+                 b["rate"], b["amount"], b["elements"], b["rate_source"]] for b in est["boq"]],
+               money_cols=(f"Rate ({cur})", f"Amount ({cur})"), widths=[11, 40, 40, 16, 18, 6, 7])
+    else:
+        _sheet(wb, "BOQ",
+               ["Code", "Description", "Trade", "Unit", "Quantity", f"Rate ({cur})", f"Amount ({cur})",
+                "Elements", "Rate source"],
+               [[b["work_item"], b["description"], b["trade"], b["unit"], b["qty"], b["rate"],
+                 b["amount"], b["elements"], b["rate_source"]] for b in est["boq"]],
+               money_cols=(f"Rate ({cur})", f"Amount ({cur})"))
     _sheet(wb, "Element costs",
            ["GlobalId", "Element", "IFC class", "Level", "Recipe", "Work item", "Description",
             "Formula", "Net qty", "Waste %", "Quantity", "Unit", "Material", "Labour",

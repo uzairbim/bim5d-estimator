@@ -129,6 +129,13 @@ class Library:
             r["_expr"] = ast.parse(r["qty"], mode="eval")
             self.recipes[r["recipe"]].append(r)
         self.groups = {r["recipe"]: r for r in _csv(root / "recipe_groups.csv")}
+        # Names in other languages (data/translations.csv: kind, code, then one column per language).
+        self.translations = defaultdict(dict)
+        if (root / "translations.csv").exists():
+            for r in _csv(root / "translations.csv"):
+                for lang, text in r.items():
+                    if lang not in ("kind", "code") and text:
+                        self.translations[lang][f'{r["kind"]}:{r["code"]}'] = text
         regions = json.loads((root / "regions.json").read_text(encoding="utf-8"))
         self.regions = {k: v for k, v in regions.items() if not k.startswith("_")}
         self.base_rates = {r["work_item"]: r for r in _csv(root / "rates" / "base_usd.csv")}
@@ -664,8 +671,10 @@ def estimate(elements, region, lib=None, settings=None):
         b["qty"] = b.get("qty", 0) + l["qty"]
         b["amount"] = b.get("amount", 0) + l["amount"]
         b["elements"] = b.get("elements", 0) + 1
+    ar = lib.translations.get("ar", {})
     for b in boq.values():
         b["qty"], b["amount"] = round(b["qty"], 3), round(b["amount"], 2)
+        b["description_ar"] = ar.get(f'work_item:{b["work_item"]}', "")
     boq = sorted(boq.values(), key=lambda b: (b["trade"], b["work_item"]))
 
     def group(key):
@@ -850,6 +859,7 @@ def estimate(elements, region, lib=None, settings=None):
         "by_trade": group("trade"), "by_level": group("level"),
         "by_nrm1": by_nrm1, "by_uniformat": group_sorted("uniformat"),
         "by_stage": group_sorted("stage"),
+        "translations_ar": {k: v for k, v in ar.items() if k.startswith(("trade:", "unit:"))},
         "boq": boq, "lines": lines, "per_element": per_element, "groups": group_list,
         "resources": resources,
         "settings": {"rebar_mode": rebar_mode, "deduct_overlaps": deduct, "min_deduct_m2": min_open},

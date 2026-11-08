@@ -1,0 +1,175 @@
+kind,code,ar
+work_item,EARTH-EXC,حفر للأساسات شاملاً نقل المخلفات
+work_item,CON-PIL,خرسانة مسلحة للخوازيق المحفورة
+work_item,CON-FTG,خرسانة مسلحة للقواعد
+work_item,CON-SOG,خرسانة بلاطة أرضية على التربة
+work_item,CON-SLB,خرسانة مسلحة للبلاطات والأسقف
+work_item,CON-WAL,خرسانة مسلحة للجدران
+work_item,CON-COL,خرسانة مسلحة للأعمدة
+work_item,CON-BEM,خرسانة مسلحة للكمرات
+work_item,CON-STR,خرسانة مسلحة للسلالم
+work_item,FRM-FTG,شدات خشبية للقواعد
+work_item,FRM-SLB,شدات خشبية لبطنيات البلاطات
+work_item,FRM-WAL,شدات خشبية للجدران
+work_item,FRM-COL,شدات خشبية للأعمدة
+work_item,FRM-BEM,شدات خشبية للكمرات
+work_item,RBR,حديد تسليح
+work_item,MESH,شبك حديد ملحوم
+work_item,VAPOR,عازل بولي إيثيلين (نايلون) تحت البلاطات
+work_item,MAS-BLK,مباني بلوك خرساني
+work_item,MAS-BRK,مباني طوب
+work_item,INS-WAL,عزل حراري للجدران
+work_item,DRY-PRT,قواطع جبسية على هيكل معدني
+work_item,PLS,لياسة أسمنتية للجدران
+work_item,PNT,دهان بلاستيك (إيمولشن) للجدران
+work_item,SCR,طبقة لياسة أسمنتية (سكريد) للأرضيات
+work_item,FLR-INS,عزل حراري للأرضيات
+work_item,TMB-FLR,أرضية خشبية على مرابيع شاملة الألواح
+work_item,FLR-WOOD,أرضيات خشبية (باركيه)
+work_item,FLR-TIL,تبليط الأرضيات (بورسلين / سيراميك)
+work_item,CLG-GYP,أسقف مستعارة من ألواح الجبس
+work_item,FIN-GEN,تشطيبات عامة (غير محددة)
+work_item,ROF-WP,عزل مائي (ممبرين) للأسطح
+work_item,ROF-INS,عزل حراري للأسطح
+work_item,ROF-DECK,سقف خفيف (خشب / معدن)
+work_item,STL-STR,حديد إنشائي (قطاعات)
+work_item,MET-MISC,أعمال معدنية متفرقة
+work_item,RAIL,درابزين / حواجز
+work_item,CLAD,تكسيات معدنية / ألواح
+work_item,DOR,باب كامل بالحلق والإكسسوارات
+work_item,WIN,نافذة كاملة
+work_item,CW-GLZ,واجهات زجاجية (ألواح زجاج)
+work_item,CW-MUL,قطاعات ألمنيوم للواجهات الزجاجية
+work_item,STR-FLT,سلم كامل (غير خرساني)
+work_item,LIFT,مصعد ركاب كامل
+work_item,FFE,أثاث وتجهيزات (مبلغ تقديري)
+work_item,PIP-S,مواسير حتى قطر 50 مم شاملة الحوامل
+work_item,PIP-M,مواسير من 65 إلى 150 مم شاملة الحوامل
+work_item,PIP-L,مواسير أكبر من 150 مم شاملة الحوامل
+work_item,PIP-FIT,قطع وصل المواسير
+work_item,VALVE,محابس
+work_item,SAN,أدوات صحية كاملة
+work_item,SPRK,رشاشات إطفاء الحريق
+work_item,DUCT,مجاري هواء من الصاج المجلفن
+work_item,DUCT-FIT,قطع وصل مجاري الهواء
+work_item,AIR-TERM,فتحات تكييف (ناشرات وجريلات)
+work_item,MECH-EQ,معدات ميكانيكية (مضخات / مراوح / وحدات)
+work_item,CBL-TRAY,حوامل كابلات / مواسير كهرباء
+work_item,CBL-FIT,قطع وصل حوامل الكابلات
+work_item,CABLE,كابلات
+work_item,LIGHT,وحدات إنارة
+work_item,OUTLET,أفياش ومفاتيح
+work_item,ELEC-DEV,لوحات توزيع كهربائية وأجهزة حماية
+work_item,APPL,أجهزة منزلية
+work_item,CTRL,أجهزة تحكم وحساسات
+work_item,GEN-ITEM,بند منمذج (مبلغ تقديري)
+work_item,FRM-EDG,شدات خشبية لحواف البلاطات
+work_item,BLINDING,خرسانة عادية (نظافة) سمك 50 مم تحت الأساسات
+work_item,BACKFILL,ردم بمواد مختارة من ناتج الحفر
+work_item,HARDCORE,طبقة إحلال (بيس كورس) مدكوكة سمك 150 مم
+work_item,TERMITE,رش مبيد النمل الأبيض للتربة
+work_item,LINTEL,أعتاب فوق الفتحات في المباني
+work_item,SILL,جلسات النوافذ
+work_item,SEALANT,مانع تسرب (سيليكون) حول النوافذ من الجهتين
+work_item,EXT-RND,لياسة خارجية للجدران
+work_item,EXT-PNT,دهان خارجي للجدران
+work_item,STL-PNT,دهان حماية للحديد الإنشائي
+work_item,FLR-SKRT,وزرات
+work_item,WAL-TILE,تكسية الجدران بالسيراميك
+work_item,WPF-WET,عزل مائي للمناطق الرطبة شاملاً الرفرفة
+work_item,CLG-PNT,دهان الأسقف
+work_item,FLR-HRD,أرضيات إيبوكسي / مقسّاة للغرف الفنية
+work_item,PIP-INS,عزل المواسير
+work_item,DUCT-INS,عزل مجاري الهواء
+work_item,JOIN,أعمال نجارة مثبتة / خزائن (بالمتر الطولي)
+work_item,SOLAR,ألواح طاقة شمسية شاملة التثبيت
+work_item,MECH-SM,وحدة ميكانيكية صغيرة (مشع / فان كويل / مروحة)
+work_item,TMB-STR,عناصر إنشائية خشبية شاملة الوصلات
+work_item,BIT-COAT,دهان بيتومين للخرسانة الملامسة للتربة (وجهين)
+work_item,MAS-TBLK,مباني بلوك عازل حراري سمك 200 مم
+work_item,STONE-CLAD,تكسية الجدران بالحجر الطبيعي شاملة التثبيت
+work_item,ROF-TILE,طبقة حماية للسطح (بلاط / حصى)
+recipe,RC_PILE,خازوق خرساني
+recipe,RC_FOOTING,قاعدة خرسانية
+recipe,SLAB_ON_GRADE,بلاطة أرضية
+recipe,RC_SLAB,بلاطة خرسانية
+recipe,TIMBER_FLOOR,أرضية خشبية
+recipe,RC_COLUMN,عمود خرساني
+recipe,RC_BEAM,كمرة خرسانية
+recipe,STEEL_MEMBER,كمرة / عمود حديد
+recipe,STEEL_PLATE,لوح حديد
+recipe,REBAR_MODELED,حديد تسليح منمذج
+recipe,RC_WALL,جدار خرساني
+recipe,ROOF_RC,سطح خرساني
+recipe,ROOF_LIGHT,سقف خفيف (خشب / معدن)
+recipe,STAIR_RC,درج خرساني
+recipe,STAIR,درج (حديد / خشب)
+recipe,RAILING,درابزين
+recipe,CAVITY_WALL,جدار مزدوج (طوب + بلوك)
+recipe,BRICK_WALL,جدار طوب
+recipe,CW_PANEL,زجاج / لوح واجهة
+recipe,CW_MULLION,قطاع واجهة زجاجية
+recipe,CLADDING,لوح تكسية
+recipe,WINDOW,نافذة
+recipe,BLOCK_WALL,جدار بلوك (مليّس)
+recipe,DRYWALL,قاطع جبسي
+recipe,DOOR,باب
+recipe,MISC_METAL,عنصر معدني
+recipe,FLOOR_FINISH,تشطيب أرضية
+recipe,CEILING,سقف مستعار
+recipe,FINISH_GENERIC,تشطيب (أخرى)
+recipe,LOOSE_FFE,أثاث متنقل (على المالك)
+recipe,JOINERY,أعمال نجارة مثبتة / خزائن
+recipe,SOLAR_PV,لوح طاقة شمسية
+recipe,APPLIANCE,جهاز منزلي
+recipe,LIFT,مصعد
+recipe,PIPE,ماسورة
+recipe,PIPE_FITTING,قطعة وصل ماسورة
+recipe,VALVE,محبس
+recipe,SANITARY,أداة صحية
+recipe,SPRINKLER,رشاش حريق
+recipe,DUCT,مجرى هواء
+recipe,DUCT_FITTING,قطعة وصل مجرى هواء
+recipe,AIR_TERMINAL,ناشر / جريل
+recipe,MECH_EQUIP,معدة ميكانيكية
+recipe,CONTROLS,جهاز تحكم / حساس
+recipe,CABLE_TRAY,حامل كابلات / ماسورة كهرباء
+recipe,CABLE_FITTING,قطعة وصل حامل كابلات
+recipe,CABLE,كابل
+recipe,LIGHT,وحدة إنارة
+recipe,OUTLET,فيش / مفتاح
+recipe,ELEC_DEVICE,لوحة / جهاز كهربائي
+recipe,GENERIC_ITEM,بند آخر (مبلغ تقديري)
+recipe,INSULATION_LAYER,طبقة عزل
+recipe,ROOM_DRY,تشطيبات غرفة جافة
+recipe,ROOM_WET,تشطيبات حمام / منطقة رطبة
+recipe,ROOM_KITCHEN,تشطيبات مطبخ
+recipe,ROOM_TECH,تشطيبات غرفة فنية / مخزن / موقف
+recipe,ROOM_EXTERNAL,تشطيبات شرفة / تراس
+recipe,ROOM_STAIR,تشطيبات بيت الدرج
+recipe,SCREED_LAYER,طبقة سكريد
+recipe,LINTEL_ELEMENT,عتب (منمذج)
+recipe,TIMBER_MEMBER,كمرة / عمود / مربوع خشبي
+recipe,THERMAL_BLOCK_WALL,جدار بلوك عازل حراري
+recipe,STONE_WALL,جدار بلوك مكسو بالحجر
+trade,Concrete,الأعمال الخرسانية
+trade,Conveying,المصاعد والسلالم المتحركة
+trade,Earthworks,أعمال الحفر والردم
+trade,Electrical,الأعمال الكهربائية
+trade,FF&E,الأثاث والتجهيزات
+trade,Finishes,أعمال التشطيبات
+trade,Fire Protection,مكافحة الحريق
+trade,General,أعمال عامة
+trade,Masonry,أعمال المباني
+trade,Metals,الأعمال المعدنية
+trade,Openings,الأبواب والنوافذ والواجهات
+trade,Plumbing & HVAC,السباكة والتكييف
+trade,Roofing,أعمال الأسطح
+trade,Thermal & Moisture,العزل الحراري والمائي
+trade,Wood,أعمال الخشب
+unit,m3,م³
+unit,m2,م²
+unit,m,م.ط
+unit,kg,كجم
+unit,nr,عدد
+unit,t,طن

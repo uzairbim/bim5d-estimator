@@ -526,7 +526,7 @@ function openReport() {
 // ---------- BOQ ----------
 function renderBoq() {
   const e = S.est;
-  const seg = `<div class="seg" id="boqSeg" style="display:inline-flex;margin-bottom:8px"><button data-v="items" class="${S.boqView !== "res" ? "on" : ""}">Work items</button><button data-v="res" class="${S.boqView === "res" ? "on" : ""}">Resources (materials, labour, plant)</button></div>`;
+  const seg = `<div class="seg" id="boqSeg" style="display:inline-flex;margin-bottom:8px"><button data-v="items" class="${S.boqView !== "res" ? "on" : ""}">${t("Work items")}</button><button data-v="res" class="${S.boqView === "res" ? "on" : ""}">${t("Resources (materials, labour, plant)")}</button></div>`;
   if (S.boqView === "res") {
     const kindTag = (k) => k === "yours" ? `<span class="tag added">${t("your price")}</span>` : k === "assumed" ? `<span class="tag changed">${t("assumed")}</span>` : `<span class="tag">${t("estimated")}</span>`;
     $("#tab-boq").innerHTML = seg + `<p class="muted">Total labour, materials and plant behind the rates: for ordering, planning and seeing which prices matter most. "+10%" shows what a 10% price rise of that resource adds.</p>
@@ -536,14 +536,15 @@ function renderBoq() {
     $$("#boqSeg button").forEach((b) => b.addEventListener("click", () => { S.boqView = b.dataset.v; renderBoq(); }));
     return;
   }
-  let html = seg + `<p class="muted">Click a row to highlight its elements in 3D.</p><table><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead><tbody>`;
+  let html = seg + `<p class="muted">${t("Click a row to highlight its elements in 3D.")}</p><table><thead><tr><th>${t("Item")}</th><th class="n">${t("Qty")}</th><th class="n">${t("Rate")}</th><th class="n">${t("Amount")}</th></tr></thead><tbody>`;
   let trade = null;
   for (const b of e.boq) {
-    if (b.trade !== trade) { trade = b.trade; html += `<tr><td colspan="4"><b>${esc(trade)}</b></td></tr>`; }
-    html += `<tr class="click" data-wi="${b.work_item}"><td>${esc(b.description)}<br><span class="tag">${b.work_item}</span> <span class="muted small">${b.elements} elements</span>${String(b.rate_source).startsWith("SAMPLE") ? ' <span class="tag">sample rate</span>' : ""}</td>
+    if (b.trade !== trade) { trade = b.trade; html += `<tr><td colspan="4"><b>${esc(tx("trade", trade, trade))}</b></td></tr>`; }
+    const local = tx("work_item", b.work_item, "");
+    html += `<tr class="click" data-wi="${b.work_item}"><td>${local ? `<span dir="auto">${esc(local)}</span><br><span class="muted small" dir="ltr">${esc(b.description)}</span>` : esc(b.description)}<br><span class="tag">${b.work_item}</span> <span class="muted small" dir="auto">${t("{n} elements", { n: b.elements })}</span>${String(b.rate_source).startsWith("SAMPLE") ? ' <span class="tag">sample rate</span>' : ""}</td>
       <td class="n">${fmt(uq(b.qty, b.unit)[0], 2)} ${uq(b.qty, b.unit)[1]}</td><td class="n">${fmt(ur(b.rate, b.unit), 2)}</td><td class="n">${fmt(b.amount)}</td></tr>`;
   }
-  html += `</tbody><tfoot><tr><th>Direct cost</th><th></th><th></th><th class="n">${fmt(e.summary.direct)}</th></tr></tfoot></table>`;
+  html += `</tbody><tfoot><tr><th>${t("Direct cost")}</th><th></th><th></th><th class="n">${fmt(e.summary.direct)}</th></tr></tfoot></table>`;
   $("#tab-boq").innerHTML = html;
   $$("#boqSeg button").forEach((b) => b.addEventListener("click", () => { S.boqView = b.dataset.v; renderBoq(); }));
   $$("tr[data-wi]", $("#tab-boq")).forEach((tr) => tr.addEventListener("click", () => {
@@ -556,7 +557,9 @@ function renderBoq() {
 }
 
 // ---------- Mapping ----------
-const recipeLabel = (n) => n === "EXCLUDE" ? "Do not price (exclude)" : (S.lib.recipes[n]?.label || n);
+// Name of a work item, recipe or trade in the interface language (data/translations.csv), or English.
+const tx = (kind, code, english) => S.lib?.translations?.[getLang()]?.[`${kind}:${code}`] || english;
+const recipeLabel = (n) => n === "EXCLUDE" ? t("Do not price (exclude)") : tx("recipe", n, S.lib.recipes[n]?.label || n);
 function recipeOptions(selected) {
   const names = Object.keys(S.lib.recipes).sort((a, b) => recipeLabel(a).localeCompare(recipeLabel(b)));
   return `<option value="">— choose —</option>` + names.map((n) => `<option value="${n}" ${n === selected ? "selected" : ""}>${esc(recipeLabel(n))}</option>`).join("") +
@@ -573,22 +576,22 @@ function renderMapping() {
   const unpricedCount = e.groups.filter((g) => g.recipe === null && g.source === "none").length;
   const anySugg = Object.keys(S.suggestions).length;
   $("#tab-mapping").innerHTML = `
-    <p class="muted">Each row is one element type. Pick what it is and every element of that type is priced that way. Your choice overrides the automatic rules for this project.</p>
+    <p class="muted">${t("Each row is one element type. Pick what it is and every element of that type is priced that way. Your choice overrides the automatic rules for this project.")}</p>
     <div class="toolbar">
-      <div class="seg" id="mapSeg"><button data-f="unpriced">Not priced (${unpricedCount})</button><button data-f="all">All types (${e.groups.length})</button><button data-f="manual">Changed by you</button></div>
-      <input type="search" id="mapSearch" placeholder="Search types" value="${esc(S.mapSearch)}">
+      <div class="seg" id="mapSeg"><button data-f="unpriced">${t("Not priced")} (${unpricedCount})</button><button data-f="all">${t("All types")} (${e.groups.length})</button><button data-f="manual">${t("Changed by you")}</button></div>
+      <input type="search" id="mapSearch" placeholder="${t("Search types")}" value="${esc(S.mapSearch)}">
     </div>
-    ${S.lib.ai && unpricedCount ? `<div class="toolbar"><button class="btn" id="aiBtn">Suggest with AI</button>${anySugg ? '<button class="btn" id="aiAccept">Accept all suggestions with 80%+ confidence</button>' : ""}<span class="muted small">Suggestions are shown for you to check, never applied automatically.</span></div>` : ""}
+    ${S.lib.ai && unpricedCount ? `<div class="toolbar"><button class="btn" id="aiBtn">${t("Suggest with AI")}</button>${anySugg ? '<button class="btn" id="aiAccept">Accept all suggestions with 80%+ confidence</button>' : ""}<span class="muted small">Suggestions are shown for you to check, never applied automatically.</span></div>` : ""}
     ${!S.lib.ai && unpricedCount ? `<p class="muted small">Tip: set ANTHROPIC_API_KEY on the server to get AI suggestions for unknown types, including names in other languages.</p>` : ""}
-    <table><thead><tr><th>Element type</th><th class="n">Count</th><th class="n">Cost</th><th style="width:170px">Priced as</th></tr></thead><tbody>
+    <table><thead><tr><th>${t("Element type")}</th><th class="n">${t("Count")}</th><th class="n">${t("Cost")}</th><th style="width:170px">${t("Priced as")}</th></tr></thead><tbody>
     ${groups.slice(0, 400).map((g) => {
       const sel = maps[g.key] || g.recipe || "";
       const sug = S.suggestions[g.key];
-      return `<tr class="map-row click" data-key="${esc(g.key)}"><td>${esc(g.type || "(no name)")}<br><span class="tag">${esc(g.kind.replace(/^Ifc/, ""))}</span> <span class="tag ${g.source}">${{ rule: "auto rule", mapping: "set by you", none: "no match", excluded: "excluded" }[g.source]}</span>
+      return `<tr class="map-row click" data-key="${esc(g.key)}"><td>${esc(g.type || "(no name)")}<br><span class="tag">${esc(g.kind.replace(/^Ifc/, ""))}</span> <span class="tag ${g.source}">${t({ rule: "auto rule", mapping: "set by you", none: "no match", excluded: "excluded" }[g.source])}</span>
         ${sug ? `<div class="sugg">AI: <b>${esc(recipeLabel(sug.recipe))}</b> (${Math.round(sug.confidence * 100)}%). ${esc(sug.reason)} <button class="btn sm" data-accept="${esc(g.key)}">Accept</button></div>` : ""}</td>
         <td class="n">${g.count}</td><td class="n">${fmt(g.total)}</td>
-        <td><select data-map="${esc(g.key)}">${recipeOptions(sel)}</select>${g.source === "mapping" || g.source === "excluded" ? `<button class="btn sm" data-reset="${esc(g.key)}" title="Go back to the automatic rule">Reset</button>` : ""}</td></tr>`;
-    }).join("") || `<tr><td colspan="4" class="muted">${S.mapFilter === "unpriced" ? "Every element type is priced. 🎉" : "Nothing found."}</td></tr>`}
+        <td><select data-map="${esc(g.key)}">${recipeOptions(sel)}</select>${g.source === "mapping" || g.source === "excluded" ? `<button class="btn sm" data-reset="${esc(g.key)}" title="${t("Go back to the automatic rule")}">${t("Reset")}</button>` : ""}</td></tr>`;
+    }).join("") || `<tr><td colspan="4" class="muted">${S.mapFilter === "unpriced" ? t("Every element type is priced.") + " 🎉" : t("Nothing found.")}</td></tr>`}
     </tbody></table>`;
   $$(`#mapSeg button`).forEach((b) => { b.classList.toggle("on", b.dataset.f === S.mapFilter); b.addEventListener("click", () => { S.mapFilter = b.dataset.f; renderMapping(); }); });
   $("#mapSearch").addEventListener("input", (ev) => { S.mapSearch = ev.target.value; clearTimeout(S._ms); S._ms = setTimeout(() => { renderMapping(); $("#mapSearch").focus(); }, 250); });
@@ -657,7 +660,7 @@ function renderElement(guid) {
     </div>
     <h3>Cost breakdown</h3>
     <table><thead><tr><th>Work item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead><tbody>
-    ${lines.map((l) => `<tr><td>${esc(l.description)}<br><span class="muted small" title="Quantity formula">= ${esc(l.formula)}${l.waste_pct ? ` + ${l.waste_pct}% waste` : ""}</span></td><td class="n">${fmt(uq(l.qty, l.unit)[0], 2)} ${uq(l.qty, l.unit)[1]}</td><td class="n">${fmt(ur(l.rate, l.unit), 2)}</td><td class="n">${fmt(l.amount)}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">${pe.source === "excluded" ? "Excluded from the estimate." : "Not priced. Choose what it is above."}</td></tr>`}
+    ${lines.map((l) => `<tr><td><span dir="auto">${esc(tx("work_item", l.work_item, l.description))}</span><br><span class="muted small" title="Quantity formula">= ${esc(l.formula)}${l.waste_pct ? ` + ${l.waste_pct}% waste` : ""}</span></td><td class="n">${fmt(uq(l.qty, l.unit)[0], 2)} ${uq(l.qty, l.unit)[1]}</td><td class="n">${fmt(ur(l.rate, l.unit), 2)}</td><td class="n">${fmt(l.amount)}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">${pe.source === "excluded" ? "Excluded from the estimate." : "Not priced. Choose what it is above."}</td></tr>`}
     </tbody></table>
     <h3>Measured from the 3D shape</h3>
     <table>${[["Volume", q.volume, "m³", "volume"], ["Wall face (one side)", q.side, "m²", "side"], ["Plan area", q.footprint, "m²", "footprint"], ["Length", q.length, "m", "length"], ["Height", q.height, "m", "height"], ["Section size", q.section, "m", "section"]]
@@ -1027,7 +1030,7 @@ $("#projImport").addEventListener("change", async (ev) => {
   ev.target.value = "";
 });
 $("#addCountry").addEventListener("click", () => openRates($("#startRegion").value || "GLOBAL", "region"));
-$("#export").addEventListener("click", () => { location.href = `/api/projects/${S.project.id}/export.xlsx?version=${S.version.id}`; });
+$("#export").addEventListener("click", () => { location.href = `/api/projects/${S.project.id}/export.xlsx?version=${S.version.id}&lang=${getLang()}`; });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") { S.highlight = null; S.selected = null; $$("tr.sel").forEach((x) => x.classList.remove("sel")); paint(); } });
 
 init().catch((err) => toast(err.message));
