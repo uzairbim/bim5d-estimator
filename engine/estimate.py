@@ -261,8 +261,8 @@ def match_text(el):
 class Library:
     """All cost data, loaded from data/. Create a new one to pick up edits."""
 
-    def __init__(self, root=DATA):
-        self.root = root = Path(root)
+    def __init__(self, root=None):
+        self.root = root = Path(root or DATA)
         self.work_items = {r["code"]: r for r in _csv(root / "work_items.csv")}
         self.rules = sorted(_csv(root / "rules.csv"), key=lambda r: int(r["priority"]))
         for r in self.rules:

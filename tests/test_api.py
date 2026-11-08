@@ -224,3 +224,38 @@ def test_project_file_dropped_on_the_upload_opens_as_a_project(client):
 def test_bad_zip_uploads_give_a_clear_message(client, data):
     r = client.post("/api/projects", files={"file": ("m.ifczip", data)})
     assert r.status_code == 400 and r.json()["detail"]
+
+
+def test_new_country_your_price_and_parallel_uploads(client, tmp_path, monkeypatch):
+    """Create a country, price with it, change one price and see the estimate move; two uploads at once."""
+    import json as _json
+    import pathlib
+    import threading
+    from engine import estimate as est_mod
+    from engine import regions as reg_mod
+    # keep the real data folder untouched: regions.json and prices go to a temporary copy
+    import shutil
+    data = tmp_path / "data"
+    shutil.copytree(pathlib.Path(est_mod.DATA), data)
+    monkeypatch.setattr(est_mod, "DATA", data)
+    monkeypatch.setattr(reg_mod, "DATA", data)
+    monkeypatch.setattr(regions_mod, "_prices_path", lambda region: data / "prices" / f"{region}.csv")
+    r = client.post("/api/regions", json={"code": "EG", "values": {"fx_per_usd": 50}})
+    assert r.status_code == 200, r.text
+    villa = (pathlib.Path(__file__).resolve().parent.parent / "samples" / "Saudi_Villa_Example.ifc").read_bytes()
+    results = []
+
+    def up(name):
+        results.append(client.post("/api/projects", files={"file": (name, villa)}, data={"region": "EG"}).json())
+    threads = [threading.Thread(target=up, args=(f"v{i}.ifc",)) for i in range(2)]
+    [t.start() for t in threads]
+    [t.join() for t in threads]
+    assert len({x["project_id"] for x in results}) == 2
+    for x in results:
+        assert _wait(client, x["project_id"]) == ["ready"]
+    pid = results[0]["project_id"]
+    e1 = client.get(f"/api/projects/{pid}/estimate").json()
+    assert e1["currency"] == "EGP" and e1["summary"]["total"] > 0
+    assert client.put("/api/prices/EG", json=[{"resource": "M-BLK", "price": 999}]).status_code == 200
+    e2 = client.get(f"/api/projects/{pid}/estimate").json()
+    assert e2["summary"]["total"] > e1["summary"]["total"]
