@@ -61,6 +61,23 @@ fixed are in the change history.
 Every workbook of 11 models, in English and Arabic (22 files, 15–16 sheets each), was recalculated in
 LibreOffice and scanned: **0 error cells**. The Priced BOQ grand total equals the estimate total.
 
+## 1e. Arithmetic and rules (tests/test_calculations.py)
+
+- Openings by measurement standard on a 10 × 3 m wall with 0.3, 1.5 and 4 m² openings: NRM2 / POMI
+  (≤ 0.5 m² not deducted), IS 1200 (masonry > 0.1 m²; plaster one face for 0.5–3 m², both faces above)
+  and exact — all equal the hand calculation.
+- Every rate = Σ norm × price; your own price and a fixed quote override correctly.
+- Mark-up chain (preliminaries → contingency → overhead → profit → escalation → VAT), allowances as %,
+  lump sum and per m², and hand-measured items equal the hand calculation.
+- Cash flow adds up to the total; revision comparison finds exactly the known changes of the sample
+  (1 wall added, 2 doors and 4 cabinets removed); rate packs carry every price.
+- Modelled rebar: 3,680 bars of the Revit structural sample weigh 4,188 kg by volume × 7,850 against
+  4,229 kg by diameter × length (−1%).
+- Doors priced by kind and size: single doors per door, large / double / garage doors per m²,
+  aluminium-glass doors per m², fire-rated doors (FD, EI60, T30…) at a fire-door price.
+- Rooms exported as a 2D outline (no 3D body) keep their finishes: 5 × 4 m room → 20 m², perimeter
+  18 m, paint 54 m² at 3.0 m.
+
 ## 2. Real Revit models
 
 Eight public Revit exports (Revit 2010–2021: Autodesk sample projects, an office in architecture,
