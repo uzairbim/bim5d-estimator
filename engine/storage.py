@@ -255,7 +255,7 @@ def _process(vid):
             e["overlaps"] = found.get(e["guid"], [])
         with gzip.open(folder / "elements.json.gz", "wt", encoding="utf-8") as f:
             json.dump(data["elements"], f)
-        _write_geometry(folder, data["meshes"])
+        _write_geometry(folder, data["meshes"], data.get("origin"))
         _set_version(vid, status="ready", progress=1.0, elements=len(data["elements"]),
                      schema=data["schema"], model_name=data["project"])
     except Exception as e:  # keep a clear message so the user knows what to do
@@ -339,7 +339,7 @@ def import_package(data):
     return pid
 
 
-def _write_geometry(folder, meshes):
+def _write_geometry(folder, meshes, origin=None):
     index, verts, faces = {}, [], []
     vo = io = 0
     for guid, (v, f) in meshes.items():
@@ -356,7 +356,8 @@ def _write_geometry(folder, meshes):
         fh.write(pos.astype("<f4").tobytes())
         fh.write(idx.astype("<u4").tobytes())
     (folder / "geometry.json").write_text(json.dumps(
-        {"vertex_floats": int(pos.size), "index_count": int(idx.size), "items": index}))
+        {"vertex_floats": int(pos.size), "index_count": int(idx.size), "items": index,
+         "origin": origin or [0.0, 0.0, 0.0]}))
 
 
 def geometry_paths(vid):

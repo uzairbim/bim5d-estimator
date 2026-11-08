@@ -223,3 +223,31 @@ def test_priced_boq_formulas_add_up_to_the_estimate(duplex, lib, region):
     from openpyxl.utils import get_column_letter
     total = _excel_value(ws, f"{get_column_letter(col)}{row}", {})
     assert abs(total - est["summary"]["total"]) < 1.0
+
+
+def test_survey_coordinates_keep_full_precision(tmp_path):
+    """Models exported with UTM survey coordinates (e.g. 2,700,000 m north) measure and display
+    exactly like the same model at the origin."""
+    import ifcopenshell
+    from engine import overlaps
+    src = SAMPLES / "Ifc2x3_Duplex_Architecture.ifc"
+    m = ifcopenshell.open(str(src))
+    for p in m.by_type("IfcLocalPlacement"):
+        if p.PlacementRelTo is None:            # every top-level placement moves, as Revit exports it
+            c = (list(p.RelativePlacement.Location.Coordinates) + [0, 0, 0])[:3]
+            p.RelativePlacement.Location = m.createIfcCartesianPoint((c[0] + 650000, c[1] + 2700000, c[2]))
+    far = tmp_path / "far.ifc"
+    m.write(str(far))
+    a, b = extract(str(src)), extract(str(far))
+    qa = {e["guid"]: e["qty"] for e in a["elements"]}
+    for e in b["elements"]:
+        for k in ("volume", "side", "footprint"):
+            assert abs(e["qty"].get(k, 0) - qa[e["guid"]].get(k, 0)) <= 0.01 * max(abs(qa[e["guid"]].get(k, 0)), 0.01)
+    assert max(abs(v).max() for v, f in b["meshes"].values() if len(v)) < 2000      # stored near the origin
+    assert abs(b["origin"][0] - 650000) <= 1000 and abs(b["origin"][2] + 2700000) <= 1000
+
+    def overlap_total(d):
+        found, _ = overlaps.find(d["elements"], d["meshes"])
+        return sum(v for vals in found.values() for _, v in vals)
+    va, vb = overlap_total(a), overlap_total(b)
+    assert abs(va - vb) <= 0.02 * max(va, 1e-3)

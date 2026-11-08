@@ -302,6 +302,7 @@ def extract(path, with_mesh=True, progress=None):
 
     total = max(len(model.by_type("IfcProduct")), 1)
     elements, meshes = {}, {}
+    origin = None
     it = ifcopenshell.geom.iterator(settings, model, multiprocessing.cpu_count())
     done = 0
     if it.initialize():
@@ -377,8 +378,13 @@ def extract(path, with_mesh=True, progress=None):
                 w = v @ m[:3, :3].T + m[:3, 3]                     # world, Z-up, metres
                 if len(w):
                     e["bbox"] = [round(float(x), 3) for x in (*w.min(axis=0), *w.max(axis=0))]
-                if with_mesh:
-                    wy = np.stack([w[:, 0], w[:, 2], -w[:, 1]], axis=1)  # Z-up -> Y-up
+                if with_mesh and len(w):
+                    # Survey (UTM) coordinates lose precision in float32: shift near the origin first,
+                    # by whole kilometres so separate discipline models keep lining up.
+                    if origin is None:
+                        origin = np.floor(w[0] / 1000.0) * 1000.0
+                    wl = w - origin
+                    wy = np.stack([wl[:, 0], wl[:, 2], -wl[:, 1]], axis=1)  # Z-up -> Y-up
                     meshes[el.GlobalId] = (wy.astype(np.float32),
                                            np.asarray(g.faces, dtype=np.uint32))
             if not it.next():
@@ -387,8 +393,11 @@ def extract(path, with_mesh=True, progress=None):
     rooms = _spaces(model, scale)
     _link_rooms(rooms, elements)
     project = model.by_type("IfcProject")[0]
+    o = origin if origin is not None else np.zeros(3)
     return {"project": project.LongName or project.Name or "Project", "schema": model.schema,
-            "elements": list(elements.values()) + rooms, "meshes": meshes}
+            "elements": list(elements.values()) + rooms, "meshes": meshes,
+            # where the meshes' (0, 0, 0) is, in the viewer's Y-up axes
+            "origin": [float(o[0]), float(o[2]), float(-o[1])]}
 
 
 def _host(el):

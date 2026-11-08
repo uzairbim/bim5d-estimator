@@ -94,6 +94,7 @@ export class Viewer {
 
   load(g) {
     this.clear();
+    this.origin = g.index.origin || [0, 0, 0];
     this.add(g, false);
     // New model: start from a standard 3/4 view from above.
     this.camera.position.set(1, 0.8, 1);
@@ -102,12 +103,20 @@ export class Viewer {
   }
 
   // Add another model's geometry (a second discipline model) to the scene.
+  // Each model's meshes are stored near (0,0,0); `origin` says where that is, so models line up.
+  _offset(g) {
+    const o = g.index.origin || [0, 0, 0], r = this.origin || [0, 0, 0];
+    return [o[0] - r[0], o[1] - r[1], o[2] - r[2]];
+  }
+
   add(g, fit = true) {
+    const off = this._offset(g);
     for (const [guid, item] of Object.entries(g.index.items)) {
       if (this.meshes.has(guid)) continue;
       const mat = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.85, side: THREE.DoubleSide,
                                                    polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
       const mesh = this._mesh(guid, g, item, mat);
+      mesh.position.set(...off);
       this.group.add(mesh);
       this.meshes.set(guid, mesh);
     }
@@ -122,6 +131,7 @@ export class Viewer {
       if (!item) continue;
       const mat = new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.55, side: THREE.DoubleSide });
       const mesh = this._mesh(guid, g, item, mat);
+      mesh.position.set(...this._offset(g));
       this.ghostGroup.add(mesh);
       this.ghosts.set(guid, mesh);
     }
