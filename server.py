@@ -23,7 +23,7 @@ from engine.schedule import build as build_schedule
 
 ROOT = Path(__file__).resolve().parent
 SAMPLES = ROOT / "samples"
-MAX_UPLOAD_MB = 500
+MAX_UPLOAD_MB = 1000
 
 app = FastAPI(title="BIM 5D Estimator")
 app.add_middleware(GZipMiddleware, minimum_size=2000)
@@ -230,13 +230,19 @@ async def upload(file: UploadFile, project_id: Optional[str] = Form(None),
     fname = (file.filename or "").lower()
     if not fname.endswith((".ifc", ".ifczip", ".zip")):
         raise HTTPException(400, "Please upload an .ifc file (in Revit: File > Export > IFC).")
+    too_big = False
     with tempfile.NamedTemporaryFile(delete=False, suffix=".ifc") as tmp:
         size = 0
         while chunk := await file.read(1 << 20):
             size += len(chunk)
             if size > MAX_UPLOAD_MB << 20:
-                raise HTTPException(413, f"File is larger than {MAX_UPLOAD_MB} MB.")
+                too_big = True      # read to the end, so the browser gets this answer (not "Failed to fetch")
+                continue
             tmp.write(chunk)
+    if too_big:
+        Path(tmp.name).unlink(missing_ok=True)
+        raise HTTPException(413, f"File is larger than {MAX_UPLOAD_MB} MB. Export one building or one "
+                                 "discipline at a time, or save it as .ifcZIP (much smaller).")
     if fname.endswith((".ifczip", ".zip")):
         # .ifcZIP from Revit, or an IFC zipped to send it by e-mail; a project file opens as a project.
         try:

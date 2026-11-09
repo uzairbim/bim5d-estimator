@@ -226,6 +226,7 @@ const D = {
   "The model is too large for this computer's memory. Export a smaller part (one building or one discipline) or use a computer with more memory.": { ar: "النموذج أكبر من ذاكرة هذا الجهاز. صدّر جزءاً أصغر (مبنى واحد أو تخصص واحد) أو استخدم جهازاً بذاكرة أكبر." },
   "Something went wrong while reading the model:": { ar: "حدث خطأ أثناء قراءة النموذج:" },
   "The file has no 3D building elements. In Revit, export IFC from a 3D view and untick 'Export only elements visible in view', then upload again.": { ar: "لا يحتوي الملف على عناصر مبنى ثلاثية الأبعاد. في Revit صدّر IFC من عرض ثلاثي الأبعاد وألغِ خيار 'Export only elements visible in view' ثم ارفع الملف مرة أخرى." },
+  "Cannot reach the app. Keep the black start window open (closing it stops the app), or start it again with start-windows.bat, then reload this page. If the window shows an error, send a photo of it.": { ar: "تعذّر الوصول إلى التطبيق. أبقِ نافذة التشغيل السوداء مفتوحة (إغلاقها يوقف التطبيق)، أو شغّله مرة أخرى بملف start-windows.bat ثم أعد تحميل الصفحة. إذا ظهر خطأ في النافذة فأرسل صورة له." },
   "Close": { ar: "إغلاق", ur: "بند کریں", es: "Cerrar", fr: "Fermer" },
   "Search": { ar: "بحث", ur: "تلاش", es: "Buscar", fr: "Rechercher" },
   "1 · Local prices": { ar: "١ · الأسعار المحلية", ur: "١ · مقامی قیمتیں", es: "1 · Precios locales", fr: "1 · Prix locaux" },

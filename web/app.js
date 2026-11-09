@@ -37,7 +37,13 @@ async function api(url, opts = {}) {
     opts = { ...opts, body: JSON.stringify(opts.json), headers: { "Content-Type": "application/json" } };
     delete opts.json;
   }
-  const r = await fetch(url, opts);
+  let r;
+  try {
+    r = await fetch(url, opts);
+  } catch {
+    // The browser could not reach the app at all ("Failed to fetch"): the server is not running.
+    throw new Error("Cannot reach the app. Keep the black start window open (closing it stops the app), or start it again with start-windows.bat, then reload this page. If the window shows an error, send a photo of it.");
+  }
   if (!r.ok) {
     const d = await r.json().catch(() => ({}));
     throw new Error(typeof d.detail === "string" ? d.detail : (d.error || r.statusText));
