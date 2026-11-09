@@ -17,6 +17,7 @@ if [ ! -f .venv/installed.ok ]; then
   touch .venv/installed.ok || {
     echo "Installation did not finish. Check the internet connection and run this again."
     echo "If it keeps failing: rm -rf .venv and try again."
+    echo "Behind a proxy? export HTTPS_PROXY=http://proxy-address:port and run this again."
     exit 1
   }
 fi

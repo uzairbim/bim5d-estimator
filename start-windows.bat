@@ -14,16 +14,19 @@ if not exist "%~dp0requirements.txt" (
   exit /b 1
 )
 
-REM Find a real Python (the Microsoft Store shortcut "python" does not count).
+REM Find a real 64-bit Python 3.10 - 3.14 (the Microsoft Store shortcut "python" does not count).
 set "PY="
-py -3 --version >nul 2>nul && set "PY=py -3"
+set "CHECK=import sys, struct; sys.exit(0 if (3,10) <= sys.version_info[:2] <= (3,14) and struct.calcsize('P') == 8 else 1)"
+for %%V in (3.13 3.12 3.14 3.11 3.10) do (
+  if not defined PY py -%%V -c "%CHECK%" >nul 2>nul && set "PY=py -%%V"
+)
 if not defined PY (
-  python --version >nul 2>nul && set "PY=python"
+  python -c "%CHECK%" >nul 2>nul && set "PY=python"
 )
 if not defined PY (
   echo.
-  echo  Python was not found.
-  echo  1. Install Python 3.12 or newer from https://www.python.org/downloads/
+  echo  Python 3.10 - 3.14 ^(64-bit^) was not found.
+  echo  1. Install Python 3.13 from https://www.python.org/downloads/
   echo  2. On the first screen tick "Add python.exe to PATH", then Install Now.
   echo  3. Double-click this file again.
   echo.
@@ -50,6 +53,9 @@ exit /b 0
 :fail
 echo.
 echo  Installation did not finish. Check the internet connection and run this file again.
+echo  Office network with a proxy? Ask IT for the proxy address, then in this window type
+echo    set HTTPS_PROXY=http://proxy-address:port
+echo  and run start-windows.bat again from the same window.
 echo  If it keeps failing, delete the .venv folder and try again.
 echo  Use 64-bit Python 3.10 - 3.14 from python.org (the 32-bit version cannot read IFC files).
 echo.

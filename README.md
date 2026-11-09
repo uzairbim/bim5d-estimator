@@ -133,7 +133,7 @@ has_ceiling`. Functions `t("regex")` (layer thickness) and `has("regex")`; compa
 > Norms and base prices are typical starting values, not quotations. The accuracy class stays at
 > Class 5 until most of the cost comes from **your** prices.
 
-Run the tests: `python -m pytest -q`. Optional AI suggestions: set `ANTHROPIC_API_KEY`.
+Run the tests: `pip install -r requirements-dev.txt`, then `python -m pytest -q`. Optional AI suggestions: set `ANTHROPIC_API_KEY`.
 
 ## Limits to know
 
