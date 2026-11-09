@@ -36,13 +36,13 @@
     <h1 data-i18n="Estimate cost straight from your BIM model">Estimate cost straight from your BIM model</h1>
     <p class="lead" data-i18n="Upload an IFC file from Revit. Every element is measured from its 3D shape, broken into work items, priced with your rates, and shown on the model.">Upload an IFC file from Revit. Every element is measured from its 3D shape, broken into work items, priced with your rates, and shown on the model.</p>
     <div class="howitworks">
-      <div><b>1</b><span>Pick your country. Prices are ready (assumed) and you can change any of them.</span></div>
-      <div><b>2</b><span>Drop your Revit model exported as IFC, or try the demo.</span></div>
-      <div><b>3</b><span>Follow "What to do next", then send the client report or Excel.</span></div>
+      <div><b>1</b><span data-i18n="Pick your country. Prices are ready (assumed) and you can change any of them.">Pick your country. Prices are ready (assumed) and you can change any of them.</span></div>
+      <div><b>2</b><span data-i18n="Drop your Revit model exported as IFC, or try the demo.">Drop your Revit model exported as IFC, or try the demo.</span></div>
+      <div><b>3</b><span data-i18n="Follow &quot;What to do next&quot;, then send the client report or Excel.">Follow "What to do next", then send the client report or Excel.</span></div>
     </div>
     <div class="row gap wrap" style="margin-bottom:14px">
-      <button class="btn primary big" id="demoBtn">Try the demo (1 click)</button>
-      <label class="btn">Open a project file<input id="projImport" type="file" accept=".zip" hidden></label>
+      <button class="btn primary big" id="demoBtn" data-i18n="Try the demo (1 click)">Try the demo (1 click)</button>
+      <label class="btn"><span data-i18n="Open a project file">Open a project file</span><input id="projImport" type="file" accept=".zip" hidden></label>
     </div>
     <label id="drop" class="drop">
       <input id="file" type="file" accept=".ifc,.ifczip,.zip" hidden>
@@ -51,16 +51,23 @@
     <div class="row gap">
       <label class="field"><span data-i18n="Region">Region</span> <select id="startRegion"></select></label>
       <button class="btn" id="addCountry" style="align-self:flex-end" data-i18n="Add my country / prices">Add my country / prices</button>
-      <label class="field"><span data-i18n="Or try a sample">Or try a sample</span> <select id="sample"><option value="">Choose…</option></select></label>
+      <label class="field"><span data-i18n="Or try a sample">Or try a sample</span> <select id="sample"><option value="" data-i18n="Choose…">Choose…</option></select></label>
     </div>
     <details class="howto">
       <summary data-i18n="How to export IFC from Revit">How to export IFC from Revit</summary>
-      <ol>
+      <ol data-lang-block="en">
         <li>In Revit: <b>File → Export → IFC</b>.</li>
         <li>IFC version: <b>IFC 2x3 Coordination View 2.0</b> or <b>IFC4 Reference View</b>.</li>
         <li>On the <b>Property Sets</b> tab, tick <b>Export Revit property sets</b> and <b>Export base quantities</b>.</li>
         <li>Optional: set an <b>Assembly Code</b> (Uniformat) on your types, which helps automatic classification.</li>
         <li>Upload the .ifc file here. Large models take a minute the first time; after that they open instantly.</li>
+      </ol>
+      <ol data-lang-block="ar" hidden>
+        <li>في Revit: <b>File ← Export ← IFC</b>.</li>
+        <li>إصدار IFC: <b>IFC 2x3 Coordination View 2.0</b> أو <b>IFC4 Reference View</b>.</li>
+        <li>في تبويب <b>Property Sets</b> فعّل <b>Export Revit property sets</b> و <b>Export base quantities</b>.</li>
+        <li>اختياري: ضع <b>Assembly Code</b> (Uniformat) على الأنواع، فهذا يساعد التصنيف التلقائي.</li>
+        <li>ارفع ملف ‎.ifc هنا. النماذج الكبيرة تأخذ دقيقة في المرة الأولى، وبعدها تُفتح فوراً.</li>
       </ol>
     </details>
     <h2 id="projectsTitle" hidden data-i18n="Your projects">Your projects</h2>
@@ -79,12 +86,12 @@
         <button data-mode="check" title="Show problems" data-i18n="Checks">Checks</button>
         <button data-mode="changes" title="Show changes between revisions" hidden data-i18n="Changes">Changes</button>
       </div>
-      <select id="levelSel" title="Show one level"><option value="">All levels</option></select>
+      <select id="levelSel" title="Show one level"><option value="" data-i18n="All levels">All levels</option></select>
       <button id="fitBtn" class="btn sm" title="Zoom to fit" data-i18n="Fit">Fit</button>
       <button id="showAll" class="btn sm primary" hidden data-i18n="Show all">Show all</button>
     </div>
     <div class="legend" id="legend"></div>
-    <div id="busy" class="busy" hidden><div class="spin"></div><span id="busyText">Reading model…</span><div class="bar-outer"><div id="busyBar" class="bar-inner"></div></div></div>
+    <div id="busy" class="busy" hidden><div class="spin"></div><span id="busyText" data-i18n="Reading model…">Reading model…</span><div class="bar-outer"><div id="busyBar" class="bar-inner"></div></div></div>
   </section>
 
   <aside class="panel">
@@ -102,7 +109,7 @@
     <div id="tab-boq" class="tab"></div>
     <div id="tab-mapping" class="tab"></div>
     <div id="tab-checks" class="tab"></div>
-    <div id="tab-element" class="tab"><p class="muted">Click an element in the 3D view.</p></div>
+    <div id="tab-element" class="tab"><p class="muted" data-i18n="Click an element in the 3D view.">Click an element in the 3D view.</p></div>
     <div id="tab-time" class="tab"></div>
     <div id="tab-compare" class="tab"></div>
   </aside>
@@ -131,8 +138,8 @@
 
 <div id="helpDlg" class="overlay" hidden>
   <div class="dialog help">
-    <div class="dlg-head"><h2>Help</h2><button class="btn" id="helpClose">Close</button></div>
-    <div class="dlg-body">
+    <div class="dlg-head"><h2 data-i18n="Help">Help</h2><button class="btn" id="helpClose" data-i18n="Close">Close</button></div>
+    <div class="dlg-body" data-lang-block="en">
       <h3>Quick start</h3>
       <ol>
         <li><b>Region</b>: pick your country on the start page. Saudi Arabia, UAE, Pakistan, India, UK, Germany and USA have assumed prices ready. For another country: <i>Add my country / prices</i>.</li>
@@ -170,6 +177,46 @@
         <dt>I need a BOQ to send to contractors.</dt><dd>Export Excel, sheet "Priced BOQ": numbered bills, quantity × rate formulas, bill summary with VAT. Change a rate in Excel and the totals update.</dd>
         <dt>The cost per m² range does not fit my building.</dt><dd>Project settings &gt; Building type (villa, office, school, mosque, hotel, hospital, warehouse…).</dd>
         <dt>Is there a Saudi example?</dt><dd>Start page &gt; samples &gt; Saudi Villa Example: footings, tie beams, hordi roof, thermal block, marble, Arabic room names.</dd>
+      </dl>
+    </div>
+    <div class="dlg-body" data-lang-block="ar" hidden>
+      <h3>بداية سريعة</h3>
+      <ol>
+        <li><b>المنطقة</b>: اختر بلدك في صفحة البداية. السعودية والإمارات وباكستان والهند وبريطانيا وألمانيا وأمريكا لها أسعار مفترضة جاهزة. لبلد آخر: <i>أضف بلدي / أسعاري</i>.</li>
+        <li><b>النموذج</b>: في Revit اختر File &gt; Export &gt; IFC (IFC 2x3 Coordination View 2.0) ثم أفلت ملف ‎.ifc في صفحة البداية.</li>
+        <li><b>ما يجب فعله بعد ذلك</b>: المربع أعلى الملخص يعرض أهم الخطوات التي تحسّن التقدير. نفّذها بالترتيب.</li>
+        <li><b>التقرير</b>: <i>تقرير العميل</i> يفتح تقريراً قابلاً للطباعة PDF، و <i>تصدير Excel</i> يعطي الملف الكامل.</li>
+      </ol>
+      <h3>مصطلحات التطبيق</h3>
+      <dl class="gloss">
+        <dt>جدول الكميات (BOQ)</dt><dd>كل بند أعمال بكميته وسعره ومبلغه.</dd>
+        <dt>بند أعمال</dt><dd>عمل مسعّر، مثل "جدار بلوك خرساني، م²".</dd>
+        <dt>الوصفة</dt><dd>كيف يتحول عنصر النموذج إلى بنود أعمال، مثلاً جدار البلوك يعطي بلوك ولياسة ودهان.</dd>
+        <dt>تحليل السعر</dt><dd>سعر مبني من الموارد: ساعات العمالة × الأجر + المواد × السعر + المعدات. اضغط أي بند في الأسعار لرؤيته.</dd>
+        <dt>سعر مفترض</dt><dd>سعر سوق نموذجي (أواخر 2026) مرفق مع التطبيق. الأسعار تتغير يومياً، فاكتب سعر اليوم فوقه.</dd>
+        <dt>سعر تقديري</dt><dd>سعر محوّل من المستوى الأمريكي بمعاملات البلد. الأقل دقة، استبدله أولاً.</dd>
+        <dt>مبلغ احتياطي (Allowance)</dt><dd>مبلغ لأعمال غير موجودة في النموذج، مثل الأعمال الكهروميكانيكية 25% من الأعمال المقاسة.</dd>
+        <dt>المصاريف العامة للموقع</dt><dd>تكاليف لا ترتبط ببند واحد: جهاز الموقع، المكاتب، السقالات، الأعمال المؤقتة، التأمين.</dd>
+        <dt>احتياطي الطوارئ</dt><dd>مبلغ للمجهول وتغييرات التصميم.</dd>
+        <dt>فئة الدقة</dt><dd>مدى قرب التكلفة النهائية المتوقع (إرشادات AACE): الفئة 5 ‎−50%/+100%، الفئة 4 ‎−30%/+50%، الفئة 3 ‎−20%/+30%، الفئة 2 ‎−15%/+20%.</dd>
+        <dt>NRM1 / Uniformat</dt><dd>طرق قياسية لتجميع التكلفة حسب عنصر المبنى (الأساسات، الهيكل، السقف…).</dd>
+        <dt>التداخل</dt><dd>عنصران يشغلان نفس المكان (عمود يخترق بلاطة). يُحسب مرة واحدة.</dd>
+        <dt>المطابقة</dt><dd>مقارنة أحجامنا المقاسة بقيم Revit نفسها لاكتشاف أخطاء القياس.</dd>
+      </dl>
+      <h3>أسئلة شائعة</h3>
+      <dl class="gloss">
+        <dt>لماذا تكلفة المتر المربع أقل من المعتاد؟</dt><dd>غالباً أجزاء من المبنى غير موجودة في النموذج (الكهروميكانيك، الأعمال الخارجية). راجع فحص النطاق وأضف المبالغ المقترحة.</dd>
+        <dt>بعض العناصر غير مسعّرة.</dt><dd>افتح التصنيف واختر ما هو كل نوع. كل عناصر هذا النوع تتبعه.</dd>
+        <dt>كمية تبدو خاطئة.</dt><dd>اضغط العنصر في العرض ثلاثي الأبعاد: ترى الكميات المقاسة والمعادلة وحجم Revit. يمكنك تعديل كمية نوع مع ذكر السبب.</dd>
+        <dt>الأثاث ليس في الإجمالي.</dt><dd>الأثاث المتحرك عادة ميزانية منفصلة للعميل. النجارة المثبتة محسوبة. فعّل "تضمين الأثاث المتحرك" في إعدادات المشروع إذا احتجته.</dd>
+        <dt>كيف أرسل مشروعاً لزميل؟</dt><dd>إعدادات المشروع &gt; تنزيل ملف المشروع. يستخدم الزميل "فتح ملف مشروع" في صفحة البداية.</dd>
+        <dt>كيف أشارك الأسعار؟</dt><dd>الأسعار والمعدلات &gt; المنطقة والمشاركة &gt; تنزيل حزمة الأسعار.</dd>
+        <dt>الإنشائي والكهروميكانيك نماذج Revit منفصلة.</dt><dd>افتح مشروع المعماري، اذهب إلى المقارنة، اختر التخصص واضغط "إضافة نموذج تخصص". التقدير يجمعها، والعنصر المرسوم في نموذجين يُحسب مرة واحدة.</dd>
+        <dt>ما الملفات التي يمكن رفعها؟</dt><dd>‎.ifc و ‎.ifcZIP (في Revit: File &gt; Export &gt; IFC مع "Save as .ifcZIP") أو ملف zip بداخله ‎.ifc. تعمل IFC 2x3 و IFC4 و IFC4.3.</dd>
+        <dt>هل يمكن الحصول على جدول الكميات بالعربية؟</dt><dd>نعم. للسعودية والدول العربية يحتوي جدول Excel على أعمدة عربية، وتقرير العميل يتبع لغة التطبيق.</dd>
+        <dt>أحتاج جدول كميات لإرساله للمقاولين.</dt><dd>تصدير Excel، ورقة "Priced BOQ": أبواب مرقمة، معادلات الكمية × السعر، ملخص الأبواب مع ضريبة القيمة المضافة. غيّر سعراً في Excel وتتحدث المجاميع.</dd>
+        <dt>نطاق تكلفة المتر المربع لا يناسب مبناي.</dt><dd>إعدادات المشروع &gt; نوع المبنى (فيلا، مكتب، مدرسة، مسجد، فندق، مستشفى، مستودع…).</dd>
+        <dt>هل يوجد مثال سعودي؟</dt><dd>صفحة البداية &gt; الأمثلة &gt; Saudi Villa Example: قواعد، ميد، سقف هوردي، بلوك معزول، رخام، أسماء غرف عربية.</dd>
       </dl>
     </div>
   </div>

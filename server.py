@@ -93,6 +93,18 @@ def _safe_name(name):
     return re.sub(r"[^A-Za-z0-9_-]", "_", name)[:40] or "estimate"
 
 
+def _download(filename):
+    """Content-Disposition that keeps Arabic (any Unicode) file names: an ASCII fallback plus the
+    UTF-8 name (RFC 6266 / 5987), which every current browser uses."""
+    from urllib.parse import quote
+    clean = re.sub(r'[\\/:*?"<>|\r\n]+', "_", filename).strip() or "estimate"
+    ascii_name = re.sub(r"[^A-Za-z0-9._-]", "_", clean)
+    ascii_name = re.sub(r"_+", "_", ascii_name).strip("_.") or "estimate"
+    if "." in clean and "." not in ascii_name:
+        ascii_name += "." + clean.rsplit(".", 1)[1]
+    return {"Content-Disposition": f"attachment; filename=\"{ascii_name}\"; filename*=UTF-8''{quote(clean)}"}
+
+
 # ---- library ----------------------------------------------------------------
 @app.get("/api/library")
 def library():
@@ -317,7 +329,7 @@ def project_package(pid: str):
     _project(pid)
     name, data = storage.export_package(pid)
     return Response(data, media_type="application/zip",
-                    headers={"Content-Disposition": f'attachment; filename="{_safe_name(name)}.bim5d.zip"'})
+                    headers=_download(f"{name[:80]}.bim5d.zip"))
 
 
 @app.post("/api/projects/import")
@@ -422,8 +434,7 @@ def export(pid: str, version: Optional[str] = None, region: Optional[str] = None
     sched = build_schedule(els, est, p["settings"].get("duration_months") or 12)
     data = to_xlsx(f"{p['name']} ({v['label']})", est, sched, lang=lang)
     return Response(data, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    headers={"Content-Disposition":
-                             f'attachment; filename="{_safe_name(p["name"])}_{est["region"]}_5D.xlsx"'})
+                    headers=_download(f'{p["name"][:80]} {est["region"]} 5D.xlsx'))
 
 
 # ---- AI suggestions --------------------------------------------------------------

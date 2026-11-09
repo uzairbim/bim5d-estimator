@@ -259,3 +259,13 @@ def test_new_country_your_price_and_parallel_uploads(client, tmp_path, monkeypat
     assert client.put("/api/prices/EG", json=[{"resource": "M-BLK", "price": 999}]).status_code == 200
     e2 = client.get(f"/api/projects/{pid}/estimate").json()
     assert e2["summary"]["total"] > e1["summary"]["total"]
+
+
+def test_download_names_keep_arabic():
+    from urllib.parse import unquote
+    h = server._download('فيلا "الرياض"/1 SA 5D.xlsx')["Content-Disposition"]
+    ascii_part, utf8_part = h.split("; filename*=UTF-8''")
+    assert ascii_part.startswith('attachment; filename="') and ascii_part.isascii()
+    assert ascii_part.endswith('.xlsx"')
+    assert unquote(utf8_part) == "فيلا _الرياض_1 SA 5D.xlsx"
+    assert server._download("Office SA 5D.xlsx")["Content-Disposition"].startswith('attachment; filename="Office_SA_5D.xlsx"')

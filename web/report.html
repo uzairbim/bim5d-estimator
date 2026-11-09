@@ -146,10 +146,10 @@ const pid = h.get("p"), vid = h.get("v");
     <table><tbody>${(e.checklist || []).map((x) => `<tr><td>${esc(tx("check", x.name, x.name))}</td><td>${x.status === "priced" ? t("Priced") : x.status === "allowance" ? t("Allowance") : x.status === "note" ? esc(t(x.note)) : `<span class="warn">${t("Not included")}</span>`}</td><td class="n">${x.cost ? fmt(x.cost) : ""}</td></tr>`).join("")}</tbody></table>
 
     <h2>8. ${t("Basis of estimate and assumptions")}</h2>
-    <ul>${e.assumptions.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+    <ul>${(e.assumptions_t || e.assumptions.map((x) => [x, {}])).map(([tpl, v]) => `<li>${esc(t(tpl, Object.fromEntries(Object.entries(v).map(([k, x]) => [k, t(x)]))))}</li>`).join("")}</ul>
 
     <h2>9. ${t("Exclusions")}</h2>
-    <ul>${e.exclusions.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
+    <ul>${e.exclusions.map((x) => `<li>${esc(x.endsWith(" (not in the model)") ? tx("scope", x.slice(0, -19), x.slice(0, -19)) + " (" + t("not in the model") + ")" : t(x))}</li>`).join("")}</ul>
 
     <h2>10. ${t("Quality checks on the model")}</h2>
     <table><tbody>

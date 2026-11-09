@@ -7,6 +7,7 @@ on that level is done and the same crew has finished the level below.
 Durations are proportional to cost, then scaled to the project duration.
 This is a planning aid, not a replacement for a real programme.
 """
+import math
 from collections import defaultdict
 
 STAGES = ["1 Substructure", "2 Frame & floors", "3 Roof", "4 Envelope & walls",
@@ -90,7 +91,7 @@ def build(elements, est, months=12):
             el_time[g] = [round(s, 2), round(f, 2)]
 
     # Monthly cash flow: each activity's cost spread evenly over its duration.
-    n = int(-(-weeks_total // WEEKS_PER_MONTH))
+    n = max(1, math.ceil(weeks_total / WEEKS_PER_MONTH - 1e-9))  # 12 months is 12, not 13 by rounding
     monthly = [0.0] * n
     for a in activities:
         span = max(a["end"] - a["start"], 1e-6)

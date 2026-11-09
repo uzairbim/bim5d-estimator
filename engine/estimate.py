@@ -75,9 +75,9 @@ def _benchmark(base, building_type):
         return None
     label, f = BUILDING_TYPES.get(building_type or "residential", BUILDING_TYPES["residential"])
     if f == 1.0:
-        return {**base, "type_label": label}
+        return {**base, "type_label": label, "base_label": base["label"], "factor": 1.0}
     return {**base, "low": round(base["low"] * f, -1), "high": round(base["high"] * f, -1), "type_label": label,
-            "label": f"{label}: {f:g} x {base['label']} (assumed ratio)"}
+            "base_label": base["label"], "factor": f, "label": f"{label}: {f:g} x {base['label']} (assumed ratio)"}
 GENERIC_TYPE = re.compile(r"\bgeneric\b|\bdefault\b|placeholder|allgemein|g[ée]n[ée]rique|gen[ée]rico|"
                           r"\bstandaard\b|عام", re.I)
 
@@ -1030,49 +1030,66 @@ def estimate(elements, region, lib=None, settings=None):
     # ---- assumptions & exclusions -------------------------------------------------
     ov_total = sum(r["volume"] for r in overlap_records)
     rb = {"modeled_kg": round(modeled_rebar_kg), "ratio_kg": round(ratio_rebar_kg), "mode": rebar_mode}
-    assumptions = [
-        "Quantities are measured from the 3D model. Work that is not modelled is excluded "
-        "unless it is listed as an allowance.",
-        ("Reinforcement is taken from the modelled bars." if rebar_mode == "modeled" else
-         "Reinforcement is an allowance by ratio (kg per m³ of concrete) until bar schedules are available."),
-        f"Openings up to {min_open:g} m² are not deducted from masonry and finishes (NRM2 practice).",
-        (f"Overlaps between elements are deducted once ({len(overlap_records)} overlaps, {ov_total:.2f} m³): "
-         "slabs measured through, columns to slab soffit, beams below slab, walls between frame members."
-         if deduct else "Overlaps between elements are NOT deducted."),
-        f"Waste allowances are included in quantities as shown per item.",
-        f"Preliminaries {reg['prelims_pct']:g}%, contingency {reg.get('contingency_pct', 0):g}%, "
-        f"overhead {reg['overhead_pct']:g}%, profit {reg['profit_pct']:g}%, escalation {reg['escalation_pct']:g}%.",
-        f"{reg['tax_name']} at {reg['tax_pct']:g}% is included in the total.",
-        f"Prices in {reg['currency']} at the date of the rates used.",
-    ]
+    assumptions, assumptions_t = [], []
+
+    def assume(tpl, **vals):
+        """English text plus its template, so the app and the report can show it in any language."""
+        vals = {k: str(v) for k, v in vals.items()}
+        assumptions.append(tpl.format(**vals))
+        assumptions_t.append([tpl, vals])
+
+    assume("Quantities are measured from the 3D model. Work that is not modelled is excluded "
+           "unless it is listed as an allowance.")
+    assume("Reinforcement is taken from the modelled bars." if rebar_mode == "modeled" else
+           "Reinforcement is an allowance by ratio (kg per m³ of concrete) until bar schedules are available.")
+    assume("Openings up to {v} m² are not deducted from masonry and finishes (NRM2 practice).", v=f"{min_open:g}")
+    if deduct:
+        assume("Overlaps between elements are deducted once ({n} overlaps, {v} m³): slabs measured through, "
+               "columns to slab soffit, beams below slab, walls between frame members.",
+               n=len(overlap_records), v=f"{ov_total:.2f}")
+    else:
+        assume("Overlaps between elements are NOT deducted.")
+    assume("Waste allowances are included in quantities as shown per item.")
+    assume("Preliminaries {p}%, contingency {c}%, overhead {o}%, profit {r}%, escalation {e}%.",
+           p=f"{reg['prelims_pct']:g}", c=f"{reg.get('contingency_pct', 0):g}", o=f"{reg['overhead_pct']:g}",
+           r=f"{reg['profit_pct']:g}", e=f"{reg['escalation_pct']:g}")
+    assume("{tax} at {v}% is included in the total.", tax=reg["tax_name"], v=f"{reg['tax_pct']:g}")
+    assume("Prices in {cur} at the date of the rates used.", cur=reg["currency"])
     if sample_share > 0:
-        assumptions.append(
-            f"Prices: {user_share:.0%} confirmed by you, {assumed_share:.0%} assumed indicative market prices "
-            f"(late 2026, not quotations), {estimated_share:.0%} estimated from US price levels.")
+        assume("Prices: {a} confirmed by you, {b} assumed indicative market prices (late 2026, not quotations), "
+               "{c} estimated from US price levels.",
+               a=f"{user_share:.0%}", b=f"{assumed_share:.0%}", c=f"{estimated_share:.0%}")
     models = sorted({e["model"] for e in elements if e.get("model")})
     if len(models) > 1:
         n_two = len(dup_models) + sum(1 for e in elements if len(e.get("in_models") or []) > 1)
-        assumptions.append(f"Combined discipline models: {', '.join(models)}. "
-                           + (f"{n_two} elements drawn in two models are counted once (structure model kept). " if n_two else "")
-                           + "Overlaps are deducted within each model, not between models.")
+        if n_two:
+            assume("Combined discipline models: {models}. {n} elements drawn in two models are counted once "
+                   "(structure model kept). Overlaps are deducted within each model, not between models.",
+                   models=", ".join(models), n=n_two)
+        else:
+            assume("Combined discipline models: {models}. Overlaps are deducted within each model, "
+                   "not between models.", models=", ".join(models))
     if any(r == "STEEL_MEMBER" for r in recipes.values()):
-        assumptions.append("Structural steel weight = member volume x 7,850 kg/m3"
-                           + (" (connection plates as modelled)." if ctx.get("plates") else
-                              " + 10% for connections (plates, bolts, cleats) not in the model."))
+        assume("Structural steel weight = member volume x 7,850 kg/m3 (connection plates as modelled)."
+               if ctx.get("plates") else
+               "Structural steel weight = member volume x 7,850 kg/m3 + 10% for connections (plates, bolts, "
+               "cleats) not in the model.")
     flat = sum(1 for e in elements if e["ifc_class"] == "IfcSpace" and (e.get("qty") or {}).get("height_assumed"))
     if flat:
-        assumptions.append(f"{flat} rooms were exported as a 2D outline without a height: 3.0 m assumed for their "
-                           "wall finishes. Export rooms in 3D (Revit IFC options) or check these rooms.")
+        assume("{n} rooms were exported as a 2D outline without a height: 3.0 m assumed for their wall finishes. "
+               "Export rooms in 3D (Revit IFC options) or check these rooms.", n=flat)
     n_existing = sum(1 for e in elements if e["ifc_class"] != "IfcSpace" and is_existing(e)
                      and not (mappings and mappings.get(group_key(e))))
     if n_existing:
-        assumptions.append(f"{n_existing} elements are marked as existing or demolished in the model (Revit phase "
-                           "or 'Existing' in the type name) and are not priced as new work. Map them in Mapping "
-                           "if they are new.")
+        assume("{n} elements are marked as existing or demolished in the model (Revit phase or 'Existing' in "
+               "the type name) and are not priced as new work. Map them in Mapping if they are new.", n=n_existing)
     if ffe_count:
-        assumptions.append(f"Loose furniture ({ffe_count} items, about {ffe_outside:,.0f} {reg['currency']}) is "
-                           "excluded: it is normally the client's separate FF&E budget. Built-in joinery is included.")
-    assumptions += [a for a in settings.get("assumptions") or [] if a]
+        assume("Loose furniture ({n} items, about {v} {cur}) is excluded: it is normally the client's separate "
+               "FF&E budget. Built-in joinery is included.", n=ffe_count, v=f"{ffe_outside:,.0f}", cur=reg["currency"])
+    for a_ in settings.get("assumptions") or []:
+        if a_:
+            assumptions.append(a_)
+            assumptions_t.append([a_, {}])
     exclusions = settings.get("exclusions")
     if exclusions is None:
         exclusions = DEFAULT_EXCLUSIONS
@@ -1100,7 +1117,7 @@ def estimate(elements, region, lib=None, settings=None):
                     "building_type": settings.get("building_type") or "residential"},
         "accuracy": accuracy, "scope": scope, "allowances": allowances, "checklist": checklist,
         "standard": {"code": std_code, **rule}, "rooms_on": bool(rooms_on), "rooms": n_rooms,
-        "assumptions": assumptions, "exclusions": exclusions,
+        "assumptions": assumptions, "assumptions_t": assumptions_t, "exclusions": exclusions,
         "by_trade": group("trade"), "by_level": group("level"),
         "by_nrm1": by_nrm1, "by_uniformat": group_sorted("uniformat"),
         "by_stage": group_sorted("stage"),

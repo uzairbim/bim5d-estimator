@@ -1,6 +1,7 @@
 """Arithmetic and rules checked by hand: openings by measurement standard, rate build-up, mark-ups,
 allowances, manual items, cash flow, revision comparison, rate packs."""
 import copy
+import math
 from pathlib import Path
 
 import pytest
@@ -112,6 +113,8 @@ def test_cash_flow_adds_up_to_the_total(lib):
     rows = sched["cashflow"] if "cashflow" in sched else sched["months"]
     assert rows[-1]["cumulative"] == pytest.approx(est["summary"]["total"], rel=0.002)
     assert all(b["cumulative"] >= a["cumulative"] for a, b in zip(rows, rows[1:]))
+    for months in (3, 6, 12, 18, 24, 36, 7.5):  # a 12-month job has 12 months of cash flow, not 13
+        assert len(build(els, est, months)["months"]) == math.ceil(months)
     stage = lambda g: est["per_element"][g]["stage"] if "stage" in est["per_element"][g] else None
     # substructure starts before the roof
     acts = sched.get("activities") or []
@@ -148,3 +151,13 @@ def test_rate_pack_round_trip(tmp_path, monkeypatch):
     assert n == len(pack["prices"])
     rows = (tmp_path / "ZZ.csv").read_text(encoding="utf-8").splitlines()
     assert len(rows) == n + 1
+
+
+def test_assumptions_come_with_templates_for_translation(lib):
+    els = extract(SAMPLES / "Saudi_Villa_Example.ifc")["elements"]
+    e = estimate(els, "SA", lib, {"assumptions": ["Soil report by others"]})
+    assert len(e["assumptions"]) == len(e["assumptions_t"])
+    for text, (tpl, vals) in zip(e["assumptions"], e["assumptions_t"]):
+        assert tpl.format(**vals) == text
+    assert e["assumptions"][-1] == "Soil report by others"
+    assert any("VAT at 15% is included" in a for a in e["assumptions"])
