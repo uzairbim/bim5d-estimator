@@ -1082,6 +1082,10 @@ def estimate(elements, region, lib=None, settings=None):
                if ctx.get("plates") else
                "Structural steel weight = member volume x 7,850 kg/m3 + 10% for connections (plates, bolts, "
                "cleats) not in the model.")
+    n_split = sum(1 for r in recipes.values() if r == "AC_SPLIT")
+    if n_split:
+        assume("{n} split air conditioners priced complete with their outdoor unit, copper piping and drain; "
+               "split outdoor units drawn in the model are not priced again.", n=n_split)
     flat = sum(1 for e in elements if e["ifc_class"] == "IfcSpace" and (e.get("qty") or {}).get("height_assumed"))
     if flat:
         assume("{n} rooms were exported as a 2D outline without a height: 3.0 m assumed for their wall finishes. "

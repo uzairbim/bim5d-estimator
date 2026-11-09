@@ -2,6 +2,8 @@ resource,price,source,date
 L-SKL,22,ASSUMED indicative market price 2026-11 - verify,2026-11
 L-UNS,14,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-ACC,35,ASSUMED indicative market price 2026-11 - verify,2026-11
+M-ACSPLIT,2600,ASSUMED indicative market price 2026-11 - verify,2026-11
+M-ACWIN,1500,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-ADH,1.2,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-AGG,60,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-APPL,2500,ASSUMED indicative market price 2026-11 - verify,2026-11

@@ -153,3 +153,6 @@ priority,ifc_class,keywords,recipe
 6,IfcElectricAppliance|IfcFlowTerminal,^(?!.*(board|panel)).*(telephone|telophone|data outlet|tv outlet|\btv\b point|receptacle|socket|outlet\b),OUTLET
 5,IfcEnergyConversionDevice|IfcBoiler|IfcChiller|IfcCoolingTower|IfcBuildingElementProxy|IfcUnitaryEquipment,^(?!.*(water heater|tankless)).*(\bboiler|chiller|cooling tower|air handling unit|\bahu\b|غلاية|تشيلر|برج تبريد),MECH_PLANT
 5,IfcBoiler|IfcChiller|IfcCoolingTower,,MECH_PLANT
+4,IfcBuildingElementProxy|IfcFlowTerminal|IfcUnitaryEquipment|IfcAirTerminal,^(?!.*(outdoor|outside|condens|vrf|vrv)).*(split|wall.?mounted (ac|unit)|hi.?wall|مكيف سبليت|سبليت|اسبليت)|^(?!.*(مركزي|باكج|package|ducted|مخفي|كونسيلد|وحدة خارجية|صحراوي)).*مكيف,AC_SPLIT
+3,IfcBuildingElementProxy|IfcFlowTerminal|IfcUnitaryEquipment,window (ac|unit|air.?con)|مكيف شباك|مكيف شباك,AC_WINDOW
+3,IfcBuildingElementProxy|IfcFlowTerminal|IfcUnitaryEquipment,split.*(outdoor|outside|condens)|(outdoor|outside|condens).*split|وحدة خارجية.*سبليت|سبليت.*وحدة خارجية,EXCLUDE

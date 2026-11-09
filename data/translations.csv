@@ -378,3 +378,9 @@ recipe,FLOOR_STONE,أرضيات رخام / جرانيت
 recipe,FLOOR_WOOD,أرضيات خشب / باركيه
 recipe,FLOOR_SOFT,أرضيات موكيت / فينيل
 recipe,MECH_PLANT,معدات مركزية (غلاية / تشيلر / وحدة مناولة هواء / برج تبريد)
+work_item,AC-SPLIT,مكيف سبليت حوالي 2 طن كامل مع الوحدة الخارجية والمواسير النحاسية والتصريف
+work_item,AC-WIN,مكيف شباك حوالي 2 طن كامل مع الإطار ونقطة الكهرباء
+recipe,AC_SPLIT,مكيف سبليت
+recipe,AC_WINDOW,مكيف شباك
+resource,M-ACSPLIT,مكيف سبليت حوالي 2 طن وحدة داخلية وخارجية (توريد)
+resource,M-ACWIN,مكيف شباك حوالي 2 طن (توريد)

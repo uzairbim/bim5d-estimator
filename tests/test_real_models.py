@@ -476,7 +476,7 @@ def test_container_with_priced_parts_is_not_priced_again(duplex, lib):
 
 
 @pytest.mark.parametrize("cls,name,recipe", [
-    ("IfcBuildingElementProxy", "M_Split System - Indoor Unit - Wall Mounted:2.5 kW", "MECH_EQUIP"),
+    ("IfcBuildingElementProxy", "M_Split System - Indoor Unit - Wall Mounted:2.5 kW", "AC_SPLIT"),
     ("IfcWasteTerminal", "Floor Drain 100mm", "DRAIN"),
     ("IfcBuildingElementProxy", "M_Fire Extinguisher Cabinet - Recessed", "FIRE_EQUIP"),
     ("IfcFireSuppressionTerminal", "Fire Hose Reel Cabinet", "FIRE_EQUIP"),
@@ -554,7 +554,7 @@ def test_modelled_rebar_weight_equals_diameter_times_length(lib):
     ("IfcBuildingElementProxy", "مغسلة", "SANITARY"), ("IfcBuildingElementProxy", "خزائن مطبخ", "JOINERY"),
     ("IfcBuildingElementProxy", "ثلاجة مطبخ", "APPLIANCE"), ("IfcBuildingElementProxy", "مصعد", "LIFT"),
     ("IfcBuildingElementProxy", "فيش كهرباء", "OUTLET"), ("IfcBuildingElementProxy", "لوحة كهرباء رئيسية", "ELEC_PANEL"),
-    ("IfcBuildingElementProxy", "مكيف سبليت 24000", "MECH_EQUIP"), ("IfcBuildingElementProxy", "طفاية حريق", "FIRE_EQUIP"),
+    ("IfcBuildingElementProxy", "مكيف سبليت 24000", "AC_SPLIT"), ("IfcBuildingElementProxy", "طفاية حريق", "FIRE_EQUIP"),
     ("IfcBuildingElementProxy", "سرير", "LOOSE_FFE"), ("IfcBuildingElementProxy", "شجرة", None),
     ("IfcBuildingElementProxy", "شطاف", None),
 ])
@@ -600,7 +600,7 @@ def test_room_names(lib, name, recipe):
     ("IfcBuildingElementProxy", "Grass", "LANDSCAPE"), ("IfcWall", "جدار استنادي", "RC_WALL"),
     ("IfcWall", "Partition glass", "CW_PANEL"), ("IfcCovering", "حجر رياض", "WALL_STONE"),
     ("IfcCovering", "Wall tiles 300x600", "WALL_TILE"), ("IfcCovering", "بورسلان", "FLOOR_FINISH"),
-    ("IfcCovering", "Carpet", "FLOOR_SOFT"), ("IfcCovering", "رخام", "FLOOR_STONE"), ("IfcCovering", "دهان جدران", "FINISH_GENERIC"), ("IfcFlowTerminal", "Split AC", "MECH_EQUIP"),
+    ("IfcCovering", "Carpet", "FLOOR_SOFT"), ("IfcCovering", "رخام", "FLOOR_STONE"), ("IfcCovering", "دهان جدران", "FINISH_GENERIC"), ("IfcFlowTerminal", "Split AC", "AC_SPLIT"),
     ("IfcFurnishingElement", "Car", None),
 ])
 def test_saudi_external_works_and_finishes(lib, cls, name, recipe):
@@ -641,4 +641,14 @@ def test_external_works_quantities(tmp_path, lib):
 def test_mep_devices_by_name(lib, kind, cls, name, recipe):
     el = {"ifc_class": cls, "kind": kind, "name": name, "type": name, "predefined": "", "materials": [],
           "classification": [], "props": {}, "layers": [], "qty": {"volume": 0.2}}
+    assert lib.classify(el)[0] == recipe
+
+
+@pytest.mark.parametrize("name, recipe", [
+    ("مكيف سبليت", "AC_SPLIT"), ("مكيف", "AC_SPLIT"), ("Split AC 24000 BTU", "AC_SPLIT"), ("مكيف شباك", "AC_WINDOW"),
+    ("Window AC", "AC_WINDOW"), ("Split outdoor unit", None), ("مكيف مركزي", "MECH_EQUIP"), ("FCU-01 fan coil", "MECH_EQUIP"),
+])
+def test_air_conditioners(lib, name, recipe):
+    el = {"ifc_class": "IfcBuildingElementProxy", "kind": "IfcBuildingElementProxy", "name": name, "type": name,
+          "predefined": "", "materials": [], "classification": [], "props": {}, "layers": [], "qty": {"volume": 0.1}}
     assert lib.classify(el)[0] == recipe

@@ -193,6 +193,7 @@ const D = {
   "{n} revisions": { ar: "{n} نسخ" },
   "This project has no model yet.": { ar: "لا يوجد نموذج في هذا المشروع بعد." },
   "Delete project": { ar: "حذف المشروع" },
+  "{n} split air conditioners priced complete with their outdoor unit, copper piping and drain; split outdoor units drawn in the model are not priced again.": { ar: "{n} مكيف سبليت مسعّر كاملاً مع الوحدة الخارجية والمواسير النحاسية والتصريف، والوحدات الخارجية المرسومة في النموذج لا تُسعّر مرة أخرى." },
   "Close": { ar: "إغلاق", ur: "بند کریں", es: "Cerrar", fr: "Fermer" },
   "Search": { ar: "بحث", ur: "تلاش", es: "Buscar", fr: "Rechercher" },
   "1 · Local prices": { ar: "١ · الأسعار المحلية", ur: "١ · مقامی قیمتیں", es: "1 · Precios locales", fr: "1 · Prix locaux" },

@@ -111,3 +111,5 @@ KERB,Precast concrete kerb on concrete bed,m,External works,32 16 00
 LOUVRE,Aluminium sun louvres / brise-soleil,m2,Metals,10 71 13
 FLR-SOFT,Carpet tiles / vinyl flooring,m2,Finishes,09 68 00
 LAND-GRASS,Natural grass incl. soil preparation,m2,External works,32 92 00
+AC-SPLIT,"Split air conditioner about 2 tons complete with outdoor unit, copper piping and drain",nr,Plumbing & HVAC,23 81 26
+AC-WIN,Window air conditioner about 2 tons complete with sleeve and power point,nr,Plumbing & HVAC,23 81 19

@@ -123,6 +123,19 @@ the generic finish rate. Assumed prices: underground tank about 960 SAR/m³ (pub
 17,000–33,000 SAR), car shade about 120 SAR/m², pool 2,000 SAR/m² (no published figure found: replace
 with a quote).
 
+## 1j. MEP devices priced by what they are
+
+Found on the Revit sample MEP models and fixed: smoke detectors were priced as distribution boards
+(2,632 SAR each), telephone outlets as kitchen appliances (2,522 SAR), a 147 kW boiler as a small
+device (1,588 SAR) because its 3D family is small, and a 5,000 L polyethylene tank as large plant
+(12,914 SAR). Detectors, outlets, terminal boards and fire alarm panels are now recognised by name in
+any IFC class; boilers, chillers, AHUs and cooling towers are central plant whatever their size; tanks
+rated in litres are roof tanks.
+
+Split air conditioners (مكيف سبليت، مكيف) are priced complete with the outdoor unit, copper piping and
+drain (about 2,940 SAR for about 2 tons in Saudi Arabia); split outdoor units in the model are not
+priced again, and the assumptions say so. Window units about 1,590 SAR.
+
 ## 2. Real Revit models
 
 Eight public Revit exports (Revit 2010–2021: Autodesk sample projects, an office in architecture,
