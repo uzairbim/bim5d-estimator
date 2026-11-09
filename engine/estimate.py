@@ -261,6 +261,8 @@ def is_external(el):
     """External wall: Revit's IsExternal when exported, otherwise the type name says so."""
     if el.get("external") is not None:
         return bool(el["external"])
+    if (el.get("predefined") or "").upper() == "PARAPET":
+        return True
     return bool(EXTERNAL_NAME.search(f'{el.get("name", "")} {el.get("type", "")}'))
 
 
@@ -702,6 +704,8 @@ def _env(el, give, rule, ctx):
         # wall tiles modelled as coverings in this room: the room adds only the rest
         q["wall_tiles_modeled"] = sum(ctx["by_guid"][g]["qty"].get("area") or 0 for g in el.get("room_wall_covers") or []
                                       if g in ctx["by_guid"] and ctx["recipes"].get(g) == "WALL_TILE")
+        q["skirting_modeled"] = sum(ctx["by_guid"][g]["qty"].get("length") or 0 for g in el.get("room_wall_covers") or []
+                                    if g in ctx["by_guid"] and ctx["recipes"].get(g) == "SKIRTING_COVER")
     return q
 
 

@@ -162,6 +162,11 @@ German Ziegel) is still rendered and painted. Brick walls below ground get bitum
 walls. Toilet cubicle partitions modelled as walls ("WC Trennwand", "Toilet partition") are fitted
 joinery per metre run, not 100 mm block or brick walls.
 
+IFC predefined types are used when the family name says nothing: coverings typed SKIRTINGBOARD,
+INSULATION, MEMBRANE and ROOFING are priced as skirting (per m), insulation, waterproofing and roof
+finish (they fell to a generic 11 SAR/m² finish); a modelled skirting is subtracted from the room's
+own skirting; a wall typed PARAPET is external (rendered outside).
+
 ## 2. Real Revit models
 
 Eight public Revit exports (Revit 2010–2021: Autodesk sample projects, an office in architecture,

@@ -226,3 +226,25 @@ def test_connections_per_point_only_when_not_modelled(lib):
         return {l["work_item"] for l in estimate(els, "SA", lib, {})["lines"]}
     assert {"PLB-PT", "WIRE-PT"} <= items(base)
     assert not {"PLB-PT", "WIRE-PT"} & items(base + extra)
+
+
+def test_modelled_skirting_is_not_counted_twice(lib):
+    room = _room([], ["k"])
+    room["name"] = room["type"] = "Bedroom"
+    skirt = _cover("k", "Skirting 100", 0.9, [0, 0, 0, 3, 0.01, 0.1])
+    skirt["predefined"] = "SKIRTINGBOARD"
+    skirt["qty"]["length"] = 5.0
+    est = estimate([room, skirt], "SA", lib, {"finishes_from": "rooms"})
+    q = {(l["guid"], l["work_item"]): l["net_qty"] for l in est["lines"]}
+    assert q[("k", "FLR-SKRT")] == pytest.approx(5.0)
+    assert q[("r", "FLR-SKRT")] == pytest.approx(9.2 - 5.0)
+
+
+@pytest.mark.parametrize("predefined, recipe", [
+    ("SKIRTINGBOARD", "SKIRTING_COVER"), ("INSULATION", "INSULATION_COVER"), ("MEMBRANE", "MEMBRANE_COVER"),
+    ("ROOFING", "ROOF_COVER"), ("FLOORING", "FLOOR_FINISH"), ("CEILING", "CEILING"), ("CLADDING", "WALL_COVER"),
+])
+def test_covering_predefined_types(lib, predefined, recipe):
+    el = {"ifc_class": "IfcCovering", "kind": "IfcCovering", "name": "Generic", "type": "Generic",
+          "predefined": predefined, "materials": [], "classification": [], "props": {}, "layers": [], "qty": {}}
+    assert lib.classify(el)[0] == recipe

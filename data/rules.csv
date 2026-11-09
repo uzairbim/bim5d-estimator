@@ -158,3 +158,7 @@ priority,ifc_class,keywords,recipe
 3,IfcBuildingElementProxy|IfcFlowTerminal|IfcUnitaryEquipment,split.*(outdoor|outside|condens)|(outdoor|outside|condens).*split|وحدة خارجية.*سبليت|سبليت.*وحدة خارجية,EXCLUDE
 3,IfcWall|IfcWallStandardCase|IfcBuildingElementProxy|IfcFurnishingElement,wc ?(partition|trennwand|kabine|cubicle)|toilet (partition|cubicle)|\bcubicle|sanitary partition|قواطع حمام|قواطع دورات,JOINERY
 12,IfcWall|IfcWallStandardCase,fac(e|ing) ?brick|brick ?veneer|engineering brick|brick. engineering|brick.? facing|klinker|sichtmauer|exposed brick|fair.?faced brick|طوب واجهات|طوب ظاهر|طوب وجهات,FACE_BRICK_WALL
+6,IfcCovering,SKIRTINGBOARD|skirting|sockelleiste|نعلة|وزرة,SKIRTING_COVER
+6,IfcCovering,^(?!.*(ceiling|سقف)).*(INSULATION|insulation|dämmung|عزل حراري),INSULATION_COVER
+6,IfcCovering,MEMBRANE|waterproof|bitumen membrane|abdichtung|عزل مائي,MEMBRANE_COVER
+6,IfcCovering,ROOFING|roof tile|roof finish|بلاط سطح|بلاط اسطح,ROOF_COVER

@@ -390,3 +390,7 @@ resource,M-ELWIRE,سلك نحاس مفرد 2.5 مم²
 work_item,PLB-PT,تمديدات تغذية (بارد / ساخن) وصرف لقطعة صحية، حوالي 10 م مواسير مع القطع، عند عدم رسم المواسير
 resource,M-PUTTY,معجون جدران
 recipe,FACE_BRICK_WALL,جدار طوب واجهات (ظاهر من الخارج)
+recipe,SKIRTING_COVER,نعلة (وزرة)
+recipe,INSULATION_COVER,عزل حراري (تكسية)
+recipe,MEMBRANE_COVER,عزل مائي (غشاء)
+recipe,ROOF_COVER,بلاط سطح

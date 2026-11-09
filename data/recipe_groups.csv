@@ -88,3 +88,7 @@ MECH_PLANT,Central plant (boiler / chiller / AHU / cooling tower),5.6 Space heat
 AC_SPLIT,Split air conditioner,5.6 Space heating and air conditioning,D30 HVAC,5 Services
 AC_WINDOW,Window air conditioner,5.6 Space heating and air conditioning,D30 HVAC,5 Services
 FACE_BRICK_WALL,Facing brick wall (exposed outside),2.5 External walls,B20 Exterior enclosure,4 Envelope & walls
+SKIRTING_COVER,Skirting (covering),3.1 Wall finishes,C30 Interior finishes,6 Finishes
+INSULATION_COVER,Insulation (covering),2.5 External walls,B20 Exterior enclosure,4 Envelope & walls
+MEMBRANE_COVER,Waterproofing membrane (covering),2.3 Roof,B30 Roofing,3 Roof
+ROOF_COVER,Roof finish (covering),2.3 Roof,B30 Roofing,3 Roof
