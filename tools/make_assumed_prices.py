@@ -27,7 +27,7 @@ SA = {
     "M-SKRT": 25, "M-HRD": 35, "M-PINS": 20, "M-DINS": 35, "M-TERM": 5,
     "M-JOIN": 1100, "M-PV": 650, "M-MECH-S": 1500,
     "M-BIT": 6, "M-TBLK": 4.5, "M-STONE": 130, "M-RTILE": 35, "M-HORDI": 3.5, "M-DRAIN": 120, "M-FIRE": 900, "M-MH": 1500, "M-POWER": 110000, "M-POWER-S": 25000, "M-MARBLE": 160, "M-PAVER": 32,
-    "M-TANKUG": 950, "M-TANKR": 1800, "M-SHADE": 170, "M-PERG": 380, "M-POOL": 2000, "M-KERB": 28,
+    "M-TANKUG": 950, "M-TANKR": 1800, "M-SHADE": 115, "M-PERG": 380, "M-POOL": 2000, "M-KERB": 28,
     "M-LVR": 380, "M-SOFT": 65, "M-GRASS": 22,
 }
 

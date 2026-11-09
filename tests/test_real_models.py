@@ -607,3 +607,20 @@ def test_saudi_external_works_and_finishes(lib, cls, name, recipe):
     el = {"ifc_class": cls, "kind": cls, "name": name, "type": name, "predefined": "", "materials": [],
           "classification": [], "props": {}, "layers": [], "qty": {"height": 0.2, "volume": 0.1}}
     assert lib.classify(el)[0] == recipe
+
+
+def test_external_works_quantities(tmp_path, lib):
+    """Site items of known size (tools/make_external_check.py) against hand calculation."""
+    import subprocess
+    import sys
+    out = tmp_path / "ext.ifc"
+    subprocess.run([sys.executable, str(SAMPLES.parent / "tools" / "make_external_check.py"), str(out)], check=True)
+    els = extract(str(out), with_mesh=False)["elements"]
+    est = estimate(els, "SA", lib, {})
+    q = {}
+    for line in est["lines"]:
+        q[line["work_item"]] = q.get(line["work_item"], 0) + line["net_qty"]
+    hand = {"TANK-UG": 4 * 3 * 2.5 + 2 * 2 * 3, "TANK-ROOF": 1, "EXT-SHADE": 30, "PERGOLA": 12, "POOL": 32,
+            "KERB": 10, "LOUVRE": 6, "DOR-L": 4 * 2.2, "LAND-GRASS": 50}
+    for k, v in hand.items():
+        assert q.get(k) == pytest.approx(v, rel=0.01), k

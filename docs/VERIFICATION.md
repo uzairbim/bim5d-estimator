@@ -100,6 +100,29 @@ because a shaft has none and the roof slab already carries the roof build-up. "L
 A 12-month programme gives exactly 12 months of cash flow (it gave 13, with an empty last month, for
 most durations through a rounding error). Checked for 3, 6, 7.5, 12, 18, 24 and 36 months.
 
+## 1i. External works and coverings (Saudi site items)
+
+`tools/make_external_check.py` builds site items as Revit generic models usually are, with known sizes:
+
+| Item | Hand | Tool |
+|---|---|---|
+| خزان أرضي 4 × 3 × 2.5 m + بيارة 2 × 2 × 3 m | 30 + 12 = 42 m³ | 42 m³ (per m³ complete) |
+| خزان علوي | 1 nr | 1 nr |
+| مظلة سيارات 6 × 5 m | 30 m² | 30 m² |
+| Pergola 4 × 3 m | 12 m² | 12 m² |
+| Swimming pool 8 × 4 m | 32 m² water area | 32 m² |
+| Kerb | 10 m | 10 m |
+| كاسرات شمس 3 × 2 m | 6 m² | 6 m² |
+| Gate 4 × 2.2 m | 8.8 m² | 8.8 m² |
+| Grass 10 × 5 m | 50 m² | 50 m² |
+
+Errors this found and fixed: a car shade named مظلة سيارات was dropped as "cars", sun breakers were
+priced as electrical circuit breakers, underground and roof tanks were a 12,000 SAR mechanical item,
+glass partitions were blockwork, جدار استنادي was blockwork, and a wall covering named حجر was priced at
+the generic finish rate. Assumed prices: underground tank about 960 SAR/m³ (published villa tanks
+17,000–33,000 SAR), car shade about 120 SAR/m², pool 2,000 SAR/m² (no published figure found: replace
+with a quote).
+
 ## 2. Real Revit models
 
 Eight public Revit exports (Revit 2010–2021: Autodesk sample projects, an office in architecture,
