@@ -1,4 +1,6 @@
 """Write an estimate to a formatted Excel workbook."""
+import re
+from pathlib import Path
 from io import BytesIO
 
 from openpyxl import Workbook
@@ -166,6 +168,27 @@ def _priced_boq(wb, title, est, bilingual):
     return ws
 
 
+_UI_AR = None
+
+
+def _ui_arabic():
+    """Arabic texts of the app (web/i18n.js), so the workbook says the same as the screen."""
+    global _UI_AR
+    if _UI_AR is None:
+        import json
+        _UI_AR = {}
+        path = Path(__file__).resolve().parent.parent / "web" / "i18n.js"
+        rx = re.compile(r'^\s*("(?:[^"\\]|\\.)*"):\s*\{.*?\bar:\s*("(?:[^"\\]|\\.)*")')
+        for line in path.read_text(encoding="utf-8").splitlines():
+            m = rx.match(line)
+            if m:
+                try:
+                    _UI_AR[json.loads(m.group(1))] = json.loads(m.group(2))
+                except ValueError:
+                    pass
+    return _UI_AR
+
+
 def to_xlsx(title, est, sched=None, lang=None):
     cur = est["currency"]
     s = est["summary"]
@@ -288,7 +311,22 @@ def to_xlsx(title, est, sched=None, lang=None):
 
     notes = [["Assumption", x] for x in est.get("assumptions", [])] + \
             [["Exclusion", x] for x in est.get("exclusions", [])]
-    _sheet(wb, "Assumptions", ["Type", "Text"], notes, widths=[14, 110])
+    if bilingual:
+        ar = _ui_arabic()
+        tr = lambda x: ar.get(x, x)
+
+        def arabic(tpl, vals):
+            try:
+                return tr(tpl).format(**{k: tr(v) for k, v in vals.items()}) if tpl in ar else ""
+            except (KeyError, IndexError, ValueError):
+                return ""
+        texts = [arabic(tpl, vals) for tpl, vals in
+                 est.get("assumptions_t") or [[a, {}] for a in est.get("assumptions", [])]]
+        texts += [ar.get(x, "") for x in est.get("exclusions", [])]
+        notes = [[t, x, a] for (t, x), a in zip(notes, texts + [""] * len(notes))]
+        _sheet(wb, "Assumptions", ["Type", "Text", "النص"], notes, widths=[14, 90, 90])
+    else:
+        _sheet(wb, "Assumptions", ["Type", "Text"], notes, widths=[14, 110])
     if est.get("allowances"):
         _sheet(wb, "Allowances", ["Allowance", "Basis", "Value", f"Amount ({cur})", "Note"],
                [[x.get("name"), x.get("kind"), x.get("value"), x["amount"], x.get("note", "")]

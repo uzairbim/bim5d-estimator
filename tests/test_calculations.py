@@ -196,3 +196,17 @@ def test_modelled_coverings_are_not_counted_twice_in_rooms(lib):
                 _cover("w", "Wall tiles", 20, [0, 0, 0, 3, 0.01, 3])])
     assert ("r", "FLR-TIL") not in both and both[("f", "FLR-MRB")] == pytest.approx(6)
     assert both[("r", "WAL-TILE")] == pytest.approx(8.32) and both[("w", "WAL-TILE")] == pytest.approx(20)
+
+
+def test_arabic_workbook_has_arabic_assumptions(lib):
+    import io
+    from openpyxl import load_workbook
+    from engine.export import to_xlsx
+    els = extract(str(SAMPLES / "Saudi_Villa_Example.ifc"), with_mesh=False)["elements"]
+    est = estimate(els, "SA", lib, {})
+    data = to_xlsx("Villa", est, None, "ar")
+    ws = load_workbook(io.BytesIO(data if isinstance(data, bytes) else data.getvalue()))["Assumptions"]
+    rows = list(ws.iter_rows(min_row=2, values_only=True))
+    vat = [r for r in rows if r[1] and "VAT at 15% is included" in r[1]][0]
+    assert vat[2] == "ضريبة القيمة المضافة بنسبة 15% مضمّنة في الإجمالي."
+    assert all(r[2] for r in rows if r[0])      # every assumption and default exclusion is in Arabic
