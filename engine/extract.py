@@ -255,21 +255,23 @@ def _classification(el, typ):
     return refs
 
 
-def _authored(el, psets):
+def _authored(el, psets, units=(1.0, 1.0)):
     """Volume and area written by the authoring tool (Revit 'Dimensions'
-    parameters first; IFC base quantities are often wrong, so only used last)."""
+    parameters first; IFC base quantities are often wrong, so only used last), in m3 and m2.
+    `units` = (area, volume) factors of the file's units (ft2 / ft3 in imperial projects)."""
     out = {}
+    af, vf = units
     for pn in ("PSet_Revit_Dimensions", "Dimensions"):
         ps = psets.get(pn) or {}
-        for k in ("Volume", "Area"):
+        for k, f in (("Volume", vf), ("Area", af)):
             v = ps.get(k)
             if isinstance(v, (int, float)) and v > 0 and k.lower() not in out:
-                out[k.lower()] = float(v)
+                out[k.lower()] = float(v) * f
     for pn, ps in psets.items():
         if pn.startswith("Qto_") or pn == "BaseQuantities":
             v = ps.get("NetVolume") or ps.get("GrossVolume")
             if "volume" not in out and isinstance(v, (int, float)) and v > 0:
-                out["volume_qto"] = float(v)
+                out["volume_qto"] = float(v) * vf
     return out
 
 
@@ -359,6 +361,10 @@ def extract(path, with_mesh=True, progress=None):
     """
     model = ifcopenshell.open(path)
     scale = uunit.calculate_unit_scale(model)  # model length unit -> metres
+    try:
+        qunits = (uunit.calculate_unit_scale(model, "AREAUNIT"), uunit.calculate_unit_scale(model, "VOLUMEUNIT"))
+    except Exception:
+        qunits = (1.0, 1.0)
     settings = ifcopenshell.geom.settings()
     settings.set("use-world-coords", False)    # measure in local axes
 
@@ -385,7 +391,7 @@ def extract(path, with_mesh=True, progress=None):
                     psets = uel.get_psets(el)
                 except Exception:
                     psets = {}
-                authored = _authored(el, psets)
+                authored = _authored(el, psets, qunits)
                 q = _measure(g, el.is_a(), sum(l["t"] for l in layers), authored)
                 level, elev = _storey(el, scale)
                 if el.is_a() in ("IfcDoor", "IfcWindow") and el.OverallWidth and el.OverallHeight:

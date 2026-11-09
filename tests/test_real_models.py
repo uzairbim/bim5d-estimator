@@ -652,3 +652,22 @@ def test_air_conditioners(lib, name, recipe):
     el = {"ifc_class": "IfcBuildingElementProxy", "kind": "IfcBuildingElementProxy", "name": name, "type": name,
           "predefined": "", "materials": [], "classification": [], "props": {}, "layers": [], "qty": {"volume": 0.1}}
     assert lib.classify(el)[0] == recipe
+
+
+@pytest.mark.parametrize("unit", ["FOOT", "INCH"])
+def test_imperial_projects_are_measured_in_metres(tmp_path, unit):
+    """Revit imperial projects write feet (or inches): geometry and Revit's own volumes (ft3 / in3)
+    must both come out in metres (Revit's volume was read as m3: 28x too large in feet)."""
+    import subprocess
+    import sys
+    out = tmp_path / f"{unit}.ifc"
+    subprocess.run([sys.executable, str(SAMPLES.parent / "tools" / "make_units_check.py"), str(out), unit], check=True)
+    els = {e["name"]: e for e in extract(str(out), with_mesh=True)["elements"]}
+    slab, wall = els["Floor:RC 1ft"]["qty"], els["Basic Wall:Block 8in"]["qty"]
+    ft = 0.3048
+    assert slab["footprint"] == pytest.approx(20 * 30 * ft * ft, rel=1e-3)
+    assert slab["volume"] == pytest.approx(20 * 30 * 1 * ft ** 3, rel=1e-3)
+    assert wall["side"] == pytest.approx(20 * 10 * ft * ft, rel=1e-3)
+    assert wall["volume"] == pytest.approx(20 * 10 * (8 / 12) * ft ** 3, rel=1e-3)
+    assert els["Floor:RC 1ft"]["bbox"][0] == pytest.approx(50 * ft, rel=1e-3)   # placed 50 ft from the origin
+    assert els["Floor:RC 1ft"]["authored"]["volume"] == pytest.approx(20 * 30 * 1 * ft ** 3, rel=1e-3)

@@ -144,6 +144,16 @@ first try reused the rebar tying-wire code). Sanitary fixtures likewise: when pi
 architect's model), each fixture gets its supply and drain connection (about 10 m of pipe with
 fittings, about 420 SAR); with modelled pipes they are measured instead, never both.
 
+## 1k. Imperial (feet / inches) projects
+
+`tools/make_units_check.py` writes the same small model in feet and in inches (a 20 × 30 × 1 ft
+slab and a 20 ft × 10 ft × 8 in wall, placed 50 ft from the origin). Geometry comes out in metres
+either way: slab 55.74 m², 16.99 m³; wall 18.58 m², 3.776 m³. Revit's own volumes and areas in such
+files are in ft³ / ft² (or in³ / in²): they were read as m³ and m² (28 times too large in feet),
+which upset the Revit comparison and the fall-back volume for shapes that cannot be measured; they
+are now converted. In the app, Units "ft · ft² · yd³" also shows the cost per ft² and the floor area
+in ft² (summary and client report).
+
 ## 2. Real Revit models
 
 Eight public Revit exports (Revit 2010–2021: Autodesk sample projects, an office in architecture,
