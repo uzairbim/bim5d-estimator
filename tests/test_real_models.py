@@ -46,7 +46,7 @@ def _like(els, ifc_class, **changes):
     ("IfcWall", "Basic Wall:Block 200", ["Concrete Masonry Units"], "BLOCK_WALL"),
     ("IfcBuildingElementProxy", "M_Lavatory - Wall Mounted:485 mmx355 mm - Public", [], "SANITARY"),
     ("IfcBuildingElementProxy", "M_Water Closet - Flush Valve - Wall Mounted:Public", [], "SANITARY"),
-    ("IfcBuildingElementProxy", "M_Cooling Tower - Closed Circuit - Counterflow - 177 kW", [], "MECH_EQUIP"),
+    ("IfcBuildingElementProxy", "M_Cooling Tower - Closed Circuit - Counterflow - 177 kW", [], "MECH_PLANT"),
     ("IfcBuildingElementProxy", "M_Base Cabinet-Single Door:500mm", ["Handle", "Wood"], "JOINERY"),
     ("IfcBuildingElementProxy", "M_Lighting and Appliance Panelboard - 208V MLO - Surface:400 A", [], "ELEC_PANEL"),
     ("IfcBuildingElementProxy", "M_Lighting and Appliance Panelboard - 480V MCB - Surface:100 A", [], "ELEC_DEVICE"),
@@ -58,7 +58,7 @@ def _like(els, ifc_class, **changes):
     ("IfcBuildingElementProxy", "Water Glass:Water Glass", ["Juice"], None),
     ("IfcBuildingElementProxy", "Wine Bottles:Wine Bottles", ["Water"], None),
     ("IfcBuildingElementProxy", "Walvit_Hung Bowl_604118 W:Walvit", ["Porcelain"], "SANITARY"),
-    ("IfcFlowTerminal", "DC_Tankworks_PLM_5000L:5000L water tank", [], "MECH_EQUIP"),
+    ("IfcFlowTerminal", "DC_Tankworks_PLM_5000L:5000L water tank", [], "WATER_TANK_ROOF"),
 ])
 def test_real_names_are_priced_sensibly(lib, cls, name, materials, recipe):
     el = {"ifc_class": cls, "kind": cls, "name": name, "type": name, "predefined": "",
@@ -624,3 +624,21 @@ def test_external_works_quantities(tmp_path, lib):
             "KERB": 10, "LOUVRE": 6, "DOR-L": 4 * 2.2, "LAND-GRASS": 50}
     for k, v in hand.items():
         assert q.get(k) == pytest.approx(v, rel=0.01), k
+
+
+@pytest.mark.parametrize("kind, cls, name, recipe", [
+    ("IfcProtectiveDevice", "IfcFlowController", "M_Smoke Detector:Smoke Detector", "CONTROLS"),
+    ("IfcElectricAppliance", "IfcFlowTerminal", "M_Telephone Outlet:Telophone Outlet", "OUTLET"),
+    ("IfcElectricAppliance", "IfcFlowTerminal", "M_Telephone Terminal Board:TTB 300x300", "ELEC_DEVICE"),
+    ("IfcElectricAppliance", "IfcFlowTerminal", "M_Fire Alarm Control Panel:400x475", "ELEC_DEVICE"),
+    ("IfcElectricAppliance", "IfcFlowTerminal", "M_Refrigerator:850 x 760mm", "APPLIANCE"),
+    ("IfcBoiler", "IfcEnergyConversionDevice", "M_Hot Water Boiler - 59-440 kW:147 kW", "MECH_PLANT"),
+    ("IfcBuildingElementProxy", "IfcBuildingElementProxy", "M_Cooling Tower - Closed Circuit:67-189 kW", "MECH_PLANT"),
+    ("IfcBuildingElementProxy", "IfcBuildingElementProxy", "M_Water Heater - Tankless:2.3 L", "MECH_EQUIP"),
+    ("IfcFlowTerminal", "IfcFlowTerminal", "DC_Tankworks_PLM_5000L:5000L 3500x900x1860", "WATER_TANK_ROOF"),
+    ("IfcBuildingElementProxy", "IfcBuildingElementProxy", "Tank-Expansion-Taco-CX", "MECH_EQUIP"),
+])
+def test_mep_devices_by_name(lib, kind, cls, name, recipe):
+    el = {"ifc_class": cls, "kind": kind, "name": name, "type": name, "predefined": "", "materials": [],
+          "classification": [], "props": {}, "layers": [], "qty": {"volume": 0.2}}
+    assert lib.classify(el)[0] == recipe

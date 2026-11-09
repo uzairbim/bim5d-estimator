@@ -377,3 +377,4 @@ recipe,WALL_TILE,بلاط جدران
 recipe,FLOOR_STONE,أرضيات رخام / جرانيت
 recipe,FLOOR_WOOD,أرضيات خشب / باركيه
 recipe,FLOOR_SOFT,أرضيات موكيت / فينيل
+recipe,MECH_PLANT,معدات مركزية (غلاية / تشيلر / وحدة مناولة هواء / برج تبريد)

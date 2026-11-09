@@ -128,7 +128,7 @@ priority,ifc_class,keywords,recipe
 14,IfcBuildingElementProxy,لوحة كهرباء|لوحة توزيع,ELEC_DEVICE
 15,IfcBuildingElementProxy,إنارة|انارة|كشاف|سبوت|ثريا|نجفة,LIGHT
 2,IfcBuildingElementProxy|IfcFlowStorageDevice|IfcTank|IfcFurnishingElement,(underground|in-?ground|ground|buried|below.?grade|fire|sump|potable)\b[\w ]*\btank|cistern|\bsump\b|septic|خزان (أرضي|ارضي|سفلي|مياه أرضي|خرساني)|خزان أرضي|بيارة|سبتك|خزان تحليل,WATER_TANK_UG
-2,IfcBuildingElementProxy|IfcFlowStorageDevice|IfcTank|IfcFurnishingElement,(roof|elevated|overhead|upper|pe|polyethylene|plastic)\s*(water\s*)?tank|خزان (علوي|سطح|بلاستيك|فايبر),WATER_TANK_ROOF
+2,IfcBuildingElementProxy|IfcFlowStorageDevice|IfcTank|IfcFurnishingElement|IfcFlowTerminal,(roof|elevated|overhead|upper|pe|polyethylene|plastic)\s*(water\s*)?tank|tank.*\b\d{3}\d?\d? ?(l|ltr|litres?|liters?)\b|\b\d{3}\d?\d? ?(l|ltr|litres?|liters?)\b.*tank|خزان (علوي|سطح|بلاستيك|فايبر),WATER_TANK_ROOF
 2,IfcBuildingElementProxy|IfcRoof|IfcFurnishingElement,car ?(park(ing)?)? ?shade|car ?port|shade (sail|structure)|tensile|مظلة|مظلات|مظلة سيارات,CAR_SHADE
 2,IfcBuildingElementProxy|IfcRoof|IfcFurnishingElement,pergola|برجولة|برجولا|بيرجولا,PERGOLA
 2,IfcBuildingElementProxy|IfcSlab|IfcFurnishingElement,swimming pool|\bpool\b(?! (pump|room|plant|table|equipment))|مسبح|حوض سباحة,POOL
@@ -148,3 +148,8 @@ priority,ifc_class,keywords,recipe
 21,IfcCovering,porcelain|بورسلان|epoxy|ايبوكسي|إيبوكسي,FLOOR_FINISH
 22,IfcCovering,stone|limestone|travertine|حجر,WALL_STONE
 22,IfcCovering,grc|\bacp\b|aluminium composite|alucobond,WALL_COVER
+5,IfcProtectiveDevice|IfcFlowController|IfcFlowTerminal|IfcElectricAppliance|IfcAlarm|IfcSensor|IfcBuildingElementProxy,smoke|heat detector|detector|call point|break glass|sounder|strobe|horn|كاشف|جرس إنذار|جرس انذار,CONTROLS
+5,IfcElectricAppliance|IfcFlowTerminal|IfcCommunicationsAppliance,terminal board|\bttb\b|fire alarm (control )?panel|\bfacp\b|panelboard|distribution board,ELEC_DEVICE
+6,IfcElectricAppliance|IfcFlowTerminal,^(?!.*(board|panel)).*(telephone|telophone|data outlet|tv outlet|\btv\b point|receptacle|socket|outlet\b),OUTLET
+5,IfcEnergyConversionDevice|IfcBoiler|IfcChiller|IfcCoolingTower|IfcBuildingElementProxy|IfcUnitaryEquipment,^(?!.*(water heater|tankless)).*(\bboiler|chiller|cooling tower|air handling unit|\bahu\b|غلاية|تشيلر|برج تبريد),MECH_PLANT
+5,IfcBoiler|IfcChiller|IfcCoolingTower,,MECH_PLANT

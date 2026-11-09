@@ -84,3 +84,4 @@ WALL_TILE,Wall tiles (covering),3.1 Wall finishes,C30 Interior finishes,6 Finish
 FLOOR_STONE,Marble / granite floor (covering),3.2 Floor finishes,C30 Interior finishes,6 Finishes
 FLOOR_WOOD,Wood / parquet floor (covering),3.2 Floor finishes,C30 Interior finishes,6 Finishes
 FLOOR_SOFT,Carpet / vinyl floor (covering),3.2 Floor finishes,C30 Interior finishes,6 Finishes
+MECH_PLANT,Central plant (boiler / chiller / AHU / cooling tower),5.6 Space heating and air conditioning,D30 HVAC,5 Services
