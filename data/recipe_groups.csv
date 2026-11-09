@@ -87,3 +87,4 @@ FLOOR_SOFT,Carpet / vinyl floor (covering),3.2 Floor finishes,C30 Interior finis
 MECH_PLANT,Central plant (boiler / chiller / AHU / cooling tower),5.6 Space heating and air conditioning,D30 HVAC,5 Services
 AC_SPLIT,Split air conditioner,5.6 Space heating and air conditioning,D30 HVAC,5 Services
 AC_WINDOW,Window air conditioner,5.6 Space heating and air conditioning,D30 HVAC,5 Services
+FACE_BRICK_WALL,Facing brick wall (exposed outside),2.5 External walls,B20 Exterior enclosure,4 Envelope & walls

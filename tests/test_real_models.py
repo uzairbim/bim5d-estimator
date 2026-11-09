@@ -671,3 +671,17 @@ def test_imperial_projects_are_measured_in_metres(tmp_path, unit):
     assert wall["volume"] == pytest.approx(20 * 10 * (8 / 12) * ft ** 3, rel=1e-3)
     assert els["Floor:RC 1ft"]["bbox"][0] == pytest.approx(50 * ft, rel=1e-3)   # placed 50 ft from the origin
     assert els["Floor:RC 1ft"]["authored"]["volume"] == pytest.approx(20 * 30 * 1 * ft ** 3, rel=1e-3)
+
+
+@pytest.mark.parametrize("name, materials, recipe", [
+    ("Basic Wall:Face brick 102", [], "FACE_BRICK_WALL"), ("Brick veneer", [], "FACE_BRICK_WALL"),
+    ("Basic Wall:MockUp Exterior", ["Brick, Engineering"], "FACE_BRICK_WALL"), ("طوب واجهات", [], "FACE_BRICK_WALL"),
+    ("Basic Wall:Brick 230", [], "BRICK_WALL"), ("طوب أحمر 20", [], "BRICK_WALL"),
+    ("Basic Wall:Ext Brick-Block cavity", [], "CAVITY_WALL"), ("WC Trennwand", [], "JOINERY"),
+])
+def test_brick_walls(lib, name, materials, recipe):
+    """Facing brick stays exposed (no render or paint outside); common brick is rendered; toilet
+    cubicle partitions are fitted joinery, not brick walls."""
+    el = {"ifc_class": "IfcWall", "kind": "IfcWall", "name": name, "type": name, "predefined": "", "materials": materials,
+          "classification": [], "props": {}, "layers": [], "qty": {}}
+    assert lib.classify(el)[0] == recipe

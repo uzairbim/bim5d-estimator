@@ -154,6 +154,14 @@ which upset the Revit comparison and the fall-back volume for shapes that cannot
 are now converted. In the app, Units "ft · ft² · yd³" also shows the cost per ft² and the floor area
 in ft² (summary and client report).
 
+## 1l. Brick walls and toilet partitions
+
+Facing brick (face brick, brick veneer, engineering brick, Klinker, طوب واجهات) stays exposed: no
+external render or paint (they were priced on the AdvancedProject façade); common brick (طوب أحمر,
+German Ziegel) is still rendered and painted. Brick walls below ground get bitumen coating like block
+walls. Toilet cubicle partitions modelled as walls ("WC Trennwand", "Toilet partition") are fitted
+joinery per metre run, not 100 mm block or brick walls.
+
 ## 2. Real Revit models
 
 Eight public Revit exports (Revit 2010–2021: Autodesk sample projects, an office in architecture,
