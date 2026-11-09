@@ -210,3 +210,19 @@ def test_arabic_workbook_has_arabic_assumptions(lib):
     vat = [r for r in rows if r[1] and "VAT at 15% is included" in r[1]][0]
     assert vat[2] == "ضريبة القيمة المضافة بنسبة 15% مضمّنة في الإجمالي."
     assert all(r[2] for r in rows if r[0])      # every assumption and default exclusion is in Arabic
+
+
+def test_connections_per_point_only_when_not_modelled(lib):
+    """A WC and a socket get their pipe / wiring connections when the model has no pipes / cables,
+    and none when pipes and cables are modelled (they are measured then)."""
+    def el(guid, cls, name, **q):
+        return {"guid": guid, "ifc_class": cls, "kind": cls, "name": name, "type": name, "predefined": "",
+                "materials": [], "classification": [], "props": {}, "layers": [], "level": "L1",
+                "level_elev": 0, "bbox": [0, 0, 0, 1, 1, 1], "qty": {"count": 1, **q}}
+    base = [el("wc", "IfcSanitaryTerminal", "WC"), el("s", "IfcOutlet", "Socket")]
+    extra = [el("p", "IfcPipeSegment", "Pipe", length=5, section=0.05, volume=0.01),
+             el("c", "IfcCableSegment", "Cable", length=5, section=0.01, volume=0.001)]
+    def items(els):
+        return {l["work_item"] for l in estimate(els, "SA", lib, {})["lines"]}
+    assert {"PLB-PT", "WIRE-PT"} <= items(base)
+    assert not {"PLB-PT", "WIRE-PT"} & items(base + extra)

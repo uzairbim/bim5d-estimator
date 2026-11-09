@@ -351,3 +351,7 @@ WIRE-PT,M-CNDT,10,
 WIRE-PT,M-ELWIRE,30,3 wires
 WIRE-PT,L-SKL,1.5,
 WIRE-PT,L-UNS,0.5,
+PLB-PT,M-PIPE-S,10,supply and drain pipe
+PLB-PT,M-PFIT,3,fittings and valves
+PLB-PT,L-SKL,3,
+PLB-PT,L-UNS,1,

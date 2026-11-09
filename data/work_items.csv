@@ -114,3 +114,4 @@ LAND-GRASS,Natural grass incl. soil preparation,m2,External works,32 92 00
 AC-SPLIT,"Split air conditioner about 2 tons complete with outdoor unit, copper piping and drain",nr,Plumbing & HVAC,23 81 26
 AC-WIN,Window air conditioner about 2 tons complete with sleeve and power point,nr,Plumbing & HVAC,23 81 19
 WIRE-PT,"Conduit and wiring to a light / socket / switch point (about 10 m conduit, 3 wires) where cables are not modelled",nr,Electrical,26 05 19
+PLB-PT,"Water supply (cold / hot) and drain connection to a fixture, about 10 m pipe with fittings, where pipes are not modelled",nr,Plumbing & HVAC,22 11 16

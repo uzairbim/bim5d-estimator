@@ -140,7 +140,9 @@ Light, socket and switch points: the device alone was priced (socket 48 SAR). Wh
 modelled (Revit wires do not export to IFC), conduit and wiring are added per point (about 10 m of
 20 mm conduit and 3 wires, about 100 SAR), so a socket point is about 150 SAR, in line with Saudi
 villa BOQs; the assumptions state it. A test now also refuses a code defined twice in the data (the
-first try reused the rebar tying-wire code).
+first try reused the rebar tying-wire code). Sanitary fixtures likewise: when pipes are not modelled (usual in an
+architect's model), each fixture gets its supply and drain connection (about 10 m of pipe with
+fittings, about 420 SAR); with modelled pipes they are measured instead, never both.
 
 ## 2. Real Revit models
 
