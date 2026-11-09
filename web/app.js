@@ -45,13 +45,13 @@ async function api(url, opts = {}) {
   return r.json();
 }
 let toastTimer;
-function toast(msg) {
-  const t = $("#toast"); t.textContent = msg; t.hidden = false;
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 3500);
+function toast(msg) {          // plain English messages are translated here
+  const el = $("#toast"); el.textContent = t(msg); el.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => (el.hidden = true), 3500);
 }
 function busy(on, text, frac) {
   $("#busy").hidden = !on;
-  if (text) $("#busyText").textContent = text;
+  if (text) $("#busyText").textContent = t(text);
   $("#busyBar").style.width = `${Math.round((frac || 0) * 100)}%`;
   $("#busyBar").parentElement.hidden = frac === undefined;
 }
@@ -225,8 +225,8 @@ async function openProject(pid, vid) {
   while (true) {
     const st = await api(`/api/versions/${v.id}`);
     if (st.status === "ready") break;
-    if (st.status === "error") { busy(false); return toast(`Could not read this model: ${st.error}`); }
-    busy(true, `Measuring ${st.file_name}… (large models take a minute the first time)`, st.progress || 0.02);
+    if (st.status === "error") { busy(false); return toast(t("Could not read this model: {e}", { e: st.error })); }
+    busy(true, t("Measuring {f}… (large models take a minute the first time)", { f: st.file_name }), st.progress || 0.02);
     await sleep(1000);
     if (S.version?.id !== v.id) return;
   }
@@ -633,7 +633,7 @@ function renderMapping() {
     try {
       const r = await api(`/api/projects/${S.project.id}/suggest`, { method: "POST", json: {} });
       r.suggestions.forEach((s) => (S.suggestions[s.key] = s));
-      toast(`${r.suggestions.length} suggestions. Check them and click Accept.`);
+      toast(t("{n} suggestions. Check them and click Accept.", { n: r.suggestions.length }));
     } catch (err) { toast(err.message); }
     renderMapping();
   });
@@ -853,7 +853,7 @@ function drawPrices() {
   const tb = S.rd.prices, q = ($("#rateSearch").value || "").toLowerCase(), cur = tb.currency;
   $("#rdHelp").innerHTML = t("Enter what things cost where you work, in {cur}. Every work-item rate is then built up from these prices (labour hours x wage + materials + plant). Start with the <b>key prices</b>; anything you leave empty is estimated from the region's exchange rate and price factors.", { cur }) +
     ` <b>${tb.rows.filter((x) => x.kind === "yours").length} / ${tb.rows.length}</b> ${t("prices entered")}.` +
-    (tb.rows.some((x) => x.kind === "assumed") ? ` <span class="tag changed">${t("assumed")}</span> = indicative market level (late 2026), not a quotation. Prices change daily: type over them with today's prices.` : "");
+    (tb.rows.some((x) => x.kind === "assumed") ? ` <span class="tag changed">${t("assumed")}</span> = ${t("indicative market level (late 2026), not a quotation. Prices change daily: type over them with today's prices.")}` : "");
   let group = null, html = `<table><thead><tr><th>${t("Resource")}</th><th>${t("Unit")}</th><th class="n">${t("Estimated")} (${cur})</th><th class="n">${t("Your price")} (${cur})</th><th>${t("Source / supplier")}</th><th>${t("Date")}</th></tr></thead><tbody>`;
   for (const r of tb.rows) {
     if (q && !(r.resource + " " + r.name + " " + tx("resource", r.resource, "")).toLowerCase().includes(q)) continue;

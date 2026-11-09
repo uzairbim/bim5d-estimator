@@ -198,6 +198,34 @@ const D = {
   "Pipes are not modelled: water supply and drain connections are priced per fixture ({n} fixtures, about 10 m of pipe each). Main drainage, tanks and pumps are separate items.": { ar: "المواسير غير مرسومة: تمديدات التغذية والصرف مسعّرة لكل قطعة صحية ({n} قطعة، حوالي 10 م مواسير لكل منها). شبكة الصرف الرئيسية والخزانات والمضخات بنود منفصلة." },
   "Cost per ft²": { ar: "التكلفة لكل قدم²", ur: "فی مربع فٹ لاگت", es: "Coste por ft²", fr: "Coût par ft²" },
   "on {a} ft² floor area.": { ar: "على مساحة طوابق {a} قدم².", ur: "{a} مربع فٹ فرش رقبے پر۔", es: "sobre {a} ft² de superficie.", fr: "sur {a} ft² de surface." },
+  "indicative market level (late 2026), not a quotation. Prices change daily: type over them with today's prices.": { ar: "مستوى سوق استرشادي (أواخر 2026) وليس عرض سعر. الأسعار تتغير يومياً: اكتب أسعار اليوم فوقها." },
+  "Could not read this model: {e}": { ar: "تعذّرت قراءة هذا النموذج: {e}" },
+  "Measuring {f}… (large models take a minute the first time)": { ar: "جارٍ قياس {f}… (النماذج الكبيرة تأخذ دقيقة في المرة الأولى)" },
+  "{n} suggestions. Check them and click Accept.": { ar: "{n} اقتراحاً. راجعها واضغط قبول." },
+  "No suggestions with 80% or more confidence.": { ar: "لا توجد اقتراحات بثقة 80% أو أكثر." },
+  "Write a reason for the adjustment first.": { ar: "اكتب سبب التعديل أولاً." },
+  "Choose two different revisions.": { ar: "اختر نسختين مختلفتين." },
+  "Opening the newer revision first…": { ar: "جارٍ فتح النسخة الأحدث أولاً…" },
+  "Loading 3D model…": { ar: "جارٍ تحميل النموذج ثلاثي الأبعاد…" },
+  "Comparing revisions…": { ar: "جارٍ مقارنة النسخ…" },
+  "AI suggestions are off. Set ANTHROPIC_API_KEY on the server to turn them on.": { ar: "اقتراحات الذكاء الاصطناعي متوقفة. اضبط ANTHROPIC_API_KEY على الخادم لتشغيلها." },
+  "Please upload an .ifc file (in Revit: File > Export > IFC).": { ar: "ارفع ملف ‎.ifc (في Revit: File > Export > IFC)." },
+  "Project not found": { ar: "المشروع غير موجود" },
+  "The model inside this zip is too large.": { ar: "النموذج داخل ملف zip كبير جداً." },
+  "There is no .ifc file inside this zip.": { ar: "لا يوجد ملف ‎.ifc داخل ملف zip هذا." },
+  "This is a project file. Open it from the start page (Open a project file).": { ar: "هذا ملف مشروع. افتحه من صفحة البداية (فتح ملف مشروع)." },
+  "This model is not ready yet.": { ar: "هذا النموذج غير جاهز بعد." },
+  "This project has no model. Upload an IFC file.": { ar: "لا يوجد نموذج في هذا المشروع. ارفع ملف IFC." },
+  "This revision was deleted or is not in this project.": { ar: "هذه النسخة محذوفة أو ليست في هذا المشروع." },
+  "This zip file could not be opened. Export the model again as .ifc or .ifcZIP.": { ar: "تعذّر فتح ملف zip هذا. صدّر النموذج مرة أخرى بصيغة ‎.ifc أو ‎.ifcZIP." },
+  "Unknown region": { ar: "منطقة غير معروفة" },
+  "Version not found": { ar: "النسخة غير موجودة" },
+  "No such sample": { ar: "المثال غير موجود" },
+  "Geometry not ready": { ar: "الشكل ثلاثي الأبعاد غير جاهز" },
+  "This file could not be read as IFC. Export it again from Revit (File > Export > IFC, IFC 2x3 Coordination View 2.0 or IFC4 Reference View) and upload the new file.": { ar: "تعذّرت قراءة هذا الملف كملف IFC. صدّره مرة أخرى من Revit ‏(File > Export > IFC، ‏IFC 2x3 Coordination View 2.0 أو IFC4 Reference View) وارفع الملف الجديد." },
+  "The model is too large for this computer's memory. Export a smaller part (one building or one discipline) or use a computer with more memory.": { ar: "النموذج أكبر من ذاكرة هذا الجهاز. صدّر جزءاً أصغر (مبنى واحد أو تخصص واحد) أو استخدم جهازاً بذاكرة أكبر." },
+  "Something went wrong while reading the model:": { ar: "حدث خطأ أثناء قراءة النموذج:" },
+  "The file has no 3D building elements. In Revit, export IFC from a 3D view and untick 'Export only elements visible in view', then upload again.": { ar: "لا يحتوي الملف على عناصر مبنى ثلاثية الأبعاد. في Revit صدّر IFC من عرض ثلاثي الأبعاد وألغِ خيار 'Export only elements visible in view' ثم ارفع الملف مرة أخرى." },
   "Close": { ar: "إغلاق", ur: "بند کریں", es: "Cerrar", fr: "Fermer" },
   "Search": { ar: "بحث", ur: "تلاش", es: "Buscar", fr: "Rechercher" },
   "1 · Local prices": { ar: "١ · الأسعار المحلية", ur: "١ · مقامی قیمتیں", es: "1 · Precios locales", fr: "1 · Prix locaux" },
@@ -486,8 +514,14 @@ let lang = "en";
 try { lang = localStorage.getItem("bim5d.lang") || (navigator.language || "en").slice(0, 2); } catch { /* ignore */ }
 if (!LANGS[lang]) lang = "en";
 
+let longKeys = null, longLang = null;
 export function t(key, vars) {
   let s = (lang !== "en" && D[key] && D[key][lang]) || key;
+  if (s === key && lang !== "en" && typeof key === "string" && key.length > 60) {
+    // A message built from known sentences plus details (server errors): translate the sentences.
+    if (longLang !== lang) { longKeys = Object.keys(D).filter((k) => k.length > 25 && D[k][lang]).sort((a, b) => b.length - a.length); longLang = lang; }
+    for (const k of longKeys) if (s.includes(k)) s = s.replaceAll(k, D[k][lang]);
+  }
   if (vars) for (const [k, v] of Object.entries(vars)) s = s.replaceAll(`{${k}}`, v);
   return s;
 }
