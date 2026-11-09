@@ -70,6 +70,8 @@ const pid = h.get("p"), vid = h.get("v");
   let snap = null;
   try { snap = localStorage.getItem("bim5d.snapshot"); } catch { /* ignore */ }
   const lang = getLang();
+  let imp = false;
+  try { imp = localStorage.getItem("bim5d.units") === "imperial"; } catch { /* metric */ }
   document.documentElement.lang = lang;
   document.documentElement.dir = ["ar", "ur"].includes(lang) ? "rtl" : "ltr";
   let tr = {};
@@ -77,7 +79,7 @@ const pid = h.get("p"), vid = h.get("v");
   const tx = (kind, code, english) => tr[`${kind}:${code}`] || english;
   document.title = `${p.name} - ${t("Cost Estimate Report")}`;
   const pct = (x, tot) => tot ? (x / tot * 100).toFixed(1) + "%" : "";
-  const perm2 = (x) => s.gfa ? fmt(x / s.gfa) : "–";
+  const perm2 = (x) => s.gfa ? fmt(x / s.gfa / (imp ? 10.7639 : 1)) : "–";
   const nrm = Object.entries(e.by_nrm1);
   const arab = /^(SA|AE|KW|QA|BH|OM|YE|IQ|JO|LB|SY|PS|EG|LY|TN|DZ|MA|SD)/.test(e.region || "");
   const build = [
@@ -105,7 +107,7 @@ const pid = h.get("p"), vid = h.get("v");
     <div class="headline">
       <div class="box"><div class="k">${t("Estimated total cost")}</div><div class="v">${fmt(s.total)} ${cur}</div><div class="s">${t("including")} ${esc(s.tax_name)} ${s.tax_pct}%</div></div>
       <div class="box"><div class="k">${t("Expected range")}</div><div class="v" style="font-size:15px">${fmt(a.low)} – ${fmt(a.high)}</div><div class="s">${esc(t(a.label))} (${Math.round(a.low_pct * 100)}% / +${Math.round(a.high_pct * 100)}%)</div></div>
-      <div class="box"><div class="k">${t("Cost per m²")}</div><div class="v">${s.per_m2 ? fmt(s.per_m2) : "–"}</div><div class="s">${t("on {a} m² floor area.", { a: fmt(s.gfa) })}</div></div>
+      <div class="box"><div class="k">${t(imp ? "Cost per ft²" : "Cost per m²")}</div><div class="v">${s.per_m2 ? fmt(imp ? s.per_m2 / 10.7639 : s.per_m2) : "–"}</div><div class="s">${t(imp ? "on {a} ft² floor area." : "on {a} m² floor area.", { a: fmt(imp ? s.gfa * 10.7639 : s.gfa) })}</div></div>
     </div>
     ${snap ? `<img class="snap" src="${snap}" alt="3D model coloured by cost">` : ""}
     ${a.reasons.length ? `<p><b>${t("To narrow the range:")}</b></p><ul>${(a.reasons_t || a.reasons.map((r) => [r, {}])).map(([tpl, vals]) => `<li>${esc(t(tpl, vals.items ? { ...vals, items: vals.items.split(", ").map((x) => tx("scope", x, x)).join("، ") } : vals))}</li>`).join("")}</ul>` : ""}
@@ -117,7 +119,7 @@ const pid = h.get("p"), vid = h.get("v");
     </tbody></table>
 
     <h2>3. ${t("Elemental summary (RICS NRM1)")}</h2>
-    <table><thead><tr><th>${t("Element")}</th><th class="n">${cur}</th><th class="n">${t("% of measured")}</th><th class="n">${cur}/m² GFA</th></tr></thead><tbody>
+    <table><thead><tr><th>${t("Element")}</th><th class="n">${cur}</th><th class="n">${t("% of measured")}</th><th class="n">${cur}/${imp ? "ft²" : "m²"} GFA</th></tr></thead><tbody>
       ${nrm.map(([k, x]) => `<tr><td>${esc(tx("nrm1", k, k))}</td><td class="n">${fmt(x)}</td><td class="n">${pct(x, s.direct)}</td><td class="n">${perm2(x)}</td></tr>`).join("")}
       <tr class="sub"><td>${t("Measured work")}</td><td class="n">${fmt(s.direct)}</td><td class="n">100%</td><td class="n">${perm2(s.direct)}</td></tr>
     </tbody></table>

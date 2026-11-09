@@ -16,6 +16,9 @@ function uq(qty, unit) {           // -> [qty, unit] in display units
   const u = UNIT[unit];
   return imperial() && u ? [qty * u[1], u[0]] : [qty, unit === "m2" ? "m²" : unit === "m3" ? "m³" : unit];
 }
+const FT2 = 10.7639;
+const gfaShow = (m2) => imperial() ? [m2 * FT2, "ft²"] : [m2, "m²"];   // floor area in display units
+const perArea = (perM2) => imperial() ? perM2 / FT2 : perM2;           // cost per display area unit
 function ur(rate, unit) {          // rate per display unit
   const u = UNIT[unit];
   return imperial() && u ? rate / u[1] : rate;
@@ -345,11 +348,11 @@ function renderSummary() {
   let bench = "";
   if (s.per_m2 && s.benchmark) {
     const b = s.benchmark, inside = s.per_m2 >= b.low && s.per_m2 <= b.high;
-    bench = `<div class="callout ${inside ? "ok" : ""}">${t("Cost per m²")}: <b>${fmt(s.per_m2)} ${e.currency}</b> ${t("on {a} m² floor area.", { a: fmt(s.gfa) })} ${t("Typical for")} <i dir="auto">${esc(b.factor && b.factor !== 1 ? `${t(b.type_label)}: ${b.factor} × ${t(b.base_label)} (${t("assumed ratio")})` : t(b.label))}</i>: ${fmt(b.low)}–${fmt(b.high)}. ${inside ? t("Inside the usual range.") : s.per_m2 < b.low ? t("Lower than usual: check the scope list below for parts not in the model.") : t("Higher than usual: check rates and quantities.")}</div>`;
+    bench = `<div class="callout ${inside ? "ok" : ""}">${t(imperial() ? "Cost per ft²" : "Cost per m²")}: <b>${fmt(perArea(s.per_m2))} ${e.currency}</b> ${t(imperial() ? "on {a} ft² floor area." : "on {a} m² floor area.", { a: fmt(gfaShow(s.gfa)[0]) })} ${t("Typical for")} <i dir="auto">${esc(b.factor && b.factor !== 1 ? `${t(b.type_label)}: ${b.factor} × ${t(b.base_label)} (${t("assumed ratio")})` : t(b.label))}</i>: ${fmt(perArea(b.low))}–${fmt(perArea(b.high))}. ${inside ? t("Inside the usual range.") : s.per_m2 < b.low ? t("Lower than usual: check the scope list below for parts not in the model.") : t("Higher than usual: check rates and quantities.")}</div>`;
   }
   const lv = Object.entries(s.gfa_by_level || {});
-  if (lv.length > 1 || s.gfa_warning) bench += `<details class="small gfa-lv"><summary>${t("Floor area by level")}: ${fmt(s.gfa)} m²${s.gfa_warning ? ' <span class="bad">⚠</span>' : ""}</summary>
-    ${s.gfa_warning ? `<p class="bad" dir="auto">${esc(s.gfa_warning)}</p>` : ""}<table>${lv.map(([k, v]) => `<tr><td>${esc(k)}</td><td class="n">${fmt(v)} m²</td></tr>`).join("")}</table>
+  if (lv.length > 1 || s.gfa_warning) bench += `<details class="small gfa-lv"><summary>${t("Floor area by level")}: ${fmt(gfaShow(s.gfa)[0])} ${gfaShow(s.gfa)[1]}${s.gfa_warning ? ' <span class="bad">⚠</span>' : ""}</summary>
+    ${s.gfa_warning ? `<p class="bad" dir="auto">${esc(s.gfa_warning)}</p>` : ""}<table>${lv.map(([k, v]) => `<tr><td>${esc(k)}</td><td class="n">${fmt(gfaShow(v)[0])} ${gfaShow(v)[1]}</td></tr>`).join("")}</table>
     <p class="muted">${t("Each level counts once: the larger of its floor slabs, floor build-ups or rooms. Levels with nothing built on them (roof) are not counted. Type your own total in Project settings.")}</p></details>`;
   const rb = c.rebar;
   const rebarNote = (rb.modeled_kg > 0) ? `<div class="callout">${t("Rebar: modelled bars {a} kg, ratios give {b} kg. Using {m}.", { a: `<b>${fmt(rb.modeled_kg)}</b>`, b: `<b>${fmt(rb.ratio_kg)}</b>`, m: `<b>${t(rb.mode === "modeled" ? "modelled bars" : "ratios")}</b>` })}${rb.modeled_kg < rb.ratio_kg * 0.5 ? " " + t("The modelled rebar looks incomplete.") : ""}</div>` : "";
@@ -1031,7 +1034,7 @@ $("#levelSel").addEventListener("change", (e) => { S.level = e.target.value; pai
 $("#showAll").addEventListener("click", () => { S.highlight = null; $$("tr.sel").forEach((x) => x.classList.remove("sel")); viewer.fit(); paint(); });
 $("#fitBtn").addEventListener("click", () => viewer.fit(S.highlight ? [...S.highlight] : null));
 $("#langSel").addEventListener("change", (e) => { setLang(e.target.value); if (S.est) refresh(); if (S.lib) loadProjects(); });
-$("#unitSel").addEventListener("change", (e) => { S.units = e.target.value; localStorageSet("units", S.units); if (S.est) { renderBoq(); if (S.selected) renderElement(S.selected); } });
+$("#unitSel").addEventListener("change", (e) => { S.units = e.target.value; localStorageSet("units", S.units); if (S.est) { renderSummary(); renderBoq(); if (S.selected) renderElement(S.selected); } });
 $("#helpBtn").addEventListener("click", () => { $("#helpDlg").hidden = false; });
 $("#helpClose").addEventListener("click", () => { $("#helpDlg").hidden = true; });
 $("#demoBtn").addEventListener("click", async () => {
