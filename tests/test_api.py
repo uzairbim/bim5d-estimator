@@ -269,3 +269,19 @@ def test_download_names_keep_arabic():
     assert ascii_part.endswith('.xlsx"')
     assert unquote(utf8_part) == "فيلا _الرياض_1 SA 5D.xlsx"
     assert server._download("Office SA 5D.xlsx")["Content-Disposition"].startswith('attachment; filename="Office_SA_5D.xlsx"')
+
+
+def test_geometry_is_compressed_once(client, tmp_path):
+    """The 3D mesh is gzip-compressed once and kept (compressing it on every request took
+    seconds on big models); browsers that do not accept gzip get the plain file."""
+    r = client.post("/api/projects/sample/Saudi_Villa_Example.ifc?region=SA").json()
+    vid = r["version_id"]
+    for _ in range(200):
+        if client.get(f"/api/versions/{vid}").json()["status"] != "processing":
+            break
+        time.sleep(0.2)
+    plain = client.get(f"/api/versions/{vid}/geometry.bin", headers={"Accept-Encoding": "identity"})
+    raw = client.get(f"/api/versions/{vid}/geometry.bin", headers={"Accept-Encoding": "gzip"})
+    assert plain.status_code == raw.status_code == 200
+    assert raw.headers.get("content-encoding") == "gzip"
+    assert raw.content == plain.content        # the client unpacks it: the same bytes, compressed once

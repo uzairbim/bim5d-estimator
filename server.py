@@ -9,7 +9,7 @@ import tempfile
 from pathlib import Path
 from typing import Optional
 
-from fastapi import Body, FastAPI, Form, HTTPException, UploadFile
+from fastapi import Body, FastAPI, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -377,10 +377,22 @@ def geometry_index(vid: str):
 
 
 @app.get("/api/versions/{vid}/geometry.bin")
-def geometry_bin(vid: str):
+def geometry_bin(vid: str, request: Request):
     _, bin_ = storage.geometry_paths(vid)
     if not bin_.is_file():
         raise HTTPException(404, "Geometry not ready")
+    if "gzip" in (request.headers.get("accept-encoding") or "").lower():
+        # Compress once and keep it: compressing 20 MB of mesh on every request took seconds.
+        gz = bin_.with_name(bin_.name + ".gz")
+        if not gz.is_file() or gz.stat().st_mtime < bin_.stat().st_mtime:
+            import gzip
+            import shutil
+            tmp = gz.with_name(gz.name + ".tmp")
+            with bin_.open("rb") as src, gzip.open(tmp, "wb", compresslevel=6) as dst:
+                shutil.copyfileobj(src, dst)
+            tmp.replace(gz)
+        return FileResponse(gz, media_type="application/octet-stream",
+                            headers={"Content-Encoding": "gzip", "Vary": "Accept-Encoding"})
     return FileResponse(bin_, media_type="application/octet-stream")
 
 
