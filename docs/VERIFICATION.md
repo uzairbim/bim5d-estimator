@@ -160,6 +160,7 @@ duplicates, curtain wall prices, survey coordinates, memory).
 | Ready-mix 350 kg | CEIC / Contractors Authority 2026: 216–228 SAR/m³ | 230 SAR/m³ |
 | Cement 50 kg | 15.8 SAR | 15 SAR |
 | Hollow block 20 cm | 1.7–4 SAR | 2.5 SAR |
+| Interior paint with putty (معجون), primer, two coats | painters advertise from 10 SAR/m² (labour) | 16.6 SAR/m² (putty was missing: 11.8) |
 | Insulated block 20 cm | 3.4–5 SAR | 4.5 SAR |
 | Shell (earthworks, concrete, block) | contractor guides 450–700 SAR/m² | 563 SAR/m² direct (villa example) |
 | Turnkey mid-range villa | contractor guides 2,200–3,300 SAR/m² | villa example 1,685 SAR/m² without MEP, kitchen, sanitary, external works (≈ 2,200 with them) |

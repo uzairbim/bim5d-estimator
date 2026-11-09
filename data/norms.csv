@@ -89,7 +89,8 @@ PLS,L-SKL,0.45,
 PLS,L-UNS,0.4,
 PNT,M-PNT,0.3,putty patching + primer + two coats emulsion
 PNT,M-PRM,0.12,
-PNT,L-SKL,0.25,
+PNT,M-PUTTY,1.0,two coats of wall putty (Gulf practice)
+PNT,L-SKL,0.4,
 PNT,L-UNS,0.05,
 SCR,M-CEM,0.4,50 mm screed
 SCR,M-SND,0.055,

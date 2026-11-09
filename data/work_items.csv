@@ -21,7 +21,7 @@ MAS-BRK,Brick masonry wall,m2,Masonry,04 21 00
 INS-WAL,Wall thermal insulation,m2,Thermal & Moisture,07 21 00
 DRY-PRT,Gypsum board stud partition,m2,Finishes,09 21 16
 PLS,Cement plaster to walls,m2,Finishes,09 24 00
-PNT,Emulsion paint to walls,m2,Finishes,09 91 00
+PNT,"Emulsion paint to walls (putty, primer, two coats)",m2,Finishes,09 91 00
 SCR,Cement sand screed to floors,m2,Finishes,03 54 00
 FLR-INS,Floor thermal insulation,m2,Thermal & Moisture,07 21 00
 TMB-FLR,Timber joist floor with subfloor,m2,Wood,06 10 00

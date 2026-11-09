@@ -104,3 +104,4 @@ M-ACSPLIT,Split AC about 2 tons indoor + outdoor unit (supply),nr,material,720,0
 M-ACWIN,Window AC about 2 tons (supply),nr,material,450,0,
 M-CNDT,PVC conduit 20 mm with fittings,m,material,0.5,0,
 M-ELWIRE,Single-core copper wire 2.5 mm2,m,material,0.38,0,
+M-PUTTY,Wall putty (filler) ready-mixed or powder,kg,material,0.4,0,
