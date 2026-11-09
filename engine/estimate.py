@@ -56,7 +56,8 @@ def is_existing(el):
     return bool(EXISTING_NAME.search(f'{el.get("name", "")} {el.get("type", "")}'))
 
 
-FINISH_FLOOR_RECIPES = {"FLOOR_FINISH", "SCREED_LAYER"}
+FLOOR_COVER_RECIPES = {"FLOOR_FINISH", "FLOOR_STONE", "FLOOR_WOOD", "FLOOR_SOFT"}
+FINISH_FLOOR_RECIPES = FLOOR_COVER_RECIPES | {"SCREED_LAYER"}
 FIRE_DOOR = re.compile(r"fire|(?<![a-z])fd ?\d|(?<![a-z])ei ?\d{2}|(?<![a-z])rated\b|brandschutz|(?<![a-z])t(30|60|90)\b|coupe.?feu|حريق", re.I)
 GLASS_DOOR = re.compile(r"glass|\bglas\b|- glas|aluminium|aluminum|storefront|curtain wall|زجاج|ألمنيوم|المنيوم", re.I)
 
@@ -546,7 +547,7 @@ CHECKLIST = [
     ("Wall plaster", ["PLS", "EXT-RND"], "Plaster allowance", 3, None),
     ("Paint to walls", ["PNT", "EXT-PNT"], "Wall painting allowance", 2.5, None),
     ("Paint to ceilings", ["CLG-PNT"], "Ceiling painting allowance", 1, None),
-    ("Floor finishes", ["FLR-TIL", "FLR-WOOD", "FLR-HRD"], "Floor finishes allowance", 5, None),
+    ("Floor finishes", ["FLR-TIL", "FLR-WOOD", "FLR-HRD", "FLR-MRB", "FLR-SOFT"], "Floor finishes allowance", 5, None),
     ("Skirting", ["FLR-SKRT"], "Skirting allowance", 0.5, None),
     ("Wall tiling in wet areas", ["WAL-TILE"], "Wall tiling allowance", 1.5, None),
     ("Waterproofing (roofs and wet areas)", ["ROF-WP", "WPF-WET"], "Waterproofing allowance", 1.5, None),
@@ -557,8 +558,8 @@ CHECKLIST = [
     ("Pipe and duct insulation", ["PIP-INS", "DUCT-INS"], None, None, None),
     ("Bitumen coating to foundations", ["BIT-COAT"], "Bitumen coating allowance", 0.3, None),
     ("Thermal insulation of external walls (energy code)", ["INS-WAL", "MAS-TBLK"], "Wall insulation allowance", 1, None),
-    ("Water tanks (ground and roof)", [], "Water tanks allowance", 1, None),
-    ("Sewer connection or septic tank", [], "Drainage connection allowance", 0.5, None),
+    ("Water tanks (ground and roof)", ["TANK-UG", "TANK-ROOF"], "Water tanks allowance", 1, None),
+    ("Sewer connection or septic tank", ["MANHOLE", "TANK-UG"], "Drainage connection allowance", 0.5, None),
     ("Boundary wall, gates and fencing", [], "Boundary wall allowance", 2, None),
     ("Testing and commissioning of services", [], "Testing and commissioning allowance", 1, None),
     ("Fire stopping of service penetrations", [], "Fire stopping allowance", 0.3, None),
@@ -694,8 +695,11 @@ def _env(el, give, rule, ctx):
     q["insulated"] = 1.0 if INSULATED.search(text) else 0.0
     if el["ifc_class"] == "IfcSpace":
         mods = [ctx["recipes"].get(g) for g in el.get("room_modeled") or []]
-        q["has_floor"] = 1.0 if "FLOOR_FINISH" in mods else 0.0
+        q["has_floor"] = 1.0 if FLOOR_COVER_RECIPES & set(mods) else 0.0
         q["has_ceiling"] = 1.0 if "CEILING" in mods else 0.0
+        # wall tiles modelled as coverings in this room: the room adds only the rest
+        q["wall_tiles_modeled"] = sum(ctx["by_guid"][g]["qty"].get("area") or 0 for g in el.get("room_wall_covers") or []
+                                      if g in ctx["by_guid"] and ctx["recipes"].get(g) == "WALL_TILE")
     return q
 
 

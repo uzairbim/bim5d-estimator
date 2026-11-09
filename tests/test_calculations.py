@@ -161,3 +161,38 @@ def test_assumptions_come_with_templates_for_translation(lib):
         assert tpl.format(**vals) == text
     assert e["assumptions"][-1] == "Soil report by others"
     assert any("VAT at 15% is included" in a for a in e["assumptions"])
+
+
+def _room(mods, covers):
+    return {"guid": "r", "ifc_class": "IfcSpace", "kind": "IfcSpace", "name": "Bathroom", "type": "Bathroom",
+            "predefined": "", "materials": [], "classification": [], "props": {}, "layers": [], "level": "L1",
+            "level_elev": 0, "bbox": [0, 0, 0, 3, 2, 3], "is_room": True, "room_doors": [[0.8, 2.1]],
+            "room_windows": [], "room_modeled": mods, "room_wall_covers": covers,
+            "qty": {"count": 1, "floor_area": 6, "perimeter": 10, "height": 3, "volume": 18, "footprint": 6,
+                    "wall_area": 30 - 0.8 * 2.1, "skirting": 9.2}}
+
+
+def _cover(guid, name, area, bbox):
+    flat = bbox[5] - bbox[2] < 0.1
+    return {"guid": guid, "ifc_class": "IfcCovering", "kind": "IfcCovering", "name": name, "type": name,
+            "predefined": "", "materials": [], "classification": [], "props": {}, "layers": [], "level": "L1",
+            "level_elev": 0, "bbox": bbox, "qty": {"count": 1, "area": area, "footprint": area if flat else 0.03,
+                                                   "height": 0.02 if flat else 3, "volume": area * 0.02}}
+
+
+def test_modelled_coverings_are_not_counted_twice_in_rooms(lib):
+    """A bathroom gets floor tiles and wall tiles from the room, unless they are modelled as coverings:
+    a marble floor covering replaces the room's floor tiles; 20 m² of modelled wall tiles leave
+    28.32 - 20 = 8.32 m² for the room."""
+    def qty(els):
+        est = estimate(els, "SA", lib, {"finishes_from": "rooms"})
+        out = {}
+        for l in est["lines"]:
+            out[(l["guid"], l["work_item"])] = out.get((l["guid"], l["work_item"]), 0) + l["net_qty"]
+        return out
+    alone = qty([_room([], [])])
+    assert alone[("r", "FLR-TIL")] == pytest.approx(6) and alone[("r", "WAL-TILE")] == pytest.approx(28.32)
+    both = qty([_room(["f"], ["w"]), _cover("f", "رخام", 6, [0, 0, 0, 3, 2, 0.02]),
+                _cover("w", "Wall tiles", 20, [0, 0, 0, 3, 0.01, 3])])
+    assert ("r", "FLR-TIL") not in both and both[("f", "FLR-MRB")] == pytest.approx(6)
+    assert both[("r", "WAL-TILE")] == pytest.approx(8.32) and both[("w", "WAL-TILE")] == pytest.approx(20)

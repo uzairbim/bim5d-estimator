@@ -629,7 +629,7 @@ def _link_rooms(rooms, elements):
     pad = 0.3
     for r in rooms:
         x0, y0, z0, x1, y1, z1 = r["bbox"]
-        doors, wins, modeled = [], [], []
+        doors, wins, modeled, wall_covers = [], [], [], []
         area = max((x1 - x0) * (y1 - y0), 1e-6)
         for e in elements.values():
             b = e.get("bbox")
@@ -640,12 +640,17 @@ def _link_rooms(rooms, elements):
                         and b[2] < z1 and b[5] > z0):
                     (doors if e["ifc_class"] == "IfcDoor" else wins).append(
                         [e["qty"].get("ow", 0.9), e["qty"].get("oh", 2.1)])
+            elif (e["ifc_class"] == "IfcCovering" and min(b[3] - b[0], b[4] - b[1]) < 0.1
+                    and b[0] > x0 - pad and b[3] < x1 + pad and b[1] > y0 - pad and b[4] < y1 + pad
+                    and b[2] < z1 and b[5] > z0):
+                wall_covers.append(e["guid"])       # a thin vertical covering on the room's walls (tiles)
             elif e["ifc_class"] in ("IfcCovering", "IfcSlab"):
                 ox = min(b[3], x1) - max(b[0], x0)
                 oy = min(b[4], y1) - max(b[1], y0)
                 if ox > 0 and oy > 0 and ox * oy / area > 0.3 and b[2] < z1 + 0.3 and b[5] > z0 - 0.3:
                     modeled.append(e["guid"])
         r["room_doors"], r["room_windows"], r["room_modeled"] = doors, wins, modeled
+        r["room_wall_covers"] = wall_covers
         q = r["qty"]
         q["door_width"] = round(sum(d[0] for d in doors), 4)
         q["openings_area"] = round(sum(d[0] * d[1] for d in doors + wins), 4)
