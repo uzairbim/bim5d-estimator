@@ -7,6 +7,7 @@ model was drawn in.
 """
 import multiprocessing
 import os
+import re
 
 import numpy as np
 
@@ -473,8 +474,14 @@ def _host(el):
 
 
 # Room-like spaces that should not get finishes (shafts, voids, area schemes).
-NOT_A_ROOM = ("shaft", "void", "riser", "duct", "gross", "gfa", "area scheme", "schacht", "luftraum",
-              "roof", "dach", "attic space", "open to below")
+NOT_A_ROOM = re.compile(r"shaft|void|riser|\bduct|gross|\bgfa\b|area scheme|schacht|luftraum|roof|dach|attic space|"
+                        r"open to below|\blift\b|elevator|\bpool\b|مصعد|مصاعد|منور|مناور|فراغ|شفت|مسبح|سطح", re.I)
+# ...unless the name says it is a real room next to one ("Lift lobby", "Pool pump room", "ردهة المصاعد").
+A_ROOM_AFTER_ALL = re.compile(r"lobby|hall|room|pump|plant|ردهة|بهو|غرفة|صالة|مضخ", re.I)
+
+
+def _is_room(name):
+    return not (NOT_A_ROOM.search(name or "") and not A_ROOM_AFTER_ALL.search(name or ""))
 
 
 def _spaces(model, scale):
@@ -542,7 +549,7 @@ def _spaces(model, scale):
             "name": name or "Room", "type": sp.LongName or sp.Name or "Room",
             "level": level, "level_elev": elev, "materials": [], "layers": [],
             "classification": [], "props": finishes, "authored": {},
-            "is_room": not any(w in name.lower() for w in NOT_A_ROOM),
+            "is_room": _is_room(name),
             "bbox": [round(x, 3) for x in (*v.min(axis=0), *v.max(axis=0))],
             "qty": {"count": 1.0, "floor_area": round(area, 4), "perimeter": round(perim, 4),
                     "height": round(zmax - zmin, 4), "volume": round(area * (zmax - zmin), 4),

@@ -570,3 +570,19 @@ def test_neck_columns_below_ground_get_bitumen(villa):
     upper = {e["guid"] for e in d["elements"] if e["ifc_class"] == "IfcColumn" and e["level"] != "Foundation"}
     bit = lambda gs: sum(l["net_qty"] for l in est["lines"] if l["guid"] in gs and l["work_item"] == "BIT-COAT")
     assert bit(cols) == pytest.approx(9 * 1.6 * 1.5, rel=0.01) and bit(upper) == 0
+
+
+@pytest.mark.parametrize("name, recipe", [
+    ("دورة المياه", "ROOM_WET"), ("دورات مياه", "ROOM_WET"), ("مرحاض", "ROOM_WET"), ("حمام خادمة", "ROOM_WET"),
+    ("Wudu", "ROOM_WET"), ("غرفة غسيل وكي", "ROOM_WET"), ("مطبخ تحضيري", "ROOM_KITCHEN"),
+    ("غرفة المضخات", "ROOM_TECH"), ("غرفة التكييف", "ROOM_TECH"), ("AHU room", "ROOM_TECH"), ("Pool pump room", "ROOM_TECH"),
+    ("Courtyard", "ROOM_EXTERNAL"), ("حوش", "ROOM_EXTERNAL"), ("مجلس نساء", "ROOM_DRY"), ("غرفة خادمة", "ROOM_DRY"),
+    ("Lift lobby", "ROOM_DRY"), ("ردهة المصاعد", "ROOM_DRY"),
+    ("مصعد", None), ("Elevator shaft", None), ("منور", None), ("مسبح", None), ("Swimming pool", None),
+    ("سطح", None), ("Roof terrace", None),     # the roof slab already carries the roof build-up
+])
+def test_room_names(lib, name, recipe):
+    from engine.extract import _is_room
+    el = {"ifc_class": "IfcSpace", "kind": "IfcSpace", "name": name, "type": "", "predefined": "", "materials": [],
+          "classification": [], "props": {}, "layers": [], "qty": {"height": 3, "volume": 30}, "is_room": _is_room(name)}
+    assert lib.classify(el)[0] == recipe

@@ -86,6 +86,20 @@ LibreOffice and scanned: **0 error cells**. The Priced BOQ grand total equals th
 - Neck columns and walls below the ground slab get bitumen coating on the part in contact with soil:
   villa 9 neck columns × 1.6 m × 1.5 m = 21.6 m², exactly.
 
+## 1g. Room names (finishes by room type)
+
+25 Arabic and Gulf room names are checked (`test_room_names`): wet rooms (دورة المياه، دورات مياه، مرحاض،
+وضوء / Wudu، غرفة غسيل وكي) get floor and wall tiles with waterproofing; plant rooms (غرفة المضخات،
+غرفة التكييف، AHU room, pool pump room) get hard-wearing finishes; courtyards and car porches external
+paving; lift shafts, light wells (منور), pools and the roof (سطح، Roof terrace) get no room finishes,
+because a shaft has none and the roof slab already carries the roof build-up. "Lift lobby" and
+"ردهة المصاعد" stay normal rooms.
+
+## 1h. Cash flow months
+
+A 12-month programme gives exactly 12 months of cash flow (it gave 13, with an empty last month, for
+most durations through a rounding error). Checked for 3, 6, 7.5, 12, 18, 24 and 36 months.
+
 ## 2. Real Revit models
 
 Eight public Revit exports (Revit 2010–2021: Autodesk sample projects, an office in architecture,

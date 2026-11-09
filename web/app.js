@@ -140,9 +140,9 @@ async function loadProjects() {
   $("#projectsTitle").hidden = !S.projects.length;
   $("#projectList").innerHTML = S.projects.map((p) => {
     const v = p.versions[p.versions.length - 1];
-    const status = !v ? "empty" : v.status === "ready" ? `${fmt(v.elements)} elements` : v.status === "error" ? "error" : "processing…";
+    const status = !v ? t("no model") : v.status === "ready" ? t("{n} elements", { n: fmt(v.elements) }) : v.status === "error" ? t("error") : t("processing…");
     return `<div class="card" data-pid="${p.id}"><button class="del" data-del="${p.id}" title="Delete project">×</button>
-      <h4>${esc(p.name)}</h4><div class="meta">${p.versions.length} revision${p.versions.length === 1 ? "" : "s"} · ${status}</div>
+      <h4>${esc(p.name)}</h4><div class="meta">${t(p.versions.length === 1 ? "1 revision" : "{n} revisions", { n: p.versions.length })} · ${status}</div>
       <div class="meta">${esc(S.lib.regions[p.settings.region]?.name || p.settings.region)} · ${new Date(p.created * 1000).toLocaleDateString(NUM_LOCALE())}</div></div>`;
   }).join("");
   $("#projectSel").innerHTML = S.projects.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join("");
@@ -209,7 +209,7 @@ async function openProject(pid, vid) {
   let p = await api(`/api/projects/${pid}`);
   S.project = p;
   const v = (vid && p.versions.find((x) => x.id === vid)) || [...p.versions].reverse().find((x) => x.status === "ready") || p.versions[p.versions.length - 1];
-  if (!v) return toast("This project has no model yet.");
+  if (!v) return toast(t("This project has no model yet."));
   $("#projectSel").value = pid;
   $("#region").value = p.settings.region;
   if (S.version?.id === v.id && S.est) return refresh();

@@ -43,10 +43,14 @@ def _project(pid):
 
 
 def _ready_version(p, vid=None):
+    if vid and not any(v["id"] == vid for v in p["versions"]):
+        raise HTTPException(404, "This revision was deleted or is not in this project.")
     versions = [v for v in p["versions"] if v["status"] == "ready"]
     if vid:
         versions = [v for v in versions if v["id"] == vid]
     if not versions:
+        if not p["versions"]:
+            raise HTTPException(409, "This project has no model. Upload an IFC file.")
         raise HTTPException(409, "This model is not ready yet.")
     return versions[-1]
 
