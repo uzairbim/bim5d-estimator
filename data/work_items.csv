@@ -102,3 +102,12 @@ POWER-S,Small transformer / UPS / inverter,nr,Electrical,26 22 00
 DOR-L,Large / double / sliding / garage door complete (per m2),m2,Openings,08 10 00
 DOR-G,Aluminium and glass door complete (per m2),m2,Openings,08 41 13
 DOR-F,Fire-rated door set complete with closer,nr,Openings,08 11 13
+TANK-UG,"Underground water / septic tank complete (excavation, RC, waterproofing, cover) per m3 gross",m3,External works,33 16 00
+TANK-ROOF,Roof water tank 2000-5000 L polyethylene with stand and connections,nr,Plumbing & HVAC,22 12 00
+EXT-SHADE,Car park shade PVC tensile on steel frame,m2,External works,32 30 00
+PERGOLA,Pergola steel / timber frame,m2,External works,32 30 00
+POOL,"Swimming pool complete (RC shell, waterproofing, tiles, filtration) per m2 water area",m2,External works,13 11 00
+KERB,Precast concrete kerb on concrete bed,m,External works,32 16 00
+LOUVRE,Aluminium sun louvres / brise-soleil,m2,Metals,10 71 13
+FLR-SOFT,Carpet tiles / vinyl flooring,m2,Finishes,09 68 00
+LAND-GRASS,Natural grass incl. soil preparation,m2,External works,32 92 00

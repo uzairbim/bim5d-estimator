@@ -344,3 +344,36 @@ work_item,DOR-F,باب مقاوم للحريق كامل مع الذراع
 resource,M-DOORL,باب كبير / مزدوج / كراج (توريد بالمتر المربع)
 resource,M-DOORG,باب ألمنيوم وزجاج (توريد بالمتر المربع)
 resource,M-DOORF,باب حديد مقاوم للحريق مع الذراع (توريد)
+work_item,TANK-UG,خزان أرضي أو بيارة كامل (حفر، خرسانة مسلحة، عزل، غطاء) بالمتر المكعب الإجمالي
+work_item,TANK-ROOF,خزان علوي بولي إيثيلين 2000-5000 لتر مع القاعدة والتوصيلات
+work_item,EXT-SHADE,مظلات سيارات PVC مشدودة على هيكل حديد
+work_item,PERGOLA,برجولة هيكل حديد / خشب
+work_item,POOL,مسبح كامل (هيكل خرساني، عزل، بلاط، فلترة) بالمتر المربع من مسطح الماء
+work_item,KERB,بردورة خرسانية جاهزة على قاعدة خرسانية
+work_item,LOUVRE,كاسرات شمس ألمنيوم
+work_item,FLR-SOFT,موكيت بلاطات / أرضيات فينيل
+work_item,LAND-GRASS,زراعة نجيل طبيعي شاملاً تجهيز التربة
+recipe,WATER_TANK_UG,خزان أرضي / بيارة
+recipe,WATER_TANK_ROOF,خزان علوي
+recipe,CAR_SHADE,مظلة سيارات
+recipe,PERGOLA,برجولة
+recipe,POOL,مسبح
+recipe,KERB,بردورة
+recipe,LOUVRE,كاسرات شمس
+recipe,GATE,بوابة
+recipe,LANDSCAPE,تنسيق حدائق (نجيل)
+recipe,WALL_COVER,تكسية جدران / بلاط جدران
+resource,M-TANKUG,خزان خرساني أرضي شامل بالمتر المكعب الإجمالي
+resource,M-TANKR,خزان علوي بولي إيثيلين مع القاعدة (توريد)
+resource,M-SHADE,مظلة سيارات PVC على هيكل حديد (توريد)
+resource,M-PERG,هيكل برجولة (توريد)
+resource,M-POOL,مسبح شامل بالمتر المربع من مسطح الماء
+resource,M-KERB,بردورة خرسانية جاهزة (توريد)
+resource,M-LVR,كاسرات ألمنيوم (توريد)
+resource,M-SOFT,موكيت بلاطات / فينيل (توريد)
+resource,M-GRASS,نجيل وتربة زراعية (توريد)
+recipe,WALL_STONE,تكسية حجر للجدران
+recipe,WALL_TILE,بلاط جدران
+recipe,FLOOR_STONE,أرضيات رخام / جرانيت
+recipe,FLOOR_WOOD,أرضيات خشب / باركيه
+recipe,FLOOR_SOFT,أرضيات موكيت / فينيل

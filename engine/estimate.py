@@ -470,6 +470,10 @@ def evaluate(node, env, layers):
         if isinstance(node.op, ast.Or):
             return next((v for v in vals if v), 0.0)
         return vals[-1] if all(vals) else 0.0
+    if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in ("max", "min")
+            and 1 < len(node.args) <= 4 and not node.keywords):
+        vals = [evaluate(a, env, layers) for a in node.args]
+        return max(vals) if node.func.id == "max" else min(vals)
     if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
             and node.func.id in ("t", "has") and len(node.args) == 1
             and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str)):

@@ -69,3 +69,18 @@ DRAIN,Floor drain / gully,5.4 Water installations,D20 Plumbing,5 Services
 FIRE_EQUIP,Fire extinguisher / hose reel,5.11 Fire and lightning protection,D40 Fire Protection,5 Services
 MANHOLE,Manhole / inspection chamber,8 External works,G30 Site civil / mechanical utilities,7 Fit-out
 POWER_PLANT,Generator / transformer,5.8 Electrical installations,D50 Electrical,5 Services
+WATER_TANK_UG,Underground water / septic tank,8 External works,G30 Site civil / mechanical utilities,7 Fit-out
+WATER_TANK_ROOF,Roof water tank,5.1 Sanitary installations,D20 Plumbing,5 Services
+CAR_SHADE,Car park shade,8 External works,G20 Site improvements,7 Fit-out
+PERGOLA,Pergola,8 External works,G20 Site improvements,7 Fit-out
+POOL,Swimming pool,8 External works,G20 Site improvements,7 Fit-out
+KERB,Kerb,8 External works,G20 Site improvements,7 Fit-out
+LOUVRE,Sun louvres / brise-soleil,2.5 External walls,B20 Exterior enclosure,4 Envelope & walls
+GATE,Gate,8 External works,G20 Site improvements,7 Fit-out
+LANDSCAPE,Soft landscaping (grass),8 External works,G20 Site improvements,7 Fit-out
+WALL_COVER,Wall cladding / wall tiles (covering),2.5 External walls,B20 Exterior enclosure,6 Finishes
+WALL_STONE,Stone wall cladding (covering),2.5 External walls,B20 Exterior enclosure,6 Finishes
+WALL_TILE,Wall tiles (covering),3.1 Wall finishes,C30 Interior finishes,6 Finishes
+FLOOR_STONE,Marble / granite floor (covering),3.2 Floor finishes,C30 Interior finishes,6 Finishes
+FLOOR_WOOD,Wood / parquet floor (covering),3.2 Floor finishes,C30 Interior finishes,6 Finishes
+FLOOR_SOFT,Carpet / vinyl floor (covering),3.2 Floor finishes,C30 Interior finishes,6 Finishes

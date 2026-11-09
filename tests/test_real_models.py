@@ -586,3 +586,24 @@ def test_room_names(lib, name, recipe):
     el = {"ifc_class": "IfcSpace", "kind": "IfcSpace", "name": name, "type": "", "predefined": "", "materials": [],
           "classification": [], "props": {}, "layers": [], "qty": {"height": 3, "volume": 30}, "is_room": _is_room(name)}
     assert lib.classify(el)[0] == recipe
+
+
+@pytest.mark.parametrize("cls, name, recipe", [
+    ("IfcBuildingElementProxy", "خزان أرضي", "WATER_TANK_UG"), ("IfcTank", "Underground water tank", "WATER_TANK_UG"),
+    ("IfcBuildingElementProxy", "بيارة", "WATER_TANK_UG"), ("IfcBuildingElementProxy", "خزان علوي", "WATER_TANK_ROOF"),
+    ("IfcTank", "Chilled water buffer tank", "MECH_EQUIP"), ("IfcTank", "Expansion tank", "MECH_EQUIP"),
+    ("IfcBuildingElementProxy", "مظلة سيارات", "CAR_SHADE"), ("IfcRoof", "Car parking shade", "CAR_SHADE"),
+    ("IfcBuildingElementProxy", "برجولة", "PERGOLA"), ("IfcBuildingElementProxy", "Swimming pool", "POOL"),
+    ("IfcBuildingElementProxy", "Pool pump", "MECH_EQUIP"), ("IfcBuildingElementProxy", "بردورة", "KERB"),
+    ("IfcBuildingElementProxy", "كاسرات شمس", "LOUVRE"), ("IfcBuildingElementProxy", "Sun breaker", "LOUVRE"),
+    ("IfcBuildingElementProxy", "Circuit breaker", "ELEC_DEVICE"), ("IfcBuildingElementProxy", "Gate", "GATE"),
+    ("IfcBuildingElementProxy", "Grass", "LANDSCAPE"), ("IfcWall", "جدار استنادي", "RC_WALL"),
+    ("IfcWall", "Partition glass", "CW_PANEL"), ("IfcCovering", "حجر رياض", "WALL_STONE"),
+    ("IfcCovering", "Wall tiles 300x600", "WALL_TILE"), ("IfcCovering", "بورسلان", "FLOOR_FINISH"),
+    ("IfcCovering", "Carpet", "FLOOR_SOFT"), ("IfcCovering", "رخام", "FLOOR_STONE"), ("IfcCovering", "دهان جدران", "FINISH_GENERIC"), ("IfcFlowTerminal", "Split AC", "MECH_EQUIP"),
+    ("IfcFurnishingElement", "Car", None),
+])
+def test_saudi_external_works_and_finishes(lib, cls, name, recipe):
+    el = {"ifc_class": cls, "kind": cls, "name": name, "type": name, "predefined": "", "materials": [],
+          "classification": [], "props": {}, "layers": [], "qty": {"height": 0.2, "volume": 0.1}}
+    assert lib.classify(el)[0] == recipe

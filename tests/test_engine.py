@@ -394,3 +394,30 @@ def test_adjustment_factor(duplex, lib):
     b = sum(l["net_qty"] for l in base["lines"] if l["guid"] == wall["guid"] and l["work_item"] == "MAS-BRK")
     a = sum(l["net_qty"] for l in adj["lines"] if l["guid"] == wall["guid"] and l["work_item"] == "MAS-BRK")
     assert a == pytest.approx(b * 1.1, rel=1e-3)
+
+
+def test_data_files_are_well_formed():
+    """Every row of every data table has the header's number of columns (a stray comma in a
+    description or a regex like {0,15} silently shifts the columns), and every recipe and rule
+    refers to things that exist."""
+    import csv
+    from pathlib import Path
+    from engine.estimate import Library
+    data = Path(__file__).resolve().parent.parent / "data"
+    for f in data.glob("*.csv"):
+        rows = list(csv.reader(f.open(encoding="utf-8")))
+        bad = [i + 1 for i, r in enumerate(rows) if r and len(r) != len(rows[0])]
+        assert not bad, f"{f.name}: rows {bad[:10]} have the wrong number of columns"
+    lib = Library()
+    recipes = set(lib.recipes) | {"EXCLUDE"}
+    assert not {r["recipe"] for r in lib.rules} - recipes
+    for name, lines in lib.recipes.items():
+        for line in lines:
+            assert line["work_item"] in lib.work_items, (name, line["work_item"])
+    used = {line["work_item"] for lines in lib.recipes.values() for line in lines}
+    assert not [w for w in used if sum(lib.rate("SA", w)[:3]) == 0], "work items without a Saudi rate"
+    groups = {r["recipe"] for r in csv.DictReader((data / "recipe_groups.csv").open(encoding="utf-8"))}
+    assert not set(lib.recipes) - groups, "recipes without a cost group"
+    tr = {(r["kind"], r["code"]) for r in csv.DictReader((data / "translations.csv").open(encoding="utf-8"))}
+    assert not [w for w in used if ("work_item", w) not in tr], "work items without an Arabic name"
+    assert not [r for r in lib.recipes if ("recipe", r) not in tr], "recipes without an Arabic name"

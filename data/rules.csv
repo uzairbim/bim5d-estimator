@@ -75,7 +75,7 @@ priority,ifc_class,keywords,recipe
 10,IfcSolarDevice,,SOLAR_PV
 12,IfcBuildingElementProxy,receptacle|socket|switch|outlet|steckdose|schalter|data point,OUTLET
 13,IfcBuildingElementProxy,sensor|detector|thermostat|melder|fühler|horn|strobe|sounder|\bbell\b|call point|break glass|pull station|beacon|cctv|camera|intercom|access control|card reader|كاميرا|انتركم,CONTROLS
-14,IfcBuildingElementProxy,transformer|switchboard|panelboard|breaker|distribution board|\bdb\b|verteiler,ELEC_DEVICE
+14,IfcBuildingElementProxy,transformer|switchboard|panelboard|(?<!sun )(?<!sun-)(?<!sun)breaker|distribution board|\bdb\b|verteiler,ELEC_DEVICE
 16,IfcBuildingElementProxy,\bfan\b|ventilator|exhaust|\bahu\b|air handling,MECH_EQUIP
 17,IfcBuildingElementProxy,\blift\b|elevator|aufzug|escalator,LIFT
 18,IfcBuildingElementProxy,balcony|balkon|canopy|vordach,STEEL_MEMBER
@@ -109,7 +109,7 @@ priority,ifc_class,keywords,recipe
 3,IfcBuildingElementProxy|IfcFireSuppressionTerminal|IfcFlowTerminal,extinguisher|hose reel|fire hose|\bfhc\b|landing valve|طفاية|خرطوم,FIRE_EQUIP
 3,IfcBuildingElementProxy|IfcDistributionChamberElement,manhole|inspection chamber|\bmh\b|catch basin|منهول|غرفة تفتيش,MANHOLE
 3,IfcBuildingElementProxy,generator|genset|transformer|\bkva\b|مولد|محول,POWER_PLANT
-5,IfcBuildingElementProxy,split (system|unit|ac)|indoor unit|cassette|\bfcu\b|fan coil|مكيف,MECH_EQUIP
+5,IfcBuildingElementProxy|IfcFlowTerminal|IfcUnitaryEquipment,split (system|unit|ac)|window (ac|unit)|indoor unit|cassette|\bfcu\b|fan coil|مكيف,MECH_EQUIP
 10,IfcFlowController|IfcBuildingElementProxy|IfcFlowMeter,valve|damper|\bmeter\b|عداد|محبس,VALVE
 10,IfcCommunicationsAppliance,data|telephone|\btv\b|socket|outlet,OUTLET
 20,IfcCommunicationsAppliance,,CONTROLS
@@ -127,3 +127,24 @@ priority,ifc_class,keywords,recipe
 3,IfcBuildingElementProxy|IfcElectricDistributionBoard,لوحة رئيسية|لوحة كهرباء رئيسية|لوحة توزيع رئيسية,ELEC_PANEL
 14,IfcBuildingElementProxy,لوحة كهرباء|لوحة توزيع,ELEC_DEVICE
 15,IfcBuildingElementProxy,إنارة|انارة|كشاف|سبوت|ثريا|نجفة,LIGHT
+2,IfcBuildingElementProxy|IfcFlowStorageDevice|IfcTank|IfcFurnishingElement,(underground|in-?ground|ground|buried|below.?grade|fire|sump|potable)\b[\w ]*\btank|cistern|\bsump\b|septic|خزان (أرضي|ارضي|سفلي|مياه أرضي|خرساني)|خزان أرضي|بيارة|سبتك|خزان تحليل,WATER_TANK_UG
+2,IfcBuildingElementProxy|IfcFlowStorageDevice|IfcTank|IfcFurnishingElement,(roof|elevated|overhead|upper|pe|polyethylene|plastic)\s*(water\s*)?tank|خزان (علوي|سطح|بلاستيك|فايبر),WATER_TANK_ROOF
+2,IfcBuildingElementProxy|IfcRoof|IfcFurnishingElement,car ?(park(ing)?)? ?shade|car ?port|shade (sail|structure)|tensile|مظلة|مظلات|مظلة سيارات,CAR_SHADE
+2,IfcBuildingElementProxy|IfcRoof|IfcFurnishingElement,pergola|برجولة|برجولا|بيرجولا,PERGOLA
+2,IfcBuildingElementProxy|IfcSlab|IfcFurnishingElement,swimming pool|\bpool\b(?! (pump|room|plant|table|equipment))|مسبح|حوض سباحة,POOL
+2,IfcBuildingElementProxy|IfcFurnishingElement|IfcCovering,\bkerbs?\b|\bcurbs?\b|kerbstone|بردورة|بردورات|بلدورة,KERB
+2,IfcBuildingElementProxy|IfcPlate|IfcMember|IfcShadingDevice|IfcCovering,sun ?breaker|brise|louv(er|re)|sun ?shad|shading device|كاسرات|كاسر شمس|لوفر|لوفرات,LOUVRE
+3,IfcShadingDevice,,LOUVRE
+3,IfcBuildingElementProxy|IfcFurnishingElement,\bgates?\b|بوابة|بوابات,GATE
+3,IfcBuildingElementProxy|IfcSlab|IfcCovering,\bgrass|\blawn|\bturf\b|نجيل|عشب|ثيل,LANDSCAPE
+4,IfcWall|IfcWallStandardCase,^(?!.*(brick|block|cmu|concrete|masonry|stud|بلوك|طوب|خرسان)).*((?<!fiber)(?<!fibre)(?<!fiber )(?<!fibre )glass(?! ?(wool|fib|fleece|batt))|glazed|glazing|storefront|زجاج),CW_PANEL
+4,IfcWall|IfcWallStandardCase,استنادي|ساند|حائط ساند|جدار ساند,RC_WALL
+8,IfcCovering,^(?!.*(paint|دهان|plaster|لياسة|render|gypsum|جبس)).*(clad|wall ?covering|facade|façade|CLADDING|تكسية|كسوة|واجهة),WALL_COVER
+7,IfcCovering,(clad|wall|facade|façade|CLADDING|تكسية|كسوة|واجهة|جدار|جدران).*(stone|marble|granite|limestone|travertine|حجر|رخام|جرانيت)|(stone|marble|granite|limestone|travertine|حجر|رخام|جرانيت).*(clad|wall|facade|façade|CLADDING|تكسية|كسوة|واجهة|جدار|جدران),WALL_STONE
+7,IfcCovering,wall ?til|(wall|جدار|جدران|حائط).*(tile|ceram|porcelain|mosaic|سيراميك|بورسلان|بورسلين|قيشاني)|(tile|ceram|porcelain|سيراميك|بورسلان|بورسلين|قيشاني).*(wall|جدار|جدران|حائط)|قيشاني,WALL_TILE
+19,IfcCovering,marble|granite|رخام|جرانيت,FLOOR_STONE
+19,IfcCovering,parquet|wood floor|timber floor|laminate|باركيه|خشب|أرضيات خشب,FLOOR_WOOD
+19,IfcCovering,carpet|vinyl|linoleum|\blvt\b|موكيت|فينيل,FLOOR_SOFT
+21,IfcCovering,porcelain|بورسلان|epoxy|ايبوكسي|إيبوكسي,FLOOR_FINISH
+22,IfcCovering,stone|limestone|travertine|حجر,WALL_STONE
+22,IfcCovering,grc|\bacp\b|aluminium composite|alucobond,WALL_COVER
