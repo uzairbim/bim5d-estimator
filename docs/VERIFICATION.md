@@ -136,6 +136,12 @@ Split air conditioners (مكيف سبليت، مكيف) are priced complete with
 drain (about 2,940 SAR for about 2 tons in Saudi Arabia); split outdoor units in the model are not
 priced again, and the assumptions say so. Window units about 1,590 SAR.
 
+Light, socket and switch points: the device alone was priced (socket 48 SAR). When cables are not
+modelled (Revit wires do not export to IFC), conduit and wiring are added per point (about 10 m of
+20 mm conduit and 3 wires, about 100 SAR), so a socket point is about 150 SAR, in line with Saudi
+villa BOQs; the assumptions state it. A test now also refuses a code defined twice in the data (the
+first try reused the rebar tying-wire code).
+
 ## 2. Real Revit models
 
 Eight public Revit exports (Revit 2010–2021: Autodesk sample projects, an office in architecture,

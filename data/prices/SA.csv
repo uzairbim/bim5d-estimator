@@ -14,6 +14,7 @@ M-CBL,8,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-CEM,15,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-CLAD,350,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-CLGSYS,25,ASSUMED indicative market price 2026-11 - verify,2026-11
+M-CNDT,2,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-CTRL,500,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-CWM,140,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-CWP,750,ASSUMED indicative market price 2026-11 - verify,2026-11
@@ -25,6 +26,7 @@ M-DOORF,3200,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-DOORG,850,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-DOORL,650,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-DRAIN,120,ASSUMED indicative market price 2026-11 - verify,2026-11
+M-ELWIRE,1.4,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-EPNT,22,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-FFE,1200,ASSUMED indicative market price 2026-11 - verify,2026-11
 M-FIRE,900,ASSUMED indicative market price 2026-11 - verify,2026-11

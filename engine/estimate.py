@@ -685,6 +685,7 @@ def _env(el, give, rule, ctx):
     q["rooms_on"] = ctx["rooms_on"]
     q["lintels_modeled"] = ctx.get("lintels", 0.0)
     q["plates_modeled"] = ctx.get("plates", 0.0)
+    q["cables_modeled"] = ctx.get("cables", 0.0)
     host = ctx["by_guid"].get(el.get("host") or "")
     if host is not None:
         q["host_masonry"] = 1.0 if ctx["recipes"].get(host["guid"]) in MASONRY else 0.0
@@ -761,7 +762,8 @@ def estimate(elements, region, lib=None, settings=None):
            "roof_twins": _roof_twins(elements, recipes),
            "lintels": 1.0 if "LINTEL_ELEMENT" in set(recipes.values()) else 0.0,
            # connection plates in the model: no extra allowance on member weight
-           "plates": 1.0 if "STEEL_PLATE" in set(recipes.values()) else 0.0}
+           "plates": 1.0 if "STEEL_PLATE" in set(recipes.values()) else 0.0,
+           "cables": 1.0 if "CABLE" in set(recipes.values()) else 0.0}
 
     lines, per_element, groups = [], {}, {}
     unclassified, flagged, excluded = [], [], []
@@ -1082,6 +1084,10 @@ def estimate(elements, region, lib=None, settings=None):
                if ctx.get("plates") else
                "Structural steel weight = member volume x 7,850 kg/m3 + 10% for connections (plates, bolts, "
                "cleats) not in the model.")
+    n_points = sum(1 for r in recipes.values() if r in ("OUTLET", "LIGHT"))
+    if n_points and not ctx.get("cables"):
+        assume("Cables are not modelled: conduit and wiring are priced per point ({n} light, socket and switch "
+               "points, about 10 m each).", n=n_points)
     n_split = sum(1 for r in recipes.values() if r == "AC_SPLIT")
     if n_split:
         assume("{n} split air conditioners priced complete with their outdoor unit, copper piping and drain; "

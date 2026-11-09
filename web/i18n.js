@@ -194,6 +194,7 @@ const D = {
   "This project has no model yet.": { ar: "لا يوجد نموذج في هذا المشروع بعد." },
   "Delete project": { ar: "حذف المشروع" },
   "{n} split air conditioners priced complete with their outdoor unit, copper piping and drain; split outdoor units drawn in the model are not priced again.": { ar: "{n} مكيف سبليت مسعّر كاملاً مع الوحدة الخارجية والمواسير النحاسية والتصريف، والوحدات الخارجية المرسومة في النموذج لا تُسعّر مرة أخرى." },
+  "Cables are not modelled: conduit and wiring are priced per point ({n} light, socket and switch points, about 10 m each).": { ar: "الكابلات غير مرسومة: المواسير والأسلاك مسعّرة لكل نقطة ({n} نقطة إنارة وبريزة ومفتاح، حوالي 10 م لكل نقطة)." },
   "Close": { ar: "إغلاق", ur: "بند کریں", es: "Cerrar", fr: "Fermer" },
   "Search": { ar: "بحث", ur: "تلاش", es: "Buscar", fr: "Rechercher" },
   "1 · Local prices": { ar: "١ · الأسعار المحلية", ur: "١ · مقامی قیمتیں", es: "1 · Precios locales", fr: "1 · Prix locaux" },

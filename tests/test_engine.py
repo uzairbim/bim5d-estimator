@@ -421,3 +421,18 @@ def test_data_files_are_well_formed():
     tr = {(r["kind"], r["code"]) for r in csv.DictReader((data / "translations.csv").open(encoding="utf-8"))}
     assert not [w for w in used if ("work_item", w) not in tr], "work items without an Arabic name"
     assert not [r for r in lib.recipes if ("recipe", r) not in tr], "recipes without an Arabic name"
+
+
+def test_codes_are_unique():
+    """A resource, work item or translation code defined twice silently replaces the first one
+    (a new 'wire' resource once changed the rebar tying-wire price)."""
+    import csv
+    from collections import Counter
+    from pathlib import Path
+    data = Path(__file__).resolve().parent.parent / "data"
+    for f, cols in [("resources.csv", ("code",)), ("work_items.csv", ("code",)),
+                    ("recipe_groups.csv", ("recipe",)), ("translations.csv", ("kind", "code")),
+                    ("rates/base_usd.csv", ("work_item",))]:
+        rows = list(csv.DictReader((data / f).open(encoding="utf-8")))
+        dup = [k for k, n in Counter(tuple(r[c] for c in cols) for r in rows).items() if n > 1]
+        assert not dup, f"{f}: {dup}"
