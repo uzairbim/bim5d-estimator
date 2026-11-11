@@ -17,6 +17,11 @@ import uuid
 import zipfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+for _stream in (sys.stdout, sys.stderr):     # a Windows console cannot show every character (Arabic names)
+    try:
+        _stream.reconfigure(errors="replace")
+    except (AttributeError, ValueError):
+        pass
 SAMPLES = os.path.join(HERE, "..", "samples")
 
 
