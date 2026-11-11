@@ -486,6 +486,7 @@ function renderSummary() {
   host.innerHTML = `
     <div class="muted">${esc(S.project.name)} · ${(e.models || []).length > 1 ? e.models.map((m) => esc(m.label)).join(" + ") : esc(S.version.label)} · ${esc(e.region_name)}</div>
     <div class="total">${fmt(s.total)} <small>${e.currency}</small></div>
+    ${s.per_m2 ? `<div class="muted" style="margin:-4px 0 8px">${fmt(perArea(s.per_m2))} ${e.currency}/${imperial() ? "ft²" : "m²"} · ${fmt(gfaShow(s.gfa)[0])} ${gfaShow(s.gfa)[1]} ${t("floor area")}</div>` : ""}
     <div class="acc acc${a.class}"><b dir="auto">${esc(t(a.label))}</b> · ${t("likely between")} <b>${fmt(a.low)}</b> ${t("and")} <b>${fmt(a.high)}</b> ${e.currency} (${Math.round(a.low_pct * 100)}% / +${Math.round(a.high_pct * 100)}%)
       ${a.reasons.length ? `<ul>${(a.reasons_t || a.reasons.map((r) => [r, {}])).map(([tpl, v]) => `<li dir="auto">${esc(t(tpl, v.items ? { ...v, items: v.items.split(", ").map((x) => tx("scope", x, x)).join("، ") } : v))}</li>`).join("")}</ul>` : ""}</div>
     ${nextSteps(e)}

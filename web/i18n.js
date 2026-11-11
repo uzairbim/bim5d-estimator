@@ -239,6 +239,7 @@ const D = {
   "Main model": { ar: "النموذج الرئيسي" },
   "Model 2": { ar: "نموذج 2" },
   "Model 3": { ar: "نموذج 3" },
+  "floor area": { ar: "مساحة الطوابق", ur: "فرش رقبہ", es: "superficie", fr: "surface" },
   "Close": { ar: "إغلاق", ur: "بند کریں", es: "Cerrar", fr: "Fermer" },
   "Search": { ar: "بحث", ur: "تلاش", es: "Buscar", fr: "Rechercher" },
   "1 · Local prices": { ar: "١ · الأسعار المحلية", ur: "١ · مقامی قیمتیں", es: "1 · Precios locales", fr: "1 · Prix locaux" },

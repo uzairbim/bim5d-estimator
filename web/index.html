@@ -41,6 +41,11 @@
       <div><b>3</b><span data-i18n="Follow &quot;What to do next&quot;, then send the client report or Excel.">Follow "What to do next", then send the client report or Excel.</span></div>
     </div>
     <div class="row gap wrap" style="margin-bottom:14px">
+      <label class="field"><span data-i18n="Region">Region</span> <select id="startRegion"></select></label>
+      <button class="btn" id="addCountry" style="align-self:flex-end" data-i18n="Add my country / prices">Add my country / prices</button>
+      <label class="field"><span data-i18n="Or try a sample">Or try a sample</span> <select id="sample"><option value="" data-i18n="Choose…">Choose…</option></select></label>
+    </div>
+    <div class="row gap wrap" style="margin-bottom:14px">
       <button class="btn primary big" id="demoBtn" data-i18n="Try the demo (1 click)">Try the demo (1 click)</button>
       <label class="btn"><span data-i18n="Open a project file">Open a project file</span><input id="projImport" type="file" accept=".zip" hidden></label>
     </div>
@@ -48,11 +53,6 @@
       <input id="file" type="file" accept=".ifc,.ifczip,.zip,.rvt" multiple hidden>
       <b data-i18n="Drop an .ifc file here">Drop an .ifc file here</b><span data-i18n="or click to choose a file">or click to choose a file</span><span class="small muted" data-i18n="Several files at once (architecture, structure, MEP) make one project.">Several files at once (architecture, structure, MEP) make one project.</span>
     </label>
-    <div class="row gap">
-      <label class="field"><span data-i18n="Region">Region</span> <select id="startRegion"></select></label>
-      <button class="btn" id="addCountry" style="align-self:flex-end" data-i18n="Add my country / prices">Add my country / prices</button>
-      <label class="field"><span data-i18n="Or try a sample">Or try a sample</span> <select id="sample"><option value="" data-i18n="Choose…">Choose…</option></select></label>
-    </div>
     <details class="howto">
       <summary data-i18n="How to export IFC from Revit">How to export IFC from Revit</summary>
       <ol data-lang-block="en">
