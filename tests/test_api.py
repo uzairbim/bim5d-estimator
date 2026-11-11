@@ -285,3 +285,22 @@ def test_geometry_is_compressed_once(client, tmp_path):
     assert plain.status_code == raw.status_code == 200
     assert raw.headers.get("content-encoding") == "gzip"
     assert raw.content == plain.content        # the client unpacks it: the same bytes, compressed once
+
+
+def test_revit_file_gets_a_clear_answer(client):
+    r = client.post("/api/projects", files={"file": ("House.rvt", b"not readable outside Revit")})
+    assert r.status_code == 400 and "Revit" in r.json()["detail"] and "IFC" in r.json()["detail"]
+
+
+def test_model_sent_from_revit_opens(client, tmp_path, monkeypatch):
+    """The Revit button saves its IFC in ~/BIM5D/inbox; the app opens it by name only."""
+    import shutil
+    monkeypatch.setattr(server, "INBOX", tmp_path)
+    shutil.copy(server.Path(__file__).resolve().parent.parent / "samples" / "Saudi_Villa_Example.ifc",
+                tmp_path / "Villa__20261111-101500.ifc")
+    r = client.post("/api/projects/inbox/Villa__20261111-101500.ifc?region=SA")
+    assert r.status_code == 200
+    p = client.get(f"/api/projects/{r.json()['project_id']}").json()
+    assert p["name"] == "Villa" and p["versions"][0]["file_name"] == "Villa.ifc"
+    for bad in ("..%2Fsecret.ifc", "x.txt", "missing.ifc"):
+        assert client.post(f"/api/projects/inbox/{bad}").status_code in (400, 404, 405)   # never opened

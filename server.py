@@ -24,6 +24,11 @@ from engine.schedule import build as build_schedule
 ROOT = Path(__file__).resolve().parent
 SAMPLES = ROOT / "samples"
 MAX_UPLOAD_MB = 1000
+REVIT_NATIVE = (".rvt", ".rfa", ".rte", ".rft")
+RVT_MESSAGE = ("This is a Revit file (.rvt). Only Revit can open its own format, so export the model to IFC first: "
+               "in Revit use the \"Send to BIM 5D\" button (one click, see the revit folder), or File > Export > IFC "
+               "and upload the .ifc file here.")
+INBOX = Path.home() / "BIM5D" / "inbox"     # where the Revit button saves its IFC export
 
 app = FastAPI(title="BIM 5D Estimator")
 app.add_middleware(GZipMiddleware, minimum_size=2000)
@@ -228,6 +233,8 @@ async def upload(file: UploadFile, project_id: Optional[str] = Form(None),
                  name: Optional[str] = Form(None), region: Optional[str] = Form(None),
                  discipline: Optional[str] = Form(None)):
     fname = (file.filename or "").lower()
+    if fname.endswith(REVIT_NATIVE):
+        raise HTTPException(400, RVT_MESSAGE)
     if not fname.endswith((".ifc", ".ifczip", ".zip")):
         raise HTTPException(400, "Please upload an .ifc file (in Revit: File > Export > IFC).")
     too_big = False
@@ -287,6 +294,19 @@ def _unzip_upload(path):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".ifc") as out, z.open(best) as src:
             shutil.copyfileobj(src, out, 1 << 20)
         return "ifc", out.name
+
+
+@app.post("/api/projects/inbox/{name}")
+def from_inbox(name: str, region: Optional[str] = None):
+    """Open an IFC that the Revit "Send to BIM 5D" button saved in ~/BIM5D/inbox."""
+    if Path(name).name != name or not name.lower().endswith(".ifc"):
+        raise HTTPException(400, "Please upload an .ifc file (in Revit: File > Export > IFC).")
+    src = INBOX / name
+    if not src.is_file():
+        raise HTTPException(404, "The file sent from Revit was not found. Send it again from Revit.")
+    pid = storage.create_project(Path(name).stem.rsplit("__", 1)[0], {"region": region} if region else None)
+    vid = storage.add_version(pid, str(src), name.rsplit("__", 1)[0] + ".ifc", move=True)
+    return {"project_id": pid, "version_id": vid}
 
 
 @app.post("/api/projects/sample/{name}")

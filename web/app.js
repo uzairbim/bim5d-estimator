@@ -170,11 +170,21 @@ $("#projectList").addEventListener("click", async (e) => {
 
 function route() {
   const h = new URLSearchParams(location.hash.slice(1));
+  const inbox = h.get("inbox");
+  if (inbox) return openFromRevit(inbox);
   const pid = h.get("p");
   if (pid && S.projects.find((p) => p.id === pid)) openProject(pid, h.get("v"));
   else showStart();
 }
 window.addEventListener("hashchange", route);
+async function openFromRevit(name) {   // sent by the "Send to BIM 5D" button in Revit
+  busy(true, t("Opening the model sent from Revit…"));
+  try {
+    const r = await api(`/api/projects/inbox/${encodeURIComponent(name)}?region=${$("#startRegion").value}`, { method: "POST" });
+    await loadProjects();
+    go(r.project_id, r.version_id);
+  } catch (err) { busy(false); location.hash = ""; toast(err.message); }
+}
 function go(pid, vid) { location.hash = `p=${pid}` + (vid ? `&v=${vid}` : ""); }
 function showStart() {
   S.project = null;
@@ -184,7 +194,13 @@ function showStart() {
 }
 $("#home").addEventListener("click", () => { location.hash = ""; });
 
+function showRvtHelp() {           // a .rvt was chosen: explain how to get the IFC out of Revit
+  busy(false);
+  $("#helpDlg").hidden = false;
+  document.querySelectorAll("#helpDlg .dlg-body").forEach((b) => { b.scrollTop = 0; });
+}
 async function uploadFile(file, projectId, discipline) {
+  if (/\.(rvt|rfa|rte|rft)$/i.test(file.name)) return showRvtHelp();
   if (!/\.(ifc|ifczip|zip)$/i.test(file.name)) return toast(t("Please choose an .ifc file."));
   const fd = new FormData();
   fd.append("file", file);
@@ -796,11 +812,11 @@ function renderCompare() {
       <table><tbody>${c.rows.slice(0, 300).map((r) => `<tr class="click" data-g="${r.guid}"><td>${esc(r.name)}<br><span class="tag ${r.status}">${t(r.status)}</span> <span class="muted small">${esc(r.why)}</span></td><td class="n ${r.delta > 0 ? "pos" : "neg"}">${r.delta > 0 ? "+" : ""}${fmt(r.delta)}</td></tr>`).join("")}</tbody></table>`;
   }
   $("#tab-compare").innerHTML = `
-    <div class="toolbar"><label class="btn primary">${t("Upload new revision")}<input type="file" id="revFile" accept=".ifc,.ifczip,.zip" hidden></label>
+    <div class="toolbar"><label class="btn primary">${t("Upload new revision")}<input type="file" id="revFile" accept=".ifc,.ifczip,.zip,.rvt" hidden></label>
       <span class="muted small">${t("of")} ${esc(S.version.discipline || t("this model"))}</span></div>
     <div class="callout small">${t("Separate Revit models for structure or MEP? Add each one here: the estimate adds them up (the latest revision of each), shows them together in 3D and counts elements drawn in two models once.")}
       <div class="toolbar" style="margin-top:6px"><select id="discSel">${["Structure", "MEP", "Electrical", "Plumbing", "Architecture", "Landscape"].map((d) => `<option value="${d}">${t(d)}</option>`).join("")}</select>
-      <label class="btn">${t("Add a discipline model")}<input type="file" id="discFile" accept=".ifc,.ifczip,.zip" hidden></label></div>
+      <label class="btn">${t("Add a discipline model")}<input type="file" id="discFile" accept=".ifc,.ifczip,.zip,.rvt" hidden></label></div>
       ${(S.models || []).length > 1 ? `<p class="small">${t("Combined now")}: ${S.models.map((m) => esc(m.label)).join(" + ")}</p>` : ""}</div>
     ${ready.length >= 2 ? `<div class="toolbar"><select id="cmpA">${opts(c?.a.id || prev?.id)}</select> → <select id="cmpB">${opts(c?.b.id || S.version.id)}</select><button class="btn" id="cmpRun">${t("Compare")}</button>${c ? `<button class="btn" id="cmpClear">${t("Clear")}</button>` : ""}</div>` : ""}
     <div class="toolbar"><label class="muted small">${t("Revision name")} <input type="text" id="verLabel" value="${esc(S.version.label)}" style="width:140px"></label></div>

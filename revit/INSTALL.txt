@@ -1,0 +1,28 @@
+﻿SEND TO BIM 5D - ONE-CLICK BUTTON FOR REVIT
+===========================================
+
+Revit's own .rvt format can only be read by Revit. This button does the export for you, with the
+right settings, and opens the model in BIM 5D Estimator.
+
+INSTALL (once, about 3 minutes)
+1. Install pyRevit (free) from https://pyrevitlabs.io  (Download, run the installer, close Revit first).
+2. Double-click install-revit-button.bat in this folder.
+3. Start BIM 5D once with start-windows.bat (so the button knows where it is).
+4. Open Revit. A "BIM5D" tab now has the "Send to BIM 5D" button.
+
+USE
+- Open your project in Revit and click "Send to BIM 5D".
+- The model is exported to IFC (whole model, base quantities, Revit property sets, rooms) into
+  the folder %USERPROFILE%\BIM5D\inbox, BIM 5D starts if it is not running, and the model
+  opens in your browser with the cost estimate.
+- Big models take a minute or two to export in Revit, then a minute to measure in BIM 5D.
+
+WITHOUT pyRevit
+In Revit: File > Export > IFC. Choose "IFC 2x3 Coordination View 2.0". On the "Property Sets"
+tab tick "Export Revit property sets" and "Export base quantities". Save, then upload the .ifc file
+in BIM 5D (drag it onto the start page).
+
+عربي
+ملف ‎.rvt لا يقرؤه إلا Revit. هذا الزر يصدّر النموذج بالإعدادات الصحيحة ويفتحه في BIM 5D.
+التثبيت: ثبّت pyRevit المجاني من pyrevitlabs.io، ثم شغّل install-revit-button.bat، ثم شغّل BIM 5D مرة واحدة
+بملف start-windows.bat. بعدها يظهر في Revit تبويب BIM5D وفيه زر "Send to BIM 5D".

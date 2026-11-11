@@ -1,0 +1,43 @@
+name: Windows test
+
+# Installs and starts the app on a clean Windows computer exactly as start-windows.bat does,
+# runs every test, then uploads the sample models (and a .rvt, a broken file, a zipped IFC)
+# to the running app the way the browser does.
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Start the app with start-windows.bat (first start installs everything)
+        shell: pwsh
+        run: |
+          $env:BIM5D_NO_BROWSER = "1"
+          Start-Process -FilePath "cmd.exe" -ArgumentList "/c", "start-windows.bat < NUL > start.log 2>&1" -WorkingDirectory $PWD
+
+      - name: Upload files to the running app
+        shell: pwsh
+        run: python tools/windows_check.py
+
+      - name: Run all tests on Windows
+        shell: pwsh
+        run: |
+          .venv\Scripts\python.exe -m pip install --disable-pip-version-check pytest
+          .venv\Scripts\python.exe -m pytest -q
+
+      - name: Start window output
+        if: always()
+        shell: pwsh
+        run: if (Test-Path start.log) { Get-Content start.log -Tail 80 }

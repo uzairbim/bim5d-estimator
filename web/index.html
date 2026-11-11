@@ -45,7 +45,7 @@
       <label class="btn"><span data-i18n="Open a project file">Open a project file</span><input id="projImport" type="file" accept=".zip" hidden></label>
     </div>
     <label id="drop" class="drop">
-      <input id="file" type="file" accept=".ifc,.ifczip,.zip" hidden>
+      <input id="file" type="file" accept=".ifc,.ifczip,.zip,.rvt" hidden>
       <b data-i18n="Drop an .ifc file here">Drop an .ifc file here</b><span data-i18n="or click to choose a file">or click to choose a file</span>
     </label>
     <div class="row gap">
@@ -140,6 +140,13 @@
   <div class="dialog help">
     <div class="dlg-head"><h2 data-i18n="Help">Help</h2><button class="btn" id="helpClose" data-i18n="Close">Close</button></div>
     <div class="dlg-body" data-lang-block="en">
+      <div id="rvtHelp" class="callout">
+        <b>Revit files (.rvt)</b>: only Revit can open its own format. Two ways:
+        <ol>
+          <li><b>One click</b>: install the <i>Send to BIM 5D</i> button (folder <code>revit</code>, file <code>INSTALL.txt</code>). In Revit open a 3D view and click it: the model is exported with the right settings and opens here.</li>
+          <li><b>By hand</b>: in Revit, File &gt; Export &gt; IFC (IFC 2x3 Coordination View 2.0, tick "Export base quantities"), then upload the .ifc file here.</li>
+        </ol>
+      </div>
       <h3>Quick start</h3>
       <ol>
         <li><b>Region</b>: pick your country on the start page. Saudi Arabia, UAE, Pakistan, India, UK, Germany and USA have assumed prices ready. For another country: <i>Add my country / prices</i>.</li>
@@ -172,6 +179,7 @@
         <dt>How do I send a project to a colleague?</dt><dd>Project settings &gt; Download project file. They use "Open a project file" on the start page.</dd>
         <dt>How do I share prices?</dt><dd>Prices &amp; rates &gt; Region &amp; sharing &gt; Download rate pack.</dd>
         <dt>Structure and MEP are separate Revit models.</dt><dd>Open the architecture project, go to Compare, choose the discipline and click "Add a discipline model". The estimate adds them up; elements drawn in two models are counted once.</dd>
+        <dt>Can I upload a Revit .rvt file?</dt><dd>Not directly: only Revit can read .rvt. Use the <i>Send to BIM 5D</i> button in Revit (folder revit, INSTALL.txt), or export IFC by hand.</dd>
         <dt>Which files can I upload?</dt><dd>.ifc, .ifcZIP (Revit: File &gt; Export &gt; IFC, tick "Save as .ifcZIP") or a zip with the .ifc inside. IFC 2x3, IFC4 and IFC4.3 all work.</dd>
         <dt>Can I get the BOQ in Arabic?</dt><dd>Choose العربية at the top. For Saudi Arabia and other Arab countries the Excel BOQ has Arabic columns, and the client report follows the language.</dd>
         <dt>I need a BOQ to send to contractors.</dt><dd>Export Excel, sheet "Priced BOQ": numbered bills, quantity × rate formulas, bill summary with VAT. Change a rate in Excel and the totals update.</dd>
@@ -180,6 +188,13 @@
       </dl>
     </div>
     <div class="dlg-body" data-lang-block="ar" hidden>
+      <div id="rvtHelpAr" class="callout">
+        <b>ملفات Revit (‎.rvt)</b>: لا يفتح هذه الصيغة إلا Revit. طريقتان:
+        <ol>
+          <li><b>نقرة واحدة</b>: ثبّت زر <i>Send to BIM 5D</i> (مجلد <code>revit</code>، ملف <code>INSTALL.txt</code>). افتح عرضاً ثلاثي الأبعاد في Revit واضغطه: يُصدَّر النموذج بالإعدادات الصحيحة ويُفتح هنا.</li>
+          <li><b>يدوياً</b>: في Revit اختر File &gt; Export &gt; IFC (IFC 2x3 Coordination View 2.0 مع "Export base quantities") ثم ارفع ملف ‎.ifc هنا.</li>
+        </ol>
+      </div>
       <h3>بداية سريعة</h3>
       <ol>
         <li><b>المنطقة</b>: اختر بلدك في صفحة البداية. السعودية والإمارات وباكستان والهند وبريطانيا وألمانيا وأمريكا لها أسعار مفترضة جاهزة. لبلد آخر: <i>أضف بلدي / أسعاري</i>.</li>

@@ -50,6 +50,19 @@ def _open_when_ready(url):
         webbrowser.open(url)
 
 
+def _remember(port):
+    """Write where the app is and which port it uses, for the Revit "Send to BIM 5D" button."""
+    try:
+        import json
+        home = os.path.join(os.path.expanduser("~"), "BIM5D")
+        os.makedirs(os.path.join(home, "inbox"), exist_ok=True)
+        start = os.path.join(HERE, "start-windows.bat" if os.name == "nt" else "start-mac-linux.sh")
+        with open(os.path.join(home, "app.json"), "w", encoding="utf-8") as f:
+            json.dump({"port": port, "folder": HERE, "start": start}, f)
+    except OSError:
+        pass
+
+
 def main():
     os.chdir(HERE)
     sys.path.insert(0, HERE)
@@ -58,6 +71,7 @@ def main():
 
     port = int(os.environ.get("PORT") or _free_port())
     url = f"http://localhost:{port}/"
+    _remember(port)
     threading.Thread(target=_open_when_ready, args=(url,), daemon=True).start()
     uvicorn.run("server:app", host="127.0.0.1", port=port, log_level="warning")
 

@@ -1,0 +1,5 @@
+title: Send to BIM 5D
+tooltip: >-
+  Exports this model to IFC with the settings BIM 5D Estimator needs (whole model, base quantities,
+  Revit property sets, rooms) and opens it in BIM 5D for the cost estimate. Starts BIM 5D if needed.
+author: BIM 5D Estimator
