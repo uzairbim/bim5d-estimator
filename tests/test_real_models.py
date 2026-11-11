@@ -685,3 +685,18 @@ def test_brick_walls(lib, name, materials, recipe):
     el = {"ifc_class": "IfcWall", "kind": "IfcWall", "name": name, "type": name, "predefined": "", "materials": materials,
           "classification": [], "props": {}, "layers": [], "qty": {}}
     assert lib.classify(el)[0] == recipe
+
+
+@pytest.mark.parametrize("name, materials, recipe", [
+    ("Giebel:Giebel", ["Default Mass"], None), ("Körper 2:Körper 1", ["Default Mass"], None),
+    ("Blinding pad", ["Mass Concrete"], None), ("fire place hang", [], "APPLIANCE"),
+    ("kappa_cycle_shelter_5_5m", [], "CAR_SHADE"),
+])
+def test_masses_and_site_items(lib, name, materials, recipe):
+    """Conceptual masses (design volumes) are left out, not left for the user to map."""
+    el = {"ifc_class": "IfcBuildingElementProxy", "kind": "IfcBuildingElementProxy", "name": name, "type": name,
+          "predefined": "", "materials": materials, "classification": [], "props": {}, "layers": [], "qty": {}}
+    got = lib.classify(el)
+    assert got[0] == recipe
+    if "Mass" in " ".join(materials) and "Concrete" not in " ".join(materials):
+        assert got[1] == "excluded"

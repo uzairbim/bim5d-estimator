@@ -162,3 +162,6 @@ priority,ifc_class,keywords,recipe
 6,IfcCovering,^(?!.*(ceiling|سقف)).*(INSULATION|insulation|dämmung|عزل حراري),INSULATION_COVER
 6,IfcCovering,MEMBRANE|waterproof|bitumen membrane|abdichtung|عزل مائي,MEMBRANE_COVER
 6,IfcCovering,ROOFING|roof tile|roof finish|بلاط سطح|بلاط اسطح,ROOF_COVER
+1,IfcBuildingElementProxy,default mass|conceptual mass|massing|\bmass\b(?! ?concrete)|körper|kubatur|كتلة,EXCLUDE
+4,IfcBuildingElementProxy|IfcFurnishingElement,fire ?place|kamin|chimney breast|مدفأة|موقد,APPLIANCE
+4,IfcBuildingElementProxy|IfcFurnishingElement,(cycle|bike|bicycle) ?shelter|shelter|مظلة دراجات,CAR_SHADE
