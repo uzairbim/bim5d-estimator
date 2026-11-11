@@ -199,26 +199,80 @@ function showRvtHelp() {           // a .rvt was chosen: explain how to get the 
   $("#helpDlg").hidden = false;
   document.querySelectorAll("#helpDlg .dlg-body").forEach((b) => { b.scrollTop = 0; });
 }
-async function uploadFile(file, projectId, discipline) {
-  if (/\.(rvt|rfa|rte|rft)$/i.test(file.name)) return showRvtHelp();
-  if (!/\.(ifc|ifczip|zip)$/i.test(file.name)) return toast(t("Please choose an .ifc file."));
-  const fd = new FormData();
-  fd.append("file", file);
-  if (projectId) fd.append("project_id", projectId);
-  if (discipline) fd.append("discipline", discipline);
-  else fd.append("region", $("#startRegion").value);
-  busy(true, `${t('Uploading')} ${file.name}…`);
-  try {
-    const r = await api("/api/projects", { method: "POST", body: fd });
-    await loadProjects();
-    go(r.project_id, r.version_id || undefined);
-  } catch (err) { busy(false); toast(err.message); }
+// Discipline from the file name, for several models dropped together (architecture + structure + MEP).
+const DISCIPLINES = [["Structure", /struct|(^|[^a-z])str([^a-z]|$)|إنشائ|انشائ|tragwerk/i],
+  ["MEP", /(^|[^a-z])mep([^a-z]|$)|hvac|mech|plumb|elec|services|كهروميكانيك|ميكانيك|كهرباء|سباك/i],
+  ["Landscape", /landscape|لاندسكيب|تنسيق موقع/i]];
+const disciplineOf = (name) => (DISCIPLINES.find(([, rx]) => rx.test(name)) || [null])[0];
+
+async function checkFile(file) {      // before uploading hundreds of MB: is it really an IFC?
+  if (/\.(rvt|rfa|rte|rft)$/i.test(file.name)) return "rvt";
+  if (/\.ifcxml$/i.test(file.name)) return t("This is IFC-XML. In Revit export IFC as .ifc (or .ifcZIP), not .ifcXML.");
+  if (!/\.(ifc|ifczip|zip)$/i.test(file.name)) return t("Please choose an .ifc file.");
+  if (!file.size) return t("This file is empty. Export it again from Revit.");
+  let head = "";
+  try { head = await file.slice(0, 64).text(); } catch { return null; }
+  const zip = head.startsWith("PK");
+  if (/\.ifc$/i.test(file.name) && !zip && !head.trimStart().startsWith("ISO-10303-21")) {
+    if (head.trimStart().startsWith("<")) return t("This is IFC-XML. In Revit export IFC as .ifc (or .ifcZIP), not .ifcXML.");
+    return t("{f} is not an IFC file (it does not start like one). Export it again from Revit: File > Export > IFC.", { f: file.name });
+  }
+  if (/\.(ifczip|zip)$/i.test(file.name) && !zip) return t("{f} is not a zip file. Export it again from Revit.", { f: file.name });
+  return null;
 }
-$("#file").addEventListener("change", (e) => { const f = e.target.files[0]; if (f) uploadFile(f); e.target.value = ""; });
+
+function postForm(fd, onProgress) {   // like api(), with upload progress (fetch cannot report it)
+  return new Promise((resolve, reject) => {
+    const x = new XMLHttpRequest();
+    x.open("POST", "/api/projects");
+    x.upload.onprogress = (e) => { if (e.lengthComputable) onProgress(e.loaded / e.total); };
+    x.onload = () => {
+      let d = {};
+      try { d = JSON.parse(x.responseText); } catch { /* not JSON */ }
+      if (x.status >= 200 && x.status < 300) resolve(d);
+      else reject(new Error(typeof d.detail === "string" ? d.detail : `${x.status} ${x.statusText}`));
+    };
+    x.onerror = () => reject(new Error("Cannot reach the app. Keep the black start window open (closing it stops the app), or start it again with start-windows.bat, then reload this page. If the window shows an error, send a photo of it."));
+    x.send(fd);
+  });
+}
+
+async function uploadFiles(fileList, projectId, discipline) {
+  const files = [...fileList];
+  if (!files.length) return;
+  for (const f of files) {
+    const problem = await checkFile(f);
+    if (problem === "rvt") return showRvtHelp();
+    if (problem) return toast(problem);
+  }
+  // Several models at once: the architecture (or first) model opens the project, the others join it.
+  if (files.length > 1 && !projectId) files.sort((x, y) => (disciplineOf(x.name) ? 1 : 0) - (disciplineOf(y.name) ? 1 : 0));
+  let first = null;
+  try {
+    for (const [i, f] of files.entries()) {
+      const fd = new FormData();
+      fd.append("file", f);
+      const pid = projectId || first?.project_id;
+      const disc = discipline || (first ? (disciplineOf(f.name) || `Model ${i + 1}`) : null);
+      if (pid) fd.append("project_id", pid);
+      if (disc) fd.append("discipline", disc);
+      if (!pid) fd.append("region", $("#startRegion").value);
+      const label = `${t("Uploading")} ${f.name}${files.length > 1 ? ` (${i + 1}/${files.length})` : ""}`;
+      const mb = (f.size / 1048576).toFixed(f.size > 10485760 ? 0 : 1);
+      busy(true, `${label}… ${mb} MB`, 0.01);
+      const r = await postForm(fd, (frac) => busy(true, `${label}… ${Math.round(frac * 100)}% ${t("of")} ${mb} MB`, frac));
+      if (!first) first = r;
+    }
+    await loadProjects();
+    go(first.project_id, first.version_id || undefined);
+  } catch (err) { busy(false); toast(err.message); if (first) { await loadProjects(); go(first.project_id, first.version_id || undefined); } }
+}
+const uploadFile = (file, projectId, discipline) => uploadFiles([file], projectId, discipline);
+$("#file").addEventListener("change", (e) => { uploadFiles(e.target.files); e.target.value = ""; });
 const drop = $("#drop");
 ["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("over"); }));
 ["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
-drop.addEventListener("drop", (e) => { const f = e.dataTransfer.files[0]; if (f) uploadFile(f); });
+drop.addEventListener("drop", (e) => { uploadFiles(e.dataTransfer.files); });
 $("#startRegion").addEventListener("change", (e) => localStorageSet("region", e.target.value));
 $("#sample").addEventListener("change", async (e) => {
   if (!e.target.value) return;
@@ -269,8 +323,38 @@ async function openProject(pid, vid) {
     const levels = [...new Set(Object.values(els).map((e) => e.level))].sort();
     $("#levelSel").innerHTML = `<option value="">${t("All levels")}</option>` + levels.map((l) => `<option>${esc(l)}</option>`).join("");
     await refresh();
+    watchOtherModels(pid, v.id);
   } catch (err) { toast(err.message); }
   busy(false);
+}
+
+// Other discipline models dropped together are still being measured: say so, and add them to the
+// estimate as soon as they are ready.
+async function watchOtherModels(pid, vid) {
+  const note = () => document.getElementById("pendingNote");
+  for (;;) {
+    let p;
+    try { p = await api(`/api/projects/${pid}`); } catch { return; }
+    if (S.project?.id !== pid || S.version?.id !== vid) { note()?.remove(); return; }
+    const pending = p.versions.filter((x) => x.id !== vid && x.status === "processing");
+    if (!pending.length) {
+      const had = note();
+      had?.remove();
+      if (had) {                         // they finished: reload so the estimate and 3D include them
+        S.version = null; S.est = null;
+        return openProject(pid, vid);
+      }
+      return;
+    }
+    if (!note()) {
+      const d = document.createElement("div");
+      d.id = "pendingNote"; d.className = "callout small";
+      document.querySelector("aside.panel").prepend(d);
+    }
+    note().textContent = t("Still measuring: {m}. The estimate adds them as soon as they are ready.",
+      { m: pending.map((x) => `${t(x.discipline || "Main model")} (${Math.round((x.progress || 0) * 100)}%)`).join(", ") });
+    await sleep(3000);
+  }
 }
 
 function renderVersions() {
