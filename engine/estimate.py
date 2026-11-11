@@ -32,8 +32,9 @@ def group_key(el):
 
     Revit names look like 'Family:Type:123456'; the trailing id is dropped.
     """
-    name = el.get("type") or re.sub(r":\d+$", "", el.get("name") or "")
-    name = re.sub(r":\d+$", "", name)
+    name = el.get("type") or re.sub(r":\s*\d+$", "", el.get("name") or "")
+    name = re.sub(r":\s*\d+$", "", name)
+    name = re.sub(r":\d{4,}$", "", name)     # 'Rebar Bar:Type:1316567: 2' -> the bar number, then the id
     return f"{el.get('kind') or el['ifc_class']}|{name}"
 
 

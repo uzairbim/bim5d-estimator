@@ -436,3 +436,13 @@ def test_codes_are_unique():
         rows = list(csv.DictReader((data / f).open(encoding="utf-8")))
         dup = [k for k, n in Counter(tuple(r[c] for c in cols) for r in rows).items() if n > 1]
         assert not dup, f"{f}: {dup}"
+
+
+def test_rebar_bars_group_by_type():
+    """Revit names each bar 'Rebar Bar:Type:<id>: <n>': all bars of a type are one row in Mapping
+    (the structural sample had 3,704 rows, one per bar)."""
+    from engine.estimate import group_key
+    keys = {group_key({"ifc_class": "IfcReinforcingBar", "name": f"Rebar Bar:Structural Rebar 1:1316567: {i}", "type": ""})
+            for i in range(1, 50)}
+    assert keys == {"IfcReinforcingBar|Rebar Bar:Structural Rebar 1"}
+    assert group_key({"ifc_class": "IfcWall", "name": "Basic Wall:Block 200:123456", "type": ""}) == "IfcWall|Basic Wall:Block 200"
