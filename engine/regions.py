@@ -14,7 +14,7 @@ import json
 import threading
 import urllib.request
 
-from .estimate import DATA, Library
+from .estimate import DATA, Library, user_dir
 
 _lock = threading.Lock()
 PACK_FORMAT = "bim5d-ratepack"
@@ -27,12 +27,31 @@ def countries():
     return json.loads((DATA / "countries.json").read_text(encoding="utf-8"))
 
 
-def _load():
+def _shipped():
     return json.loads((DATA / "regions.json").read_text(encoding="utf-8"))
 
 
+def _load():
+    """Countries shipped with the app, with yours (added, changed or deleted) on top."""
+    d = _shipped()
+    f = user_dir() / "regions.json"
+    if f.is_file():
+        for k, v in json.loads(f.read_text(encoding="utf-8")).items():
+            if v is None:
+                d.pop(k, None)
+            else:
+                d[k] = {**d.get(k, {}), **v}
+    return d
+
+
 def _save(d):
-    (DATA / "regions.json").write_text(json.dumps(d, indent=2, ensure_ascii=False), encoding="utf-8")
+    """Keep only what differs from the shipped countries, in your own folder (kept by new versions)."""
+    shipped = _shipped()
+    mine = {k: v for k, v in d.items() if shipped.get(k) != v}
+    mine.update({k: None for k in shipped if k not in d and not k.startswith("_")})
+    f = user_dir() / "regions.json"
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text(json.dumps(mine, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
 def create_region(code, values=None):
@@ -74,9 +93,18 @@ def delete_region(code):
 
 # ---- local resource prices -------------------------------------------------------------
 def _prices_path(region):
-    p = DATA / "prices"
-    p.mkdir(exist_ok=True)
+    """Your prices: in your own folder, over the assumed prices shipped with the app."""
+    p = user_dir() / "prices"
+    p.mkdir(parents=True, exist_ok=True)
     return p / f"{region}.csv"
+
+
+def _shipped_prices(region):
+    f = DATA / "prices" / f"{region}.csv"
+    if not f.is_file():
+        return {}
+    with open(f, newline="", encoding="utf-8") as fh:
+        return {r["resource"]: r for r in csv.DictReader(fh)}
 
 
 def price_table(region, lib=None):
@@ -113,6 +141,10 @@ def save_prices(region, rows, lib=None):
         clean.append({"resource": code, "price": round(price, 6),
                       "source": str(r.get("source") or "user")[:80],
                       "date": str(r.get("date") or dt.date.today().isoformat())[:10]})
+    shipped = _shipped_prices(region)       # an unchanged assumed price stays the app's (a new version updates it)
+    clean = [r for r in clean if not (r["resource"] in shipped
+                                      and abs(float(shipped[r["resource"]]["price"] or 0) - r["price"]) < 1e-9
+                                      and shipped[r["resource"]].get("source", "") == r["source"])]
     with _lock, open(_prices_path(region), "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=["resource", "price", "source", "date"])
         w.writeheader()

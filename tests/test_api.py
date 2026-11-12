@@ -1,5 +1,6 @@
 """API checks: bad input gives a clear 4xx message, never a crash or a broken project."""
 import io
+import pathlib
 import json
 import time
 import types
@@ -304,3 +305,41 @@ def test_model_sent_from_revit_opens(client, tmp_path, monkeypatch):
     assert p["name"] == "Villa" and p["versions"][0]["file_name"] == "Villa.ifc"
     for bad in ("..%2Fsecret.ifc", "x.txt", "missing.ifc"):
         assert client.post(f"/api/projects/inbox/{bad}").status_code in (400, 404, 405)   # never opened
+
+
+def test_your_data_is_kept_outside_the_app_folder(tmp_path, monkeypatch):
+    """Prices and countries you enter go to your own folder (~/BIM5D), over the shipped data, so a new
+    version unzipped elsewhere keeps them; unchanged assumed prices stay the app's."""
+    from engine import estimate as est_mod
+    monkeypatch.setenv("BIM5D_HOME", str(tmp_path / "home"))
+    shipped = (pathlib.Path(est_mod.DATA) / "prices" / "SA.csv").read_text(encoding="utf-8")
+    table = regions_mod.price_table("SA")
+    rows = [{"resource": r["resource"], "price": r["price"],
+             "source": next(x for x in __import__("csv").DictReader(io.StringIO(shipped)) if x["resource"] == r["resource"])["source"]}
+            for r in table["rows"] if r["price"] is not None]
+    rows = [dict(r, price=9.0, source="my supplier") if r["resource"] == "M-BLK" else r for r in rows]
+    assert regions_mod.save_prices("SA", rows) >= 1
+    mine = (tmp_path / "home" / "prices" / "SA.csv").read_text(encoding="utf-8")
+    assert "M-BLK,9.0,my supplier" in mine and "M-RBR" not in mine          # only what you changed
+    assert (pathlib.Path(est_mod.DATA) / "prices" / "SA.csv").read_text(encoding="utf-8") == shipped
+    lib = est_mod.Library()
+    assert float(lib.prices["SA"]["M-BLK"]["price"]) == 9.0 and lib.price_kind("SA", "M-BLK") == "yours"
+    assert float(lib.prices["SA"]["M-RBR"]["price"]) == 3300                # shipped assumed price still read
+    regions_mod.create_region("SA_JED", {"name": "Jeddah", "currency": "SAR"})
+    regions_mod.delete_region("GB")
+    lib = est_mod.Library()
+    assert "SA_JED" in lib.regions and "GB" not in lib.regions and "SA" in lib.regions
+
+
+def test_projects_of_an_older_version_are_brought_over(tmp_path, monkeypatch):
+    old, new = tmp_path / "app" / "projects", tmp_path / "home" / "projects"
+    (old / "abc123").mkdir(parents=True)
+    (old / "bim5d.sqlite").write_bytes(b"db")
+    (old / "abc123" / "model.ifc").write_text("ISO-10303-21;")
+    monkeypatch.setattr(storage, "OLD_ROOT", old)
+    monkeypatch.setattr(storage, "ROOT", new)
+    storage.migrate_old()
+    assert (new / "bim5d.sqlite").read_bytes() == b"db" and (new / "abc123" / "model.ifc").is_file()
+    (old / "bim5d.sqlite").write_bytes(b"changed")
+    storage.migrate_old()                                                     # only once
+    assert (new / "bim5d.sqlite").read_bytes() == b"db"

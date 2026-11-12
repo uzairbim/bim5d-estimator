@@ -19,6 +19,13 @@ from collections import defaultdict
 from pathlib import Path
 
 DATA = Path(__file__).resolve().parent.parent / "data"
+
+
+def user_dir():
+    """Your own data, kept outside the app folder so a new version (unzipped anywhere) keeps it:
+    projects, your prices, your countries and rates. ~/BIM5D, or BIM5D_HOME."""
+    import os
+    return Path(os.environ.get("BIM5D_HOME") or (Path.home() / "BIM5D"))
 NONE = "(not priced)"
 
 
@@ -298,12 +305,24 @@ class Library:
                     if lang not in ("kind", "code") and text:
                         self.translations[lang][f'{r["kind"]}:{r["code"]}'] = text
         regions = json.loads((root / "regions.json").read_text(encoding="utf-8"))
+        mine = user_dir() if root == Path(DATA) else None     # your own data, over the shipped data
+        if mine is not None and (mine / "regions.json").is_file():
+            try:
+                for k, v in json.loads((mine / "regions.json").read_text(encoding="utf-8")).items():
+                    if v is None:
+                        regions.pop(k, None)               # a country you deleted
+                    else:
+                        regions[k] = {**regions.get(k, {}), **v}
+            except ValueError:
+                pass
         self.regions = {k: v for k, v in regions.items() if not k.startswith("_")}
         self.base_rates = {r["work_item"]: r for r in _csv(root / "rates" / "base_usd.csv")}
         self.local_rates = {}
         for code, reg in self.regions.items():
             f = root / "rates" / reg.get("rates_file", f"{code}.csv")
             self.local_rates[code] = {r["work_item"]: r for r in _csv(f)} if f.is_file() else {}
+            if mine is not None and (mine / "rates" / f"{code}.csv").is_file():
+                self.local_rates[code].update({r["work_item"]: r for r in _csv(mine / "rates" / f"{code}.csv")})
         # Rate build-up: resources (labour, materials, plant) and norms per work item.
         self.resources = ({r["code"]: r for r in _csv(root / "resources.csv")}
                           if (root / "resources.csv").is_file() else {})
@@ -316,6 +335,9 @@ class Library:
             f = root / "prices" / f"{code}.csv"
             self.prices[code] = ({r["resource"]: r for r in _csv(f) if str(r.get("price", "")).strip()}
                                  if f.is_file() else {})
+            if mine is not None and (mine / "prices" / f"{code}.csv").is_file():
+                self.prices[code].update({r["resource"]: r for r in _csv(mine / "prices" / f"{code}.csv")
+                                          if str(r.get("price", "")).strip()})
         self._cache = {}
 
     # -- classification -------------------------------------------------

@@ -33,8 +33,10 @@ Pick your region, click **Try the demo** or drop an IFC file (.ifc, .ifcZIP or a
 | Browser shows nothing | Open the address shown in the black window yourself (Chrome, Edge or Firefox). |
 | A model will not load | The message says how to re-export from Revit (IFC4 Reference View or IFC 2x3 CV 2.0). |
 
-Tip: extract to a normal folder such as `C:\BIM5D` or Documents, not inside *Program Files*. Projects and
-your prices are saved in that folder (`projects/`, `data/prices/`), so copy it to keep them.
+Tip: extract to a normal folder such as Documents, not inside *Program Files*. Your projects, the prices you
+enter, your countries and rates are kept in your own folder `C:\Users\<you>\BIM5D` (`~/BIM5D` on Mac/Linux),
+not in the app folder, so a new version (unzipped anywhere) opens them straight away. Back up that folder to keep
+them. Projects of an older version in its app folder are brought over the first time.
 To share it with others for free (own computers, a free website, GitHub), see
 [docs/SHARE_FOR_FREE.md](docs/SHARE_FOR_FREE.md).
 

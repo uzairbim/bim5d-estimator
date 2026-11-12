@@ -6,13 +6,16 @@ from pathlib import Path
 
 from openpyxl import Workbook, load_workbook
 
-from .estimate import DATA, Library
+from .estimate import DATA, Library, user_dir
 
 FIELDS = ["work_item", "material", "labour", "equipment", "source"]
 
 
 def _region_file(lib, region):
-    return DATA / "rates" / f"{region}.csv"
+    """Your fixed rates for a region, in your own folder (kept when you install a new version)."""
+    p = user_dir() / "rates"
+    p.mkdir(parents=True, exist_ok=True)
+    return p / f"{region}.csv"
 
 
 def table(region, lib=None):

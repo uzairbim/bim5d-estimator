@@ -23,7 +23,10 @@ import numpy as np
 from .extract import extract
 from . import overlaps
 
-ROOT = Path(__file__).resolve().parent.parent / "projects"
+from .estimate import user_dir
+
+OLD_ROOT = Path(__file__).resolve().parent.parent / "projects"   # versions before 2026-11 kept them here
+ROOT = user_dir() / "projects"                                  # kept when you install a new version
 _lock = threading.Lock()
 
 DEFAULT_SETTINGS = {"region": "SA", "rebar_mode": "ratio", "mappings": {},
@@ -108,7 +111,7 @@ def history(project_id=None, limit=200):
 
 
 def _db():
-    ROOT.mkdir(exist_ok=True)
+    ROOT.mkdir(parents=True, exist_ok=True)
     con = sqlite3.connect(ROOT / "bim5d.sqlite", check_same_thread=False)
     con.row_factory = sqlite3.Row
     con.executescript("""
@@ -397,6 +400,25 @@ def delete_version(vid):
 
 def rename_version(vid, label):
     _set_version(vid, label=label)
+
+
+def migrate_old():
+    """Bring projects (and prices you typed) from the app folder of an older version, once."""
+    import csv as csv_
+    if ROOT.exists() or not OLD_ROOT.is_dir() or not any(OLD_ROOT.iterdir()):
+        return
+    shutil.copytree(OLD_ROOT, ROOT)
+    from .estimate import DATA
+    for f in (Path(DATA) / "prices").glob("*.csv"):
+        with open(f, newline="", encoding="utf-8") as fh:
+            mine = [r for r in csv_.DictReader(fh) if not str(r.get("source", "")).upper().startswith("ASSUMED")]
+        dest = user_dir() / "prices" / f.name
+        if mine and not dest.exists():
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            with open(dest, "w", newline="", encoding="utf-8") as fh:
+                w = csv_.DictWriter(fh, fieldnames=["resource", "price", "source", "date"], extrasaction="ignore")
+                w.writeheader()
+                w.writerows(mine)
 
 
 def recover():

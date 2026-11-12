@@ -36,6 +36,10 @@ app.add_middleware(GZipMiddleware, minimum_size=2000)
 
 @app.on_event("startup")
 def _startup():
+    try:
+        storage.migrate_old()
+    except OSError:
+        pass
     storage.recover()
 
 
