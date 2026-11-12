@@ -248,3 +248,15 @@ def test_covering_predefined_types(lib, predefined, recipe):
     el = {"ifc_class": "IfcCovering", "kind": "IfcCovering", "name": "Generic", "type": "Generic",
           "predefined": predefined, "materials": [], "classification": [], "props": {}, "layers": [], "qty": {}}
     assert lib.classify(el)[0] == recipe
+
+
+def test_unusual_sizes_are_flagged(lib):
+    """A wall three times thicker or a column four times bigger than the rest of its Revit type is
+    flagged; the clean villa has none."""
+    els = extract(str(SAMPLES / "Saudi_Villa_Example.ifc"), with_mesh=False)["elements"]
+    assert estimate(els, "SA", lib, {})["checks"]["odd_sizes"] == []
+    bad = copy.deepcopy(els)
+    wall = next(e for e in bad if e["ifc_class"] == "IfcWall")
+    wall["qty"]["volume"] *= 3
+    flagged = estimate(bad, "SA", lib, {})["checks"]["odd_sizes"]
+    assert [f["guid"] for f in flagged] == [wall["guid"]] and flagged[0]["times"] == pytest.approx(3, rel=0.01)

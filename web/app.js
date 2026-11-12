@@ -409,6 +409,7 @@ function nextSteps(e) {
   if ((a.user_price_share || 0) < 0.5) items.push([t("Prices: {a}% assumed, {e}% estimated. Confirm today's prices for labour, ready-mix, rebar, blocks and cement.", { a: Math.round((a.assumed_price_share || 0) * 100), e: Math.round((a.estimated_price_share || 0) * 100) }), t("Enter prices"), "rates"]);
   const gap = e.scope.find((x) => !x.present && x.suggest && !e.allowances.some((al) => al.name === x.suggest.name));
   if (gap) items.push([t("Not in the model: {name}. Add an allowance so the total is complete.", { name: tx("scope", gap.name, gap.name) }), t("Add {v}% allowance", { v: gap.suggest.value }), "allow:" + JSON.stringify(gap.suggest)]);
+  if ((c.odd_sizes || []).length) items.push([t("Elements much bigger than others of their type: {n}. Probably a modelling error.", { n: c.odd_sizes.length }), t("Open Checks"), "goto:checks"]);
   if (c.duplicates.length) items.push([t("Elements that look duplicated: {n}. Check them before issuing.", { n: c.duplicates.length }), t("Open Checks"), "goto:checks"]);
   else if (c.overlaps.length) items.push([t("Overlaps found and counted once: {n}. Have a quick look.", { n: c.overlaps.length }), t("Open Checks"), "goto:checks"]);
   const missing = e.checklist.filter((x) => x.status === "missing").length;
@@ -615,6 +616,9 @@ async function renderChecks() {
     <h3>1 · ${t("Quantities vs the model's own values")}</h3>
     ${rec.compared ? `<div class="callout ${rec.share >= 0.95 ? "ok" : ""}">${t("{a} of {b} element volumes ({p}%) agree within 5% with the volumes Revit calculated.", { a: rec.within_5pct, b: rec.compared, p: Math.round(rec.share * 100) })}</div>
       ${outl ? `<table><thead><tr><th>${t("Element")}</th><th class="n">${t("Measured m³")}</th><th class="n">${t("Revit m³")}</th><th class="n">${t("Diff")}</th></tr></thead><tbody>${outl}</tbody></table>` : ""}` : `<p class="muted">${t("The model has no volumes of its own to compare with.")}</p>`}
+    ${(c.odd_sizes || []).length ? `<h3>${t("Unusual sizes for their type")} (${c.odd_sizes.length})</h3>
+      <p class="muted small">${t("Elements of one Revit type normally have one thickness or section. These are much bigger than the others of their type: usually a modelling or export error. Click to see them.")}</p>
+      <table><tbody>${c.odd_sizes.slice(0, 100).map((o) => `<tr class="click" data-g="${o.guid}"><td>${name(o.guid)}<br><span class="muted small">${esc(o.type)}</span></td><td class="n">${t(o.measure)} ${fmt(o.value, 3)} ${o.measure === "section" ? "m²" : "m"}<br><span class="muted small">${t("typical")} ${fmt(o.typical, 3)} · ×${o.times}</span></td></tr>`).join("")}</tbody></table>` : ""}
     <h3>2 · ${t("Overlaps")} (${c.overlaps.length}, ${fmt(c.overlap_m3, 2)} m³)</h3>
     <p class="muted small">${e.settings.deduct_overlaps ? t("Shared volume is deducted once, from the element that normally stops at the other (column under slab, beam below slab, wall between frame). Steel keeps its weight.") : t("Overlaps are NOT being deducted (see settings).")} ${c.duplicates.length ? `<b class="bad">${t("Possible duplicates: {n}. Same element twice, in one model or in two models.", { n: c.duplicates.length })}</b>` : ""}</p>
     ${overl ? `<table><tbody>${overl}</tbody></table>` : `<p class="muted">${t("No overlaps found.")}</p>`}

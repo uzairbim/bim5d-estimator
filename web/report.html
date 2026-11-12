@@ -162,6 +162,7 @@ const pid = h.get("p"), vid = h.get("v");
       <tr><td>${t("Overlaps found and deducted once")}</td><td class="n">${c.overlaps.length} (${fmt(c.overlap_m3, 2)} m³)</td></tr>
       <tr><td>${t("Possible duplicate elements")}</td><td class="n">${c.duplicates.length}</td></tr>
       <tr><td>${t("Shapes not measured exactly")}</td><td class="n">${c.geometry_flagged.length}</td></tr>
+      <tr><td>${t("Unusual sizes for their type")}</td><td class="n">${(c.odd_sizes || []).length}</td></tr>
       <tr><td>${t("Reinforcement basis")}</td><td class="n">${c.rebar.mode === "modeled" ? t("modelled bars") : t("ratio allowance")}</td></tr>
     </tbody></table>
     <p class="foot">${t("Quantities measured automatically from the IFC model (each element's 3D shape, in metres) and priced with the rate library shown in the detailed workbook. The accuracy range follows the AACE 18R-97 estimate classes as guidance. Full detail per element, with quantity formulas and rate sources, is in the Excel workbook.")}</p>`;

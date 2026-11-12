@@ -597,6 +597,43 @@ _STRUCTURAL = {"IfcColumn": "col", "IfcBeam": "beam", "IfcFooting": "ftg", "IfcS
                "IfcWallStandardCase": "wall", "IfcStair": "stair", "IfcStairFlight": "stair", "IfcPile": "pile"}
 
 
+def odd_sizes(elements, recipes):
+    """Elements much thicker (walls, slabs) or with a much bigger cross-section (columns, beams)
+    than the other elements of the same Revit type: the same type normally has one size, so this is
+    usually a modelling or export error worth a look before the estimate is issued."""
+    import statistics
+
+    def size(e):
+        q, c = e.get("qty") or {}, e["ifc_class"]
+        if c in ("IfcWall", "IfcWallStandardCase") and q.get("side"):
+            return "thickness", q.get("volume", 0) / q["side"]
+        if c in ("IfcSlab", "IfcRoof", "IfcCovering") and q.get("footprint"):
+            return "thickness", q.get("volume", 0) / q["footprint"]
+        if c == "IfcColumn":
+            return "section", q.get("footprint")
+        if c in ("IfcBeam", "IfcMember"):
+            return "section", q.get("section")
+        return None, None
+
+    by_type = defaultdict(list)
+    for e in elements:
+        if not recipes.get(e["guid"]) or (e.get("qty") or {}).get("volume", 0) <= 0:
+            continue
+        kind, v = size(e)
+        if v:
+            by_type[group_key(e)].append((v, kind, e))
+    out = []
+    for key, items in by_type.items():
+        if len(items) < 3:
+            continue
+        typical = statistics.median(v for v, _, _ in items)
+        for v, kind, e in items:
+            if typical > 0 and v > 2 * typical and e["qty"]["volume"] > 0.2:
+                out.append({"guid": e["guid"], "type": key.split("|", 1)[-1], "measure": kind,
+                            "value": round(v, 3), "typical": round(typical, 3), "times": round(v / typical, 1)})
+    return sorted(out, key=lambda r: -r["times"])
+
+
 def _same_in_two_models(elements, cls):
     """An element drawn in two discipline models (structural columns kept in the architect's model)
     is counted once: the copy in the structure model wins. Returns the duplicate records."""
@@ -1183,5 +1220,6 @@ def estimate(elements, region, lib=None, settings=None):
                    "overlaps": overlap_records, "overlap_m3": round(ov_total, 3),
                    "duplicates": [r for r in overlap_records if r["kind"] in ("same type", "same room shape", "in two models")],
                    "generic": generic,
+                   "odd_sizes": odd_sizes(elements, recipes),
                    "reconciliation": reconciliation},
     }
