@@ -240,6 +240,17 @@ const D = {
   "Model 2": { ar: "نموذج 2" },
   "Model 3": { ar: "نموذج 3" },
   "floor area": { ar: "مساحة الطوابق", ur: "فرش رقبہ", es: "superficie", fr: "surface" },
+  "Delete this project and all its revisions?": { ar: "حذف هذا المشروع وكل نسخه؟" },
+  "Remove": { ar: "إزالة" },
+  "Quantity formula": { ar: "معادلة الكمية" },
+  "All projects": { ar: "كل المشاريع" },
+  "Region and currency": { ar: "المنطقة والعملة" },
+  "Colour by cost": { ar: "تلوين حسب التكلفة" },
+  "Colour by trade": { ar: "تلوين حسب الحرفة" },
+  "Show problems": { ar: "إظهار المشاكل" },
+  "Show changes between revisions": { ar: "إظهار التغييرات بين النسخ" },
+  "Show one level": { ar: "إظهار طابق واحد" },
+  "Zoom to fit": { ar: "ملاءمة العرض" },
   "Close": { ar: "إغلاق", ur: "بند کریں", es: "Cerrar", fr: "Fermer" },
   "Search": { ar: "بحث", ur: "تلاش", es: "Buscar", fr: "Rechercher" },
   "1 · Local prices": { ar: "١ · الأسعار المحلية", ur: "١ · مقامی قیمتیں", es: "1 · Precios locales", fr: "1 · Prix locaux" },
@@ -553,6 +564,10 @@ export function applyStatic(root = document) {
     el.innerHTML = t(el.dataset.i18nKey);
   });
   root.querySelectorAll("[data-i18n-ph]").forEach((el) => { el.placeholder = t(el.dataset.i18nPh); });
+  root.querySelectorAll("[title]").forEach((el) => {   // tooltips too
+    if (!el.dataset.i18nTitle) el.dataset.i18nTitle = el.title;
+    el.title = t(el.dataset.i18nTitle);
+  });
   // Long texts (help, export steps) come as whole blocks per language; English when none exists.
   const blocks = [...root.querySelectorAll("[data-lang-block]")];
   const has = new Set(blocks.map((el) => el.dataset.langBlock));

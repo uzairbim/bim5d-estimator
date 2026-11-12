@@ -150,7 +150,7 @@ async function loadProjects() {
   $("#projectList").innerHTML = S.projects.map((p) => {
     const v = p.versions[p.versions.length - 1];
     const status = !v ? t("no model") : v.status === "ready" ? t("{n} elements", { n: fmt(v.elements) }) : v.status === "error" ? t("error") : t("processing…");
-    return `<div class="card" data-pid="${p.id}"><button class="del" data-del="${p.id}" title="Delete project">×</button>
+    return `<div class="card" data-pid="${p.id}"><button class="del" data-del="${p.id}" title="${t("Delete project")}">×</button>
       <h4>${esc(p.name)}</h4><div class="meta">${t(p.versions.length === 1 ? "1 revision" : "{n} revisions", { n: p.versions.length })} · ${status}</div>
       <div class="meta">${esc(S.lib.regions[p.settings.region]?.name || p.settings.region)} · ${new Date(p.created * 1000).toLocaleDateString(NUM_LOCALE())}</div></div>`;
   }).join("");
@@ -160,7 +160,7 @@ $("#projectList").addEventListener("click", async (e) => {
   const del = e.target.closest("[data-del]");
   if (del) {
     e.stopPropagation();
-    if (!confirm("Delete this project and all its revisions?")) return;
+    if (!confirm(t("Delete this project and all its revisions?"))) return;
     await api(`/api/projects/${del.dataset.del}`, { method: "DELETE" });
     return loadProjects();
   }
@@ -472,7 +472,7 @@ function renderSummary() {
     return `<tr><td><input type="text" data-al="${i}" data-f="name" value="${esc(al.name)}"></td>
       <td><select data-al="${i}" data-f="kind"><option value="pct" ${al.kind === "pct" ? "selected" : ""}>${t("% of measured")}</option><option value="lump" ${al.kind === "lump" ? "selected" : ""}>${t("Lump sum")}</option><option value="per_m2" ${al.kind === "per_m2" ? "selected" : ""}>${t("per m\u00b2")}</option></select></td>
       <td><input type="number" step="any" data-al="${i}" data-f="value" value="${al.value}"></td><td class="n">${fmt(calc)}</td>
-      <td><button class="btn sm" data-alrm="${i}" title="Remove">×</button></td></tr>`;
+      <td><button class="btn sm" data-alrm="${i}" title="${t("Remove")}">×</button></td></tr>`;
   }).join("");
   const missingCount = e.scope.filter((x) => !x.present && x.suggest && !e.allowances.some((al) => al.name === x.suggest.name)).length
     + e.checklist.filter((x) => x.status === "missing").length;
@@ -781,7 +781,7 @@ function renderElement(guid) {
     </div>
     <h3>${t("Cost breakdown")}</h3>
     <table><thead><tr><th>${t("Work item")}</th><th class="n">${t("Qty")}</th><th class="n">${t("Rate")}</th><th class="n">${t("Amount")}</th></tr></thead><tbody>
-    ${lines.map((l) => `<tr><td><span dir="auto">${esc(tx("work_item", l.work_item, l.description))}</span><br><span class="muted small" title="Quantity formula">= ${esc(l.formula)}${l.waste_pct ? ` + ${l.waste_pct}% ${t("waste")}` : ""}</span></td><td class="n">${fmt(uq(l.qty, l.unit)[0], 2)} ${uq(l.qty, l.unit)[1]}</td><td class="n">${fmt(ur(l.rate, l.unit), 2)}</td><td class="n">${fmt(l.amount)}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">${pe.source === "excluded" ? t("Excluded from the estimate.") : t("Not priced. Choose what it is above.")}</td></tr>`}
+    ${lines.map((l) => `<tr><td><span dir="auto">${esc(tx("work_item", l.work_item, l.description))}</span><br><span class="muted small" title="${t("Quantity formula")}">= ${esc(l.formula)}${l.waste_pct ? ` + ${l.waste_pct}% ${t("waste")}` : ""}</span></td><td class="n">${fmt(uq(l.qty, l.unit)[0], 2)} ${uq(l.qty, l.unit)[1]}</td><td class="n">${fmt(ur(l.rate, l.unit), 2)}</td><td class="n">${fmt(l.amount)}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">${pe.source === "excluded" ? t("Excluded from the estimate.") : t("Not priced. Choose what it is above.")}</td></tr>`}
     </tbody></table>
     <h3>${t("Measured from the 3D shape")}</h3>
     <table>${[[t("Volume"), q.volume, "m³", "volume"], [t("Wall face (one side)"), q.side, "m²", "side"], [t("Plan area"), q.footprint, "m²", "footprint"], [t("Length"), q.length, "m", "length"], [t("Height"), q.height, "m", "height"], [t("Section size"), q.section, "m", "section"]]
